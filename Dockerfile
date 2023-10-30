@@ -1,11 +1,11 @@
-FROM python:alpine
+FROM python:3.8.2-alpine3.11
 
 # Install packages
 RUN apk --no-cache add bash make gcc libc-dev python3-dev imagemagick
 
 # set environment variables so docker uses the virtual environment
 ENV VIRTUAL_ENV=./.virtualenv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
 WORKDIR /usr/src/app
 
@@ -18,4 +18,4 @@ RUN bash setup.sh
 EXPOSE 5000
 
 # Start application.
-CMD ["python3", "./run.py", "waitress"]
+CMD python ./run.py waitress
