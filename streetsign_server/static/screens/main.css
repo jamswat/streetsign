@@ -58,7 +58,7 @@ div.zone {
 
 .zone_ div.post_inner, .zone_fade div.post_inner {
     display: table-cell;
-    vertical-align: middle;
+    vertical-align: top;
     width: 100%;
     bottom: 0px;
 }
