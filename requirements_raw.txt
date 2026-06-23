@@ -21,6 +21,7 @@ passlib
 simpleeval
 
 # simple python-based WSGI webserver:
+Werkzeug
 waitress
 
 # for tests:
