@@ -7,7 +7,7 @@ Jinja2==2.10.1
 peewee==3.9.6
 
 # for importing 'external data' sources:
-feedparser==5.2.1
+feedparser==6.0.12
 tweepy==3.8.0
 bleach==3.1.4
 
