@@ -36,7 +36,8 @@ import streetsign_server.user_session as user_session
 
 # set up the app
 from streetsign_server import app
-from streetsign_server.models import DB, Post, Screen, Feed, User, config_var
+from streetsign_server.models import DB, ALL_MODELS, \
+     Post, Screen, Feed, User, config_var
 
 ######################################################################
 # Basic App stuff:
@@ -47,6 +48,7 @@ def before_the_action():
 
     g.site_vars = app.config.get('SITE_VARS')
     DB.init(app.config.get('DATABASE_FILE'))
+    DB.bind(ALL_MODELS)
     DB.connect()
 
 @app.teardown_request

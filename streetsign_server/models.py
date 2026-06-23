@@ -111,14 +111,14 @@ def init(dbfile=False):
         DB.init(dbfile)
     else:
         DB.init(app.config.get('DATABASE_FILE'))
+    DB.bind(ALL_MODELS)
 
 def create_all(dbfile=False):
     ''' initialises the database, creates all needed tables. '''
 
     init(dbfile)
 
-    for t in (User, UserSession, Group, UserGroup, Post, Feed,
-              FeedPermission, ConfigVar, ExternalSource, Screen):
+    for t in ALL_MODELS:
         t.create_table(True)
 
 def by_id(model, ids):
@@ -879,3 +879,6 @@ def config_var(key, default_value):
         except sqlite3.IntegrityError:
             # ha! we have a race! and you lose...
             return json.loads(ConfigVar.get(ConfigVar.id == key).value)
+
+ALL_MODELS = (User, UserSession, Group, UserGroup, Post, Feed,
+              FeedPermission, ConfigVar, ExternalSource, Screen)
