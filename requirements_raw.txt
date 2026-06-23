@@ -7,7 +7,6 @@ flask-peewee
 
 # for importing 'external data' sources:
 feedparser
-#feedformatter
 tweepy
 bleach
 
