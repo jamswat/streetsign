@@ -190,8 +190,6 @@ class DBModel(Model):
     ''' base class for other database models '''
     # pylint: disable=too-few-public-methods
 
-    database = DB
-
     validation_regexp = {}
 
     def update_from(self, form, field, formfield=None, cb=False):
