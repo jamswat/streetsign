@@ -27,5 +27,4 @@ waitress
 nose
 coverage
 pylint
-requests
 html5lib

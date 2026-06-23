@@ -14,7 +14,6 @@ import streetsign_server.models as models
 from streetsign_server.views.utils import admin_only, registered_users_only
 
 from unittest_helpers import StreetSignTestCase
-from requests import session
 
 class TestDecorators(StreetSignTestCase):
     ''' test for valid HTML & JSON of the main views. '''
