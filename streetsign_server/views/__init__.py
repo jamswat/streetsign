@@ -44,17 +44,9 @@ from streetsign_server.models import DB, ALL_MODELS, \
 
 @app.before_request
 def before_the_action():
-    ''' load some variables in for template etc to use, and connect the DB '''
+    ''' load some variables in for template etc to use '''
 
     g.site_vars = app.config.get('SITE_VARS')
-    DB.init(app.config.get('DATABASE_FILE'))
-    DB.bind(ALL_MODELS)
-    DB.connect()
-
-@app.teardown_request
-def end_of_request(exception): # pylint: disable=unused-argument
-    ''' close the database '''
-    DB.close()
 
 
 @app.route('/')

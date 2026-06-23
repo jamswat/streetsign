@@ -35,7 +35,11 @@ app.config.from_object(config)
 
 from . import models
 import streetsign_server.views as views
-from .models import DB, User, Group, Post, Feed, FeedPermission
+from .models import DB, ALL_MODELS, \
+     User, Group, Post, Feed, FeedPermission
+
+DB.init(app.config.get('DATABASE_FILE'))
+DB.bind(ALL_MODELS)
 
 #auth = Auth(app, db)
 #admin = Admin(app, auth)
