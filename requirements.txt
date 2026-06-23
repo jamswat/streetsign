@@ -18,7 +18,7 @@ simpleeval==1.0.7
 Werkzeug==3.1.8
 waitress==3.0.2
 # for tests:
-nose==1.3.7
+pytest==9.1.1
 coverage==7.14.3
 pylint==4.0.6
 html5lib==1.1
@@ -27,11 +27,15 @@ astroid==4.0.4
 blinker==1.9.0
 click==8.4.1
 dill==0.4.1
+iniconfig==2.3.0
 isort==8.0.1
 itsdangerous==2.2.0
 MarkupSafe==3.0.3
 mccabe==0.7.0
+packaging==26.2
 platformdirs==4.10.0
+pluggy==1.6.0
+Pygments==2.20.0
 sgmllib3k==1.0.0
 six==1.17.0
 tinycss2==1.5.1

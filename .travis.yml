@@ -10,8 +10,8 @@ install:
 - pip install codecov
 - python .setup/make_initial_config_file.py > config.py
 script:
-- nosetests
-- coverage run -m nose
+  - pytest
+  - coverage run -m pytest
 after_success:
 - coveralls
 - codecov

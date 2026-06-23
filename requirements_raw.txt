@@ -24,7 +24,7 @@ Werkzeug
 waitress
 
 # for tests:
-nose
+pytest
 coverage
 pylint
 html5lib
