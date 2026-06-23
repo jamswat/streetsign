@@ -1,5 +1,6 @@
 # the web framework:
 Flask
+Jinja2
 
 # database stuff:
 peewee
