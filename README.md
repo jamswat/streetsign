@@ -1,5 +1,5 @@
 # StreetSign (Server)
-##Forked to update dependencies and modernize the project a bit
+## Forked to update dependencies and modernize the project a bit
 
 A digital signage system, inspired by Concerto, however written in Flask/Peewee/Python,
 with a simpler basis.  This project was originally written for Teenstreet 2013 in Germany
