@@ -14,7 +14,7 @@ bleach
 #importlib
 
 # for passwords:
-py-bcrypt
+bcrypt
 passlib
 
 # for parsing date-related formulae:
