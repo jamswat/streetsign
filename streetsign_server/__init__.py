@@ -26,12 +26,12 @@ import flask
 #from flask_peewee.auth import Auth
 try:
     import config
-except:
-    print("Config file missing!!!")
-    import config_default
+except ImportError:
+    print("Config file missing, using defaults.")
+    import config_default as config
 
 app = Flask(__name__) # pylint: disable=invalid-name
-app.config.from_object('config')
+app.config.from_object(config)
 
 from . import models
 import streetsign_server.views as views

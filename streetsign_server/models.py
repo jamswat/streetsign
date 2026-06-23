@@ -36,7 +36,8 @@ peewee ORM database models.
 #
 # pylint: disable=invalid-name, too-many-public-methods, missing-docstring, pointless-string-statement, no-value-for-parameter, no-member, bad-continuation, unexpected-keyword-arg
 
-from flask import json, url_for, Markup
+from flask import json, url_for
+from markupsafe import Markup
 from peewee import * # pylint: disable=wildcard-import,unused-wildcard-import
 import sqlite3 # for catching an integrity error
 from passlib.hash import bcrypt # pylint: disable=no-name-in-module
