@@ -20,7 +20,7 @@ simpleeval==0.9.8
 
 # simple python-based WSGI webserver:
 Werkzeug==0.15.5
-waitress==1.4.3
+waitress==3.0.2
 
 # for tests:
 nose==1.3.7
