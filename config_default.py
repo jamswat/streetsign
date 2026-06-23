@@ -14,7 +14,7 @@
 
 from os.path import dirname
 import secrets
-SECRET_KEY = secrets.token_hex(32)
+SECRET_KEY = 'dev-default-key-change-in-production'
 CSRF_ENABLED = True
 DATABASE_FILE = 'database.db'
 
