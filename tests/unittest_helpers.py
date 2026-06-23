@@ -58,7 +58,7 @@ class StreetSignTestCase(unittest.TestCase):
         for modelname in models.__all__:
             model = getattr(models, modelname)
             try:
-                model._meta.database = models.DB  # pylint: disable=protected-access
+                model.bind(models.DB)  # pylint: disable=protected-access
                 model_list.append(model)
             except AttributeError:
                 pass

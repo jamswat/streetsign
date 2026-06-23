@@ -4,7 +4,7 @@ Flask==1.1.1
 Jinja2==2.10.1
 
 # database stuff:
-peewee==3.9.6
+peewee==4.1.0
 
 # for importing 'external data' sources:
 feedparser==6.0.12
