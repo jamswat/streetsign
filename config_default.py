@@ -13,6 +13,8 @@
 '''
 
 from os.path import dirname
+import secrets
+SECRET_KEY = secrets.token_hex(32)
 CSRF_ENABLED = True
 DATABASE_FILE = 'database.db'
 

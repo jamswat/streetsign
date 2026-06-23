@@ -8,7 +8,7 @@ import sys
 import os
 import unittest
 import html5lib
-from peewee import SqliteDatabase
+from peewee import SqliteDatabase, Model
 from flask import json
 
 sys.path.append(os.path.dirname(__file__) + '/..')
@@ -58,9 +58,10 @@ class StreetSignTestCase(unittest.TestCase):
         for modelname in models.__all__:
             model = getattr(models, modelname)
             try:
-                model.bind(models.DB)  # pylint: disable=protected-access
-                model_list.append(model)
-            except AttributeError:
+                if issubclass(model, Model):
+                    model.bind(models.DB)
+                    model_list.append(model)
+            except TypeError:
                 pass
 
         models.DB.create_tables(model_list)
