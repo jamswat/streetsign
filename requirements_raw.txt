@@ -3,7 +3,6 @@ Flask
 
 # database stuff:
 peewee
-flask-peewee
 
 # for importing 'external data' sources:
 feedparser
