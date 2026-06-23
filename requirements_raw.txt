@@ -7,7 +7,6 @@ peewee
 
 # for importing 'external data' sources:
 feedparser
-tweepy
 bleach
 
 # a lot of our modules are separately pulled in later:

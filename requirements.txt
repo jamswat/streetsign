@@ -6,7 +6,6 @@ Jinja2==3.1.6
 peewee==4.1.0
 # for importing 'external data' sources:
 feedparser==6.0.12
-tweepy==4.16.0
 bleach==6.4.0
 # a lot of our modules are separately pulled in later:
 #importlib
@@ -26,22 +25,15 @@ html5lib==1.1
 ## The following requirements were added by pip freeze:
 astroid==4.0.4
 blinker==1.9.0
-certifi==2026.6.17
-charset-normalizer==3.4.7
 click==8.4.1
 dill==0.4.1
-idna==3.18
 isort==8.0.1
 itsdangerous==2.2.0
 MarkupSafe==3.0.3
 mccabe==0.7.0
-oauthlib==3.3.1
 platformdirs==4.10.0
-requests==2.34.2
-requests-oauthlib==2.0.0
 sgmllib3k==1.0.0
 six==1.17.0
 tinycss2==1.5.1
 tomlkit==0.15.0
-urllib3==2.7.0
 webencodings==0.5.1
