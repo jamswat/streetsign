@@ -29,7 +29,7 @@
 
 from flask import render_template, url_for, request, redirect, \
                   flash, json, jsonify
-from werkzeug import ImmutableDict
+from werkzeug.datastructures import ImmutableDict
 
 import sqlite3
 from glob import glob

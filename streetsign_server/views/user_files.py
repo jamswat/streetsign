@@ -33,7 +33,7 @@ from streetsign_server.views.utils import admin_only, registered_users_only
 
 from glob import glob
 from os.path import basename, dirname, join as pathjoin, splitext, isdir, isfile
-from werkzeug import secure_filename # pylint: disable=no-name-in-module
+from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
 from os import makedirs, remove, stat
 from streetsign_server import app
 from subprocess import check_call # for making thumbnails

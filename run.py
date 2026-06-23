@@ -41,7 +41,7 @@ if __name__ == '__main__':
         elif sys.argv[1] == 'profiler':
             print("Loading dev server with profiling on.")
             print("Press <Ctrl-C> to stop")
-            from werkzeug.contrib.profiler import ProfilerMiddleware
+            from werkzeug.middleware.profiler import ProfilerMiddleware
             app.config['PROFILE'] = True
             app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[20])
             app.run(debug=True)
