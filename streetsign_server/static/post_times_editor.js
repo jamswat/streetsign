@@ -27,8 +27,24 @@
 //
 // Date/time pickers
 
-flatpickr('#datetimestart', {enableTime: true, dateFormat: 'Y-m-d H:i:S'});
-flatpickr('#datetimeend', {enableTime: true, dateFormat: 'Y-m-d H:i:S'});
+flatpickr('#active_start', {
+    enableTime: true,
+    dateFormat: 'Y-m-d H:i:s',
+    allowInput: true
+});
+flatpickr('#active_end', {
+    enableTime: true,
+    dateFormat: 'Y-m-d H:i:s',
+    allowInput: true
+});
+
+// Make calendar icons clickable to open the picker
+$('#datetimestart .bi-calendar').parent().on('click', function() {
+    document.querySelector('#active_start')._flatpickr.open();
+});
+$('#datetimeend .bi-calendar').parent().on('click', function() {
+    document.querySelector('#active_end')._flatpickr.open();
+});
 
 /*
 $('#active_start').AnyTime_picker(
@@ -97,11 +113,12 @@ function make_time_observable(t){
 
 ko.bindingHandlers.timeHandler = {
     init: function(element, valueAccessor) {
-        var inputbox = element;
-        var fp = flatpickr(inputbox, {
+        var initialValue = valueAccessor()();
+        var fp = flatpickr(element, {
             enableTime: true,
             noCalendar: true,
             dateFormat: "H:i",
+            defaultDate: initialValue || "00:00",
             onChange: function(selectedDates, dateStr) {
                 valueAccessor()(dateStr);
             }
