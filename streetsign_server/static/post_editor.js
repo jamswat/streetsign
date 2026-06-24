@@ -5,6 +5,7 @@ $('.post_type_button').click(function (e) {
         );
 
     $(this).parent('li').addClass("active").siblings().removeClass("active");
+    $(this).addClass("active").closest('.nav-tabs').find('.nav-link').not(this).removeClass("active");
     $('#title-input').show();
 
     // TODO: put these in CSS classes...

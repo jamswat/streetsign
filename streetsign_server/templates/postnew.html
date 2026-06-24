@@ -7,7 +7,7 @@
 <div style="text-align:center">
 <ul class="nav nav-tabs">
 {%- for type in post_types -%}
-  <li><a href='#' data-posttype="{{type.id}}" class="post_type_button">{{ type.name }}</a></li>
+  <li class="nav-item"><a href='#' data-posttype="{{type.id}}" class="nav-link post_type_button">{{ type.name }}</a></li>
 {%- endfor -%}
 </ul>
 </div>
