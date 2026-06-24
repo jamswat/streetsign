@@ -28,13 +28,17 @@ class WrongHTTPCode(AssertionError):
 class MockBcrypt(object):
     ''' Mock BCrypt out.  It's very slow.  Which is actually good... '''
 
-    def encrypt(self, text):
-        ''' FAKE encypt a password '''
-        return text
+    @staticmethod
+    def hashpw(password, salt):
+        return password
 
-    def verify(self, text, to_compare_to):
-        ''' FAKE verify a password against the hash version. '''
-        return text == to_compare_to
+    @staticmethod
+    def checkpw(password, hashed):
+        return password == hashed
+
+    @staticmethod
+    def gensalt():
+        return b''
 
 class StreetSignTestCase(unittest.TestCase):
     ''' Base Class, initialises and tears down a streetsign_server context. '''

@@ -64,7 +64,7 @@ Password hashes and moving the database
 ---------------------------------------
 
 The user passwords are stored in the database hashed using two salts - an
-individual salt per password (stored in standard passlib style in the password
+individual salt per password (stored in standard bcrypt format in the password
 field) and also with the site-wide "secret".  This "secret" is generated
 automatically when you run the setup script, and is stored in the ``config.py``
 file.  (It's also used by flask for encrypting session data, and so should

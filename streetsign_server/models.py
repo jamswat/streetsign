@@ -40,7 +40,7 @@ from flask import json, url_for
 from markupsafe import Markup
 from peewee import * # pylint: disable=wildcard-import,unused-wildcard-import
 import sqlite3 # for catching an integrity error
-from passlib.hash import bcrypt # pylint: disable=no-name-in-module
+import bcrypt
 from uuid import uuid4 # for unique session ids
 from datetime import datetime, timedelta
 from time import time, mktime
@@ -267,12 +267,18 @@ class User(DBModel):
         ''' Encrypts password, and sets the password hash.
             Not stored until you save! '''
 
-        self.passwordhash = bcrypt.encrypt(password + SECRET_KEY)
+        self.passwordhash = bcrypt.hashpw(
+            (password + SECRET_KEY).encode('utf-8'),
+            bcrypt.gensalt(),
+        ).decode('utf-8')
 
     def confirm_password(self, password):
         ''' Check that password does verify against the stored hash '''
 
-        return bcrypt.verify(password + SECRET_KEY, self.passwordhash)
+        return bcrypt.checkpw(
+            (password + SECRET_KEY).encode('utf-8'),
+            self.passwordhash.encode('utf-8'),
+        )
 
     def __repr__(self):
         return '<User:' + self.displayname + '>'
@@ -380,7 +386,10 @@ def user_login(name, password):
     user = User.select().where(User.loginname == name).get()
     # on error, raises: User.DoesNotExist
 
-    if bcrypt.verify(password + SECRET_KEY, user.passwordhash):
+    if bcrypt.checkpw(
+            (password + SECRET_KEY).encode('utf-8'),
+            user.passwordhash.encode('utf-8'),
+    ):
         session = UserSession(id=str(uuid4()), username=user.loginname,
                                                user=user)
         session.save(force_insert=True)
