@@ -37,15 +37,13 @@ $('a.confirm_ajax_delete').click(function(evt) {
         dom_item.slideUp();
         $.ajax({
             url: $(dom_item).data('item'),
-            type: 'DELETE',
-            success: function(resp) {
+            type: 'DELETE'
+            }).done(function(resp) {
                 dom_item.slideUp('fast', dom_item.remove);
                 flash('deleted');
-                },
-            error: function(resp) {
+            }).fail(function(resp) {
                 dom_item.slideDown();
                 flash('could not delete!');
-                }
             });
     }
 
@@ -116,11 +114,11 @@ $(document).on('click', '.item_ajax_toggle', function() {
 
     $.ajax($(this).parents('[data-uri]').data('uri'),
            { type: $(this).data('ajaxtype'),
-             data: data,
-             error: function() {
+             data: data
+           }).fail(function() {
                 item.toggleClass(toggle_class);
                 alert('failed to delete!');
-                }});
+           });
 });
 
 $(function() {
