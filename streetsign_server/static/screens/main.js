@@ -362,6 +362,10 @@ Zone.prototype = {
 
         if (nextpost) {
             that.showPost(nextpost, function () {
+                if (nextpost.display_time === 0) {
+                    // Permanent post — never cycle.
+                    return;
+                }
                 that.next_post_timer = setTimeout(call_me_again, nextpost.display_time);
                 });
             return;

@@ -136,13 +136,19 @@ def post_form_intake(post, form, editor):
     post.time_restrictions_show = \
         (form.get('times_mode', 'do_not_show') == 'only_show')
     post.time_restrictions = form.get('time_restrictions_json', '[]')
-    post.display_time = \
-        getint('displaytime', 8, minimum=2, maximum=100, form=form)
 
-    post.active_start = \
-        getstr('active_start', post.active_start, validate=DATESTR, form=form)
-    post.active_end = \
-        getstr('active_end', post.active_end, validate=DATESTR, form=form)
+    if getbool('permanent', False, form=form):
+        post.display_time = 0
+        post.active_end = '2099-12-31 23:59:59'
+        post.active_start = \
+            getstr('active_start', post.active_start, validate=DATESTR, form=form)
+    else:
+        post.display_time = \
+            getint('displaytime', 8, minimum=2, maximum=100, form=form)
+        post.active_start = \
+            getstr('active_start', post.active_start, validate=DATESTR, form=form)
+        post.active_end = \
+            getstr('active_end', post.active_end, validate=DATESTR, form=form)
 
     fontsize = getint('post_fontsize', 0, minimum=0, form=form)
     if form.get('post_fontsize_mode', '') == 'custom' and fontsize > 0:

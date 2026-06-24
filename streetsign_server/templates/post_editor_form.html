@@ -47,7 +47,19 @@
     <div class="card-body">
 
     <div class="row">
-    <div class="col-md-6">
+
+    <div class="col-12 mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="permanent" value="1"
+                   id="permanent-check"
+                   {{ 'checked' if post.display_time == 0 }}>
+            <label class="form-check-label" for="permanent-check">
+                <strong>Show permanently</strong> — never expires, never cycles to next post
+            </label>
+        </div>
+    </div>
+
+    <div class="col-md-6" id="lifetime-start-group">
     <label>Start:</label>
         <div class="mb-3">
             <div class="input-group date" id="datetimestart" data-date-format="YYYY-MM-DD HH:mm:ss">
@@ -61,7 +73,7 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-6" id="lifetime-end-group">
     <label>End:</label>
         <div class="mb-3">
             <div class="input-group date" id="datetimeend" data-date-format="YYYY-MM-DD HH:mm:ss" >
@@ -77,9 +89,11 @@
     </div>
 
     <br/>
+    <div id="displaytime-group">
     <label>How many seconds to show for at one time?
                 <input type="number" name="displaytime" data-min="1" data-max="500"
                        class="form-control" value="{{ post.display_time }}" /></label>
+    </div>
     </div>
 </div>
 <div class="card">
@@ -145,3 +159,22 @@
 {% if post.feed.user_can_write(user) %}
         <input class="btn btn-primary" type="submit" value="{{ 'Post!' if not post.id else 'Save' }}" />
 {% endif %}
+
+<script type="text/javascript">
+(function() {
+    var checkbox = document.getElementById('permanent-check'),
+        endGroup = document.getElementById('lifetime-end-group'),
+        displayGroup = document.getElementById('displaytime-group');
+
+    function update() {
+        var permanent = checkbox.checked;
+        endGroup.style.display = permanent ? 'none' : '';
+        displayGroup.style.display = permanent ? 'none' : '';
+    }
+
+    if (checkbox) {
+        checkbox.addEventListener('change', update);
+        update();
+    }
+})();
+</script>
