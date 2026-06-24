@@ -7,9 +7,10 @@
 import sys
 import os
 
-sys.path.append("../.virtualenv/lib/python3.7/site-packages/")
-sys.path.append("../")
-sys.path.append(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '.virtualenv', 'lib',
+    'python' + '.'.join(str(x) for x in sys.version_info[:2]),
+    'site-packages'))
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -21,11 +22,11 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'StreetSign'
-copyright = '2013-2019, Daniel Fairhead'
+copyright = '2013-2026, Daniel Fairhead, et al.'
 
-version = '0.5'
+version = '0.6'
 # The full version, including alpha/beta/rc tags.
-release = '0.5'
+release = '0.6'
 
 exclude_patterns = ['_build']
 pygments_style = 'sphinx'
@@ -37,20 +38,18 @@ rst_epilog = """
 .. _Python: http://python.org/
 .. _Flask: http://flask.pocoo.org/
 .. _peewee: http://peewee.readthedocs.org/en/latest/
-.. _flask-peewee: https://github.com/coleifer/flask-peewee
 .. _jQuery: http://jquery.com/
-.. _jQuery.transit: https://github.com/rstacruz/jquery.transit
-.. _chosen: http://harvesthq.github.io/chosen/
-.. _knockout.js: http://knockoutjs.com/
+.. _Alpine.js: https://alpinejs.dev/
+.. _Quill: https://quilljs.com/
+.. _Choices.js: https://github.com/Choices-js/Choices
+.. _Day.js: https://day.js.org/
+.. _Prism.js: https://prismjs.com/
+.. _Bootstrap: https://getbootstrap.com/
+.. _Flatpickr: https://flatpickr.js.org/
 .. _pylint: http://www.pylint.org/ 
-.. _pylint git commit hook: https://github.com/sebdah/git-pylint-commit-hook
-.. _bleach: http://bleach.readthedocs.org/en/latest/index.html
-.. _Bootstrap: http://twbs.github.io/bootstrap/
 .. _sqlite: http://www.sqlite.org/
 .. _FeedParser: http://pythonhosted.org/feedparser/
 .. _Waitress: http://docs.pylonsproject.org/projects/waitress/en/latest/
-
-
 """
 
 # ---------------------------------------------

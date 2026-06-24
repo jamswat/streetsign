@@ -4,16 +4,16 @@ A lightweight digital signage server written in Python by **Daniel Fairhead**.
 Originally created for [Teenstreet 2013](http://www.teenstreet.de) in Germany,
 it has been used at large conferences and in corporate environments since.
 
-Built with Flask, Peewee, and SQLite — manage content feeds, schedule posts, and
-display them on configurable screen layouts with smooth fade and scroll
+Built with Flask, Peewee, Alpine.js, and SQLite — manage content feeds, schedule
+posts, and display them on configurable screen layouts with smooth fade and scroll
 transitions.
 
 ---
 
 ## Features
 
-- **Content types** — plain text, rich text (HTML), advanced documents, images,
-  external webpages, web hooks, and raw HTML. Plugin system for adding more.
+- **Content types** — plain text, rich text (HTML), images, video, external
+  webpages, web hooks, and raw HTML. Plugin system for adding more.
 - **Screen layouts** — multi-zone displays with configurable backgrounds, CSS,
   fonts, scroll/fade transitions, and aspect ratio override.
 - **Scheduling** — per-post start/end lifetimes, time-of-day restrictions,
@@ -92,6 +92,10 @@ Full documentation at [streetsign.readthedocs.org](http://streetsign.readthedocs
 - Are time restrictions blocking it?
 - Is it within its active lifetime (start/end dates)?
 
+## Changelog
+
+See the [CHANGELOG](CHANGELOG.md) for a summary of improvements.
+
 ## Credits
 
 StreetSign was created by **Daniel Fairhead** for Teenstreet 2013. It is made
@@ -101,7 +105,8 @@ Bitbucket.
 ## AI Usage
 
 Code in this repository has been developed with assistance from AI coding tools,
-including the Bootstrap 3→5 migration, dependency updates.
+including the Bootstrap 3→5 migration, Knockout.js→Alpine.js replacement,
+HTML/CSS/JS modernization, and dependency updates.
 
 ## License
 

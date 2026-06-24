@@ -52,7 +52,7 @@
 - Templating & defaults for posts
 - 'Unarchive' posts
 - Rename uploaded post images to `postid-imagename` to avoid conflicts
-- Remove old new-post view complexity — choose types in a single view like external data importer
+- ~~Remove old new-post view complexity — choose types in a single view like external data importer~~ — Done: complex type merged into HTML, single type selector
 - Better post types API (better error messages, etc.)
 
 # Screen / Display Engine
@@ -65,7 +65,7 @@
 - Non-session auth for API, makes scripting easier
 - Local machine mini-proxy for offline resilience
 - Urgent alert post type, takes over whole display
-- HTML5 video post type
+- ~~HTML5 video post type~~ — Done: video post type with audio overlay implemented
 - YouTube video post type
 - Sub-zones post type (horizontal/vertical mode with nested zones)
 
