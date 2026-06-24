@@ -3,6 +3,7 @@
 
 {% block body %}
 	<h1>Feeds</h1>
+	<div class="table-responsive">
 	<table class="table table-striped">
 		<thead>
 		<tr>
@@ -47,14 +48,15 @@
 		{% endfor %}
 	</tbody>
 </table>
+	</div>
 
 {% if session.display_admin_stuff %}
-
 	<div class="card mt-4">
 		<div class="card-header">
 			<h2 class="card-title">External Data Importers</h2>
 		</div>
 		<div class="card-body">
+			<div class="table-responsive">
 			<table class="table table-striped">
 			<thead>
 				<tr>
@@ -89,6 +91,7 @@
 			{% endfor %}
 			</tbody>
 			</table>
+			</div>
 		</div>
 	</div>
 {% endif %}

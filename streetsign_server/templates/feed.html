@@ -3,6 +3,7 @@
 
 {% block body %}
 <h1>Feed: {{ feed.name }} </h1>
+<div class="table-responsive">
 <table class="table table-striped">
 <thead>
   <tr>
@@ -46,6 +47,7 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 {% if user.is_admin %}
     <form method="POST" id="users_and_groups" class="form">
     <input type="submit" value="Save" class="btn btn-primary" style="float:right"/>
@@ -118,7 +120,7 @@
     </div>
     </div>
 {% endif %}
-<div class="cf"></div>
+<div class="clearfix"></div>
 </div>
 {% endblock %}
 

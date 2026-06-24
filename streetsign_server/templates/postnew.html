@@ -4,7 +4,7 @@
 
 {% block body %}
 <h2>New Post (in {{ post.feed.name }})</h2>
-<div style="text-align:center">
+<div class="text-center">
 <ul class="nav nav-tabs">
 {%- for type in post_types -%}
   <li class="nav-item"><a href='#' data-posttype="{{type.id}}" class="nav-link post_type_button">{{ type.name }}</a></li>

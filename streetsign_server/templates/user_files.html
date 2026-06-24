@@ -4,6 +4,7 @@
 {% block body %}
 <h1>Uploaded Files</h1>
 <pre>{{ dirname }}</pre>
+<div class="table-responsive">
 <table class="table table-striped">
 <thead>
   <tr>
@@ -25,6 +26,7 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 <div class="card">
   <div class="card-header">
     <h2 class="card-title">Upload new file</h2>

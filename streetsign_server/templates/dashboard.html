@@ -11,6 +11,7 @@
 					<h2 class="card-title"> Unpublished Posts I can publish:</h2>
 				</div>
 				<div class="card-body">
+					<div class="table-responsive">
 					<table class="table table-striped">
 						{% for post in posts_to_publish %}
 							<tr>
@@ -26,6 +27,7 @@
 							</tr>
 						{% endfor %}
 					</table>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -36,6 +38,7 @@
 					<h2 class="card-title">Feeds I can write for:</h2>
 				</div>
 				<div class="card-body">
+					<div class="table-responsive">
 					<table class="table table-striped">
 					{% for feed in feeds %}
 						{% if feed.user_can_write(user) %}
@@ -51,6 +54,7 @@
 						{% endif %}
 					{% endfor %}
 					</table>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -61,6 +65,7 @@
 					<h2 class="card-title"> My recent Posts:</h2>
 				</div>
 				<div class="card-body">
+					<div class="table-responsive">
 					<table class="table table-striped">
 						{% for post in posts %}
 							<tr>
@@ -79,6 +84,7 @@
 							</tr>
 						{% endfor %}
 					</table>
+					</div>
 				</div>
 			</div>
 		</div>

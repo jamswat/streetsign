@@ -3,6 +3,7 @@
 
 {% block body %}
 <h1>Groups</h1>
+<div class="table-responsive">
 <table class="table table-striped">
 <thead>
 <tr>
@@ -26,6 +27,7 @@
 {% endfor %}
 </tbody>
 </table>
+</div>
 
 {% if session.display_admin_stuff %}
 <div class="card">

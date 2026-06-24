@@ -14,7 +14,7 @@
 </div>
 </div>
 
-{% if post.id %}<p>{{ 'Not' if not post.published }} Published</p>{% endif %}
+{% if post.id %}<p>{{ 'Published' if post.published else 'Unpublished' }}</p>{% endif %}
 
 <div class="card">
     <div class="card-header">
@@ -88,6 +88,7 @@
     </div>
     <div class="card-body">
 
+<div class="table-responsive">
 <table style="min-width:80%" class="table table-striped">
 <thead>
   <tr>
@@ -135,6 +136,7 @@
   </tr>
 </tbody>
 </table>
+</div>
 <input type="hidden" name="time_restrictions_json" data-bind="value: ko.toJSON($root.times)" />
 <!--<input style="width: 80%; height: 90px" data-bind="value: ko.toJSON($root.times)"/>-->
 </div>
