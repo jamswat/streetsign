@@ -49,9 +49,6 @@ docker run -p 5000:5000 streetsign
 ./run.py waitress
 ```
 
-For larger deployments, put nginx or a similar reverse proxy in front of the
-WSGI server and serve the `static/` directory directly.
-
 ## Upgrading
 
 1. Backup `database.db` and `config.py`
@@ -104,8 +101,7 @@ Bitbucket.
 ## AI Usage
 
 Code in this repository has been developed with assistance from AI coding tools,
-including the Bootstrap 3→5 migration, dependency updates, Python 3 fixes, bug
-fixes, CSRF protection, and the raw HTML post type.
+including the Bootstrap 3→5 migration, dependency updates.
 
 ## License
 
