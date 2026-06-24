@@ -3,16 +3,13 @@ and is covered by the GNU General Public Licence (GPL), which can be found in th
 file.
 
 None of this would have been possible without the amazing open source libraries that
-I've been able to use.  The following are included in the distribution:
+have been included.  The following are included in the distribution:
 
-jQuery (for javascript/DOM awesomeness)
+jQuery (DOM manipulation and AJAX)
  - MIT Licence (http://jquery.org/licence)
 
-knockout.js (for much easier complex UI elements in the admin interface)
- - MIT Licence (http://opensource.org/licences/mit-licence.php)
-
-knockout.mapping (for turning JSON from the server into ko objects)
- - MIT Licence (http://opensource.org/licences/mit-licence.php)
+Alpine.js (lightweight MVVM for admin interface)
+ - MIT Licence (https://github.com/alpinejs/alpine)
 
 Bootstrap 5 (CSS framework for the admin interface)
  - MIT Licence (https://github.com/twbs/bootstrap)
@@ -20,7 +17,7 @@ Bootstrap 5 (CSS framework for the admin interface)
 Bootstrap Icons (icon font)
  - MIT Licence (https://github.com/twbs/icons)
 
-Quill (modern vanilla JS rich text editor)
+Quill (rich text / WYSIWYG editor)
  - BSD 3-Clause Licence (https://github.com/slab/quill)
 
 Flatpickr (date and time picker)
@@ -31,9 +28,6 @@ Choices.js (enhanced select boxes)
 
 Day.js (date formatting for magic vars)
  - MIT Licence (https://github.com/iamkun/dayjs)
-
-Spectrum colour picker (by Brian Grinstead)
- - MIT Licence (https://github.com/bgrins/spectrum)
 
 Prism.js (syntax highlighting for the raw HTML editor)
  - MIT Licence (https://github.com/PrismJS/prism)
