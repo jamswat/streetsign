@@ -1,6 +1,22 @@
 /*jslint browser:true, regexp: true, debug: true */
 /*global $, jLater, confirm, alert */
 ////////////////////////////////////////////////
+// CSRF token auto-injection for AJAX requests:
+
+$(function() {
+    var token = $('meta[name="csrf-token"]').attr('content');
+    $(document).ajaxSend(function(event, xhr, settings) {
+        if (settings.type && settings.type.toUpperCase() !== 'GET') {
+            if (settings.data instanceof FormData) {
+                settings.data.append('_csrf_token', token);
+            } else {
+                settings.data = settings.data || '';
+                settings.data += (settings.data ? '&' : '') + '_csrf_token=' + encodeURIComponent(token);
+            }
+        }
+    });
+});
+////////////////////////////////////////////////
 // Flashed notices:
 $('#flashed_notices').children('li').click(function(){
     $(this).fadeOut();
@@ -117,7 +133,7 @@ $(document).on('click', '.item_ajax_toggle', function() {
              data: data
            }).fail(function() {
                 item.toggleClass(toggle_class);
-                alert('failed to delete!');
+                alert('Request failed — check your permissions.');
            });
 });
 
