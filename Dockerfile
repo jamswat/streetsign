@@ -1,4 +1,4 @@
-FROM python:3.8.2-alpine3.11
+FROM python:3.12-alpine
 
 # Install packages
 RUN apk --no-cache add bash make gcc libc-dev python3-dev imagemagick

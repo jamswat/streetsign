@@ -85,21 +85,34 @@ class StreetSignTestCase(unittest.TestCase):
             request = self.client.post(url, data=data, **kwargs)
 
         if lang == 'html':
-            parser = html5lib.HTMLParser(strict=True)
-            try:
-                parser.parse(request.data)
-            except Exception as e:
-                lineno = parser.errors[0][0][0] - 1
+            parser = html5lib.HTMLParser(strict=False)
+            parser.parse(request.data)
 
-                print('HTML Parse Error, %s, %s:' % parser.errors[0][0])
-                print('----------------:', parser.errors[0][1])
-                print('----------------:', parser.errors[0][2])
+            real_errors = []
+            for err in parser.errors:
+                errcode = err[1] if len(err) > 1 else None
+                errdata = err[2] if len(err) > 2 else None
+                if (isinstance(errdata, dict)
+                        and errdata.get('name') == 'template'):
+                    continue
+                real_errors.append(err)
 
-                print('\n    '.join(request.data.split('\n')[lineno-3: lineno]))
-                print('-->', request.data.split('\n')[lineno])
-                print('\n    ' + ('\n    '.join(request.data.split('\n')[lineno+1: lineno+3])))
+            if real_errors:
+                err = real_errors[0]
+                body = request.data.decode('utf-8', errors='replace')
+                lineno = err[0][0] - 1
 
-                raise e
+                print('HTML Parse Error, %s, %s:' % err[0])
+                print('----------------:', err[1] if len(err) > 1 else None)
+                print('----------------:', err[2] if len(err) > 2 else None)
+
+                print('\n    '.join(body.split('\n')[lineno-3: lineno]))
+                print('-->', body.split('\n')[lineno])
+                print('\n    ' + ('\n    '.join(
+                    body.split('\n')[lineno+1: lineno+3])))
+
+                raise AssertionError(
+                    'HTML parse error at line %s: %s' % (err[0], err[1]))
 
         elif lang == 'json':
             json.loads(request.data)
