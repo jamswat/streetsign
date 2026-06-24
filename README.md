@@ -10,19 +10,92 @@ transitions.
 
 ---
 
-## Features
+## How it works
 
-- **Content types** — plain text, rich text (HTML), images, video, external
-  webpages, web hooks, and raw HTML. Plugin system for adding more.
-- **Screen layouts** — multi-zone displays with configurable backgrounds, CSS,
-  fonts, scroll/fade transitions, and aspect ratio override.
-- **Scheduling** — per-post start/end lifetimes, time-of-day restrictions,
-  configurable display duration.
-- **Permissions** — user and group-based read/write/publish permissions per feed.
-- **External data** — import posts automatically from RSS/Atom feeds or local
-  image folders.
-- **Client aliases** — route different display clients to different screens.
-- **Magic variables** — `%%TIME%%` and `%%DATE%%` in posts update live on screen.
+StreetSign is a self-contained web server. Browsers acting as display clients
+load a screen layout from the server, then continuously poll for posts from the
+feeds assigned to each zone on that layout. Admins create and publish posts
+through a web-based control panel, configure multi-zone screen designs, and
+optionally import content automatically from RSS feeds or local image folders.
+The server handles scheduling (per-post active windows, time-of-day restrictions),
+permissions (read/write/publish per feed, per user or group), and housekeeping
+(auto-archive old posts).
+
+## Content types
+
+| Type | Description |
+|------|-------------|
+| **Plain Text** | Unformatted text, auto-scaled to fill the zone |
+| **Rich HTML** | Formatted content via the Quill WYSIWYG editor, sanitised with Bleach |
+| **Image** | Uploaded or remote images, displayed with `background-size: contain` |
+| **Video** | HTML5 video with loop — muted autoplay by default, tap to enable audio |
+| **External Web Page** | Embeds any URL in a full-zone iframe |
+| **Web Hook** | POSTs to external URLs on render, display, and hide — designed for controlling stream players (e.g. VLC) or automation systems |
+| **Raw HTML** | Arbitrary, unsanitised HTML rendered in a sandboxed iframe |
+
+New post types can be added via a plugin system (`streetsign_server/post_types/`).
+
+## Screen engines
+
+Display clients load one of three rendering engines, selected per client alias:
+
+| Engine | Technology | Best for |
+|--------|-----------|----------|
+| **basic** | CSS3 transitions (`opacity` for fades, `translateX` for scroll) | Modern browsers, full-featured PCs |
+| **notrans** | JavaScript `requestAnimationFrame` for scroll | Raspberry Pi, low-powered devices |
+| **mobile** | Lightweight CSS | Phones and tablets |
+
+Each screen layout consists of rectangular **zones** positioned on a background.
+Each zone subscribes to one or more feeds and cycles through their posts. Zones
+support two transition types:
+
+- **Fade** — posts cross-fade via opacity transitions at configurable intervals
+- **Scroll** — posts slide horizontally; longer content scrolls for longer
+
+Zones can be styled per-layout with custom CSS, background images per screen,
+user-uploaded fonts (`.ttf`/`.otf`), and per-zone font family and colour overrides.
+
+**Client aliases** map short access keys (like `/client/mainhall`) to a specific
+screen + engine combination with display overrides (aspect ratio, fadetime,
+scroll speed). This lets different physical displays use different layouts without
+changing bookmarks on the clients.
+
+## External data
+
+Posts can be imported automatically from external sources:
+
+- **RSS / Atom** feeds — each entry is rendered through a Jinja2 template,
+  sanitised with Bleach, and saved as a Rich HTML post. Supports deduplication
+  and configurable update frequency.
+- **Local folder (images)** — watches a server-side directory for new image
+  files and creates Image posts for each.
+
+Both importers run on a configurable schedule (every N minutes) and can
+optionally auto-publish new posts. A test button previews what an importer will
+produce. Manual "Run Now" is also available.
+
+## Scheduling
+
+- **Post lifetime** — set start and end dates/times, or mark a post
+  "Show permanently" (never expires, never rotates)
+- **Time-of-day restrictions** — blackout windows or exclusive windows
+  (e.g. "only show between 09:00 and 17:00")
+- **Display duration** — how many seconds each post stays visible (2–100s)
+- **Per-post font size** — override the automatic zone font scaling with a fixed
+  point size
+- **Magic variables** — `%%TIME%%` and `%%DATE%%` in posts update live on screen
+
+## Permissions
+
+Three permission levels per feed, assignable to users and groups:
+
+- **Read** — view posts in the feed
+- **Write** — create and edit posts
+- **Publish** — mark posts as ready for display (separate from write — the
+  dashboard highlights unpublished posts)
+
+Admins bypass all permission checks. Locked-out accounts are denied everything.
+Sessions are tracked server-side in the database, validated on every request.
 
 ## Quick Start
 
@@ -118,8 +191,8 @@ To use the virtualenv directly: `.virtualenv/bin/python`.
 ## Development
 
 ```bash
-.virtualenv/bin/python -m pytest tests/          # 158 tests
-.virtualenv/bin/python -m pylint streetsign_server/  # lint
+.virtualenv/bin/python -m pytest tests/
+.virtualenv/bin/python -m pylint streetsign_server/
 ```
 
 There is a pre-commit hook in `.setup/hooks/` that runs pylint before commits.
