@@ -12,7 +12,7 @@
 			<th>login name</th>
 			<th>Email</th>
 			<th>
-				<a href="{{url_for('user_edit',userid=-1)}}" class="btn btn-primary pull-right">New</a>
+				<a href="{{url_for('user_edit',userid=-1)}}" class="btn btn-primary float-end">New</a>
 			</th>
 		</tr>
 	</thead>
@@ -27,7 +27,7 @@
 					{% if user.is_locked_out %} Locked Out! {% endif %}
 					{% if session.display_admin_stuff %}
 						{% if user.loginname != session.username %}
-							<a class="confirm_ajax_delete btn close btn-sm" href="">&times;</a>
+							<a class="confirm_ajax_delete btn btn-close btn-sm" href=""></a>
 						{% endif %}
 					{% endif %}
 				</td>
@@ -46,10 +46,10 @@
 			<th>
 				{% if session.display_admin_stuff %}
 					<form action="{{ url_for('users_and_groups') }}" method="POST"
-					      class="form-inline" role="form">
+					      class="d-flex" role="form">
 						<input name="action" value="creategroup" type="hidden" />
 						<input name="name" type="hidden" />
-						<button type="submit" class="btn btn-primary popup_ask pull-right"
+						<button type="submit" class="btn btn-primary popup_ask float-end"
 						        data-inputname="name" data-prompt="New Group Name?"
 						        data-autofill="newgroup">New</button>
 					</form>
@@ -72,7 +72,7 @@
 					{% if session.display_admin_stuff %}
 						<form action="{{ url_for('group',groupid=group.id) }}" method="POST">
 							<input type="hidden" name="action" value="delete" />
-							<input type="submit" class="btn btn-sm close confirm_delete"
+							<input type="submit" class="btn btn-sm btn-close confirm_delete"
 							       value="&times;" />
 						</form>
 					{% endif %}

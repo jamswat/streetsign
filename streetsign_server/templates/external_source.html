@@ -5,17 +5,17 @@
 <input type="hidden" name="type" value="{{ source.type}}" />
 
 <div class="col-md-10">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h2 class="panel-title">External Data Source ({{ source.type }})</h2>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">External Data Source ({{ source.type }})</h2>
     </div>
-    <div class="panel-body form">
-      <div class="form-group col-md-6">
-        <label class="control-label">Name:</label>
+    <div class="card-body">
+      <div class="mb-3 col-md-6">
+        <label class="col-form-label">Name:</label>
         <input class="form-control" name="name" type="text" value="{{ source.name }}" />
       </div>
       <div class="col-md-3">
-        <div class="form-group">
+        <div class="mb-3">
           <label class="form-label">Feed:</label>
           <select class="form-control" name="feed">
             {% for f in feeds %}
@@ -25,11 +25,11 @@
         </div>
       </div>
       <div class="col-md-3">
-        <div class="form-group">
+        <div class="mb-3">
           <label class="form-label">Update Every:</label>
           <div class="input-group">
             <input class="form-control" name="frequency" type="number" value="{{ source.frequency }}" />
-            <span class="input-group-addon">minutes</span>
+            <span class="input-group-text">minutes</span>
           </div>
         </div>
         <small>(last checked: {{ source.last_checked }})</small>
@@ -48,43 +48,43 @@
 <div class="cf"></div>
 
 <div class="col-md-8">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h2 class="panel-title"> {{ source.type}} settings: </h2>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title"> {{ source.type}} settings: </h2>
     </div>
-    <div class="panel-body form">
+    <div class="card-body">
       {{ form |safe }}
     </div>
   </div>
 <div id="test_area">for tests...</div>
 </div>
 
-<div class="col-md-4"><div class="panel panel-default">
-  <div class="panel-heading">
-    <h2 class="panel-title">New Post Lifetime</h2>
+<div class="col-md-4"><div class="card">
+  <div class="card-header">
+    <h2 class="card-title">New Post Lifetime</h2>
   </div>
-  <div class="panel-body form">
-    <div class="form-group">
-      <label class="control-label">Start Time Formula</label>
+  <div class="card-body">
+    <div class="mb-3">
+      <label class="col-form-label">Start Time Formula</label>
         <input class="form-control" name="active_start" type="text" value="{{source.lifetime_start}}"/>
     </div>
 
-    <div class="form-group">
-      <label class="control-label">End Time Formula</label>
+    <div class="mb-3">
+      <label class="col-form-label">End Time Formula</label>
         <input class="form-control" name="active_end" type="text" value="{{source.lifetime_end}}" />
     </div>
 
-    <div class="form-group">
-      <label class="control-label">Display-time on screen</label>
+    <div class="mb-3">
+      <label class="col-form-label">Display-time on screen</label>
         <div class="input-group">
             <input class="form-control" name="display_time" type="number" value="{{ source.display_time if source.display_time else 8 }}" title="How long should each post be displayed on screen for?" />
-            <span class="input-group-addon">seconds</span>
+            <span class="input-group-text">seconds</span>
         </div>
     </div>
 
-    <div class="form-group">
+    <div class="mb-3">
       <div class="checkbox">
-      <label class="control-label" > Publish automatically?
+      <label class="col-form-label" > Publish automatically?
       <input name="publish" type="checkbox" {{ "checked" if source.publish else '' }} />
       </label>
       </div>

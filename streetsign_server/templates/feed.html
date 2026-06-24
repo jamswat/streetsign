@@ -10,7 +10,7 @@
     <th>Post</th>
     <th>Author</th>
     <th>Date</th>
-    <th>  <button type="button" class="btn btn-default" id="show_past_posts">Show Past Posts</button> </th>
+    <th>  <button type="button" class="btn btn-secondary" id="show_past_posts">Show Past Posts</button> </th>
     <th colspan=2>{% if feed.user_can_write(user) %}<a href="{{ url_for('post_new', feed_id=feed.id) }}" class="btn btn-primary">NEW</a>{% endif %}  </th>
   </tr>
 </thead>
@@ -26,12 +26,12 @@
         <td>{{ 'Published' if post.published }}
             {% if feed.user_can_publish(user) %}
             <span class="onlyunpublished">
-                <button class="btn btn-default item_ajax_toggle"
+                <button class="btn btn-secondary item_ajax_toggle"
                         data-ajaxtype="POST"
                         data-ajaxtoggle="published unpublished" data-name="action" data-value="publish">Publish</button>
             </span>
             <span class="onlypublished">
-                <button class="btn btn-default item_ajax_toggle"
+                <button class="btn btn-secondary item_ajax_toggle"
                         data-ajaxtype="POST"
                         data-ajaxtoggle="published unpublished" data-name="action" data-value="unpublish">UnPublish</button>
             </span>
@@ -40,7 +40,7 @@
         <td>{% if (post.published and feed.user_can_publish(user)) or
                   ((not post.published) and feed.user_can_write(user)) %}
             <button data-ajaxtype="POST" data-ajaxtoggle="hidden" data-name="action" data-value="delete"
-                    class="item_ajax_toggle btn confirm_delete close">&times;</button>
+                    class="item_ajax_toggle btn confirm_delete btn-close"></button>
            {% endif %}</td>
     </tr>
 {% endfor %}
@@ -60,32 +60,32 @@
     <input type="hidden" name="action" value="edit" />
     <h2>Permissions for this feed.</h2>
     <div class="autowidth">
-    <div class="col-md-3"><div class="panel panel-default">
-        <div class="panel-heading"><h3 class="panel-title">Author Users:</h3>
+    <div class="col-md-3"><div class="card">
+        <div class="card-header"><h3 class="card-title">Author Users:</h3>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
         {{ widgets.userselect("authors", allusers, feed.authors()) }}
     </div>
     </div></div>
-    <div class="col-md-3"><div class="panel panel-default">
-        <div class="panel-heading"><h3 class="panel-title">Publisher Users:</h3>
+    <div class="col-md-3"><div class="card">
+        <div class="card-header"><h3 class="card-title">Publisher Users:</h3>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
         {{ widgets.userselect("publishers", allusers, feed.publishers()) }}
     </div>
 
     </div></div>
-    <div class="col-md-3"><div class="panel panel-default">
-        <div class="panel-heading"><h3 class="panel-title">Author Groups:</h3>
+    <div class="col-md-3"><div class="card">
+        <div class="card-header"><h3 class="card-title">Author Groups:</h3>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
         {{ widgets.groupselect("author_groups", allgroups, feed.author_groups()) }}
     </div>
     </div></div>
-    <div class="col-md-3"><div class="panel panel-default">
-        <div class="panel-heading"><h3 class="panel-title">Publisher Groups:</h3>
+    <div class="col-md-3"><div class="card">
+        <div class="card-header"><h3 class="card-title">Publisher Groups:</h3>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
         {{ widgets.groupselect("publisher_groups", allgroups, feed.publisher_groups()) }}
     </div>
     </div></div>

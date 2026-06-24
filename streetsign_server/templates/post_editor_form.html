@@ -3,10 +3,10 @@
 {% endmacro %}
 
 {% if post.feed.user_can_write(user) %}
-        <input type="submit" value="{{ 'Post!' if not post.id else 'Save' }}" class="btn btn-primary pull-right"/>
+        <input type="submit" value="{{ 'Post!' if not post.id else 'Save' }}" class="btn btn-primary float-end"/>
 {% endif %}
 
-<div id="postcontentblock" class="well">
+<div id="postcontentblock" class="card card-body">
 <label id="title-input">Title: <input type="text" name="post_title" value="{{post.title if post.title else ''}}"></label><br>
 <div id="postcontentblock-type">
 <input type="hidden" name="post_type" value="{{ post.type }}" />
@@ -16,11 +16,11 @@
 
 {% if post.id %}<p>{{ 'Not' if not post.published }} Published</p>{% endif %}
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h2 class="panel-title">Font Size:</h2>
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Font Size:</h2>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
         <div class="col-md-12">
             <input id="font-auto" type="radio" name="post_fontsize_mode" value="auto" {{'checked' if not post.fontsize}}>
             <label for="font-auto">Automatic (the client will calculate the size based on screen and content size)</label>
@@ -32,42 +32,42 @@
         <div class="col-md-3">
             <div class="input-group">
                 <input class="form-control" type="number" name="post_fontsize" value="{{post.fontsize if post.fontsize else ''}}">
-                <span class="input-group-addon">pt</span>
+                <span class="input-group-text">pt</span>
             </div>
         </div>
     </div>
 </div>
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h2 class="panel-title">Post Lifetime:</h2>
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Post Lifetime:</h2>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
 
     <div class="col-md-6">
     <label>Start:</label>
-        <div class="form-group">
+        <div class="mb-3">
             <div class="input-group date" id="datetimestart" data-date-format="YYYY-MM-DD HH:mm:ss">
                 <input type="text" name="active_start" id="active_start"
                        class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
                        value="{{ post.active_start }}"
                        />
-                <span class="input-group-addon">
-                <span class="glyphicon glyphicon-calendar"></span></span>
+                <span class="input-group-text">
+                <span class="bi bi-calendar"></span></span>
             </div>
         </div>
     </div>
 
     <div class="col-md-6">
     <label>End:</label>
-        <div class="form-group">
+        <div class="mb-3">
             <div class="input-group date" id="datetimeend" data-date-format="YYYY-MM-DD HH:mm:ss" >
                 <input type="text" name="active_end" id="active_end"
                        class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
                        value="{{ post.active_end }}"
                        />
-                <span class="input-group-addon">
-                <span class="glyphicon glyphicon-calendar"></span></span>
+                <span class="input-group-text">
+                <span class="bi bi-calendar"></span></span>
             </div>
         </div>
     </div>
@@ -78,11 +78,11 @@
                        class="form-control" value="{{ post.display_time }}" /></label>
     </div>
 </div>
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3 class="panel-title">Time restrictions:</h3>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Time restrictions:</h3>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
 
 <table style="min-width:80%" class="table table-striped">
 <thead>
@@ -109,19 +109,19 @@
 <tbody data-bind="foreach: times">
   <tr>
     <td>
-        <div class="form-group"> <div class="input-group date">
+        <div class="mb-3"> <div class="input-group date">
             <input type="time" data-bind="timeHandler: start" class="form-control"
                 data-date-format="HH:mm" />
-            <span class="input-group-addon">
-            <span class="glyphicon glyphicon-time"></span></span>
+            <span class="input-group-text">
+            <span class="bi bi-clock"></span></span>
         </div> </div>
     </td>
     <td>
-        <div class="form-group"> <div class="input-group date">
+        <div class="mb-3"> <div class="input-group date">
             <input type="time" data-bind="timeHandler: end" class="form-control"
                 data-date-format="HH:mm" />
-            <span class="input-group-addon">
-            <span class="glyphicon glyphicon-time"></span></span>
+            <span class="input-group-text">
+            <span class="bi bi-clock"></span></span>
         </div> </div>
     </td>
     <td><input data-bind="value: note" class="form-control" /></td>

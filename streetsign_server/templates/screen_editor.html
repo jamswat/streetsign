@@ -10,17 +10,17 @@
 
 <div class="col-md-6">
 <form id="screen_form" method="post">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h2 class="panel-title">Screen ID:{{ screen.id }}
-      <div class="pull-right">
-      <a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname or '') }}" class="btn btn-default btn-sm">Preview</a>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Screen ID:{{ screen.id }}
+      <div class="float-end">
+      <a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname or '') }}" class="btn btn-secondary btn-sm">Preview</a>
       <input type="submit" id="save_btn" value="Save"
              class="btn btn-sm btn-primary"/>
       </div>
       </h2>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
       <div class="col-md-6">
         <label>Name<input type="text" name="urlname" value="{{ screen.urlname }}" class="form-control" /></label>
       </div>
@@ -47,31 +47,29 @@
       </div>
       <!-- where the actual saved data happens -->
       <input type="hidden" name="zones" data-bind="value: ko.mapping.toJSON(zones)"/>
-    </div> <!-- panel-body -->
+    </div> <!-- card-body -->
   </div>
 </form>
 
-<div id="zones_container" class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">Zones:
-    <span class="pull-right">
-    <button data-bind="click: addZone" class="btn btn-xs btn-primary">New Zone</button>
+<div id="zones_container" class="card">
+  <div class="card-header">
+    <h3 class="card-title">Zones:
+    <span class="float-end">
+    <button data-bind="click: addZone" class="btn btn-sm btn-primary">New Zone</button>
     </span>
     </h3>
   </div>
-  <div class="panel-body">
+  <div class="card-body">
   <!-- ko foreach: zones -->
-    <div class="panel panel-default" data-bind="attr: {'data-zoneedit': name}">
-      <div class="panel-heading">
+    <div class="card" data-bind="attr: {'data-zoneedit': name}">
+      <div class="card-header">
         <div class="input-group">
           <input name="urlname" data-bind="value: name"
                  placeholder="zone name" class="form-control" />
-          <span class="input-group-btn">
-            <button data-bind="click:$root.removeZone " class="btn delbutton">&times;</button>
-          </span>
+          <button data-bind="click:$root.removeZone " class="btn delbutton">&times;</button>
         </div>
       </div>
-      <div class="panel-body" data-bind="click: $root.selectZone, event: {mouseover: $root.selectZone}">
+      <div class="card-body" data-bind="click: $root.selectZone, event: {mouseover: $root.selectZone}">
         <div class="col-md-12">
             <label>Feeds:</label>
             <select multiple autocomplete="off" class="form-control"
@@ -89,7 +87,7 @@
           <div class="input-group">
             <input type="number" data-bind="value: fadetime"
                    class="form-control" />
-            <span class="input-group-addon">msec</span>
+            <span class="input-group-text">msec</span>
           </div>
         </div>
 
@@ -113,23 +111,23 @@
           </div>
         </div>
 
-      </div> <!-- (zone) /panel-body -->
-    </div> <!-- (zone) /panel -->
+      </div> <!-- (zone) /card-body -->
+    </div> <!-- (zone) /card -->
   <!-- /ko -->
-  </div> <!-- (zones-container) /panel-body -->
-  <div class="panel-footer">
-    <button data-bind="click: addZone" class="btn btn-xs btn-primary">New Zone</button>
+  </div> <!-- (zones-container) /card-body -->
+  <div class="card-footer">
+    <button data-bind="click: addZone" class="btn btn-sm btn-primary">New Zone</button>
   </div>
 
-</div> <!-- (zones-container) /panel -->
+</div> <!-- (zones-container) /card -->
 
 </div> <!-- col-md-6 -->
 
 <div class="col-md-6">
   <h2>Zones layout
-      <a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname or '') }}" class="btn btn-default btn-sm pull-right">Preview</a>
+      <a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname or '') }}" class="btn btn-secondary btn-sm float-end">Preview</a>
 	</h2>
-  <div class="well" data-spy="affix" data-offset-top="30" data-offset-bottom="30">
+  <div class="card card-body">
     <div id="my_fake_screen" class="fake_screen">
     <!-- ko foreach: zones -->
     <div class="fake_zone" data-bind="style: { top: top, left: left, right: right, bottom: bottom, color: color, 'font-family': fontfamily}, text: name, click: $root.selectZoneScroll, css: {selected: selected}"></div>

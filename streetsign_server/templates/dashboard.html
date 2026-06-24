@@ -5,11 +5,11 @@
 {% if session.logged_in %}
 	<div class="row">
 		<div class="col-sm-6">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h2 class="panel-title"> Unpublished Posts I can publish:</h2>
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title"> Unpublished Posts I can publish:</h2>
 				</div>
-				<div class="panel-body">
+				<div class="card-body">
 					<table class="table table-striped">
 						{% for post in posts_to_publish %}
 							<tr>
@@ -19,7 +19,7 @@
 								<td>
 									<form method="post" action="{{ url_for('postpage', postid=post.id) }}">
 										<input type="hidden" name="action" value="publish" />
-										<input type="submit" class="btn btn-default btn-sm newbutton pull-right" value="Publish" style="" />
+										<input type="submit" class="btn btn-secondary btn-sm float-end" value="Publish" />
 									</form>
 								</td>
 							</tr>
@@ -30,11 +30,11 @@
 		</div>
 
 		<div class="col-sm-6">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h2 class="panel-title">Feeds I can write for:</h2>
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title">Feeds I can write for:</h2>
 				</div>
-				<div class="panel-body">
+				<div class="card-body">
 					<table class="table table-striped">
 					{% for feed in feeds %}
 						{% if feed.user_can_write(user) %}
@@ -44,7 +44,7 @@
 								</td>
 								<td>
 									<a href="{{ url_for('post_new', feed_id=feed.id) }}"
-										 class="btn btn-sm btn-default pull-right">New Post</a>
+										 class="btn btn-sm btn-secondary float-end">New Post</a>
 								</td>
 							</tr>
 						{% endif %}
@@ -54,13 +54,12 @@
 			</div>
 		</div>
 
-		
 		<div class="col-sm-6">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h2 class="panel-title"> My recent Posts:</h2>
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title"> My recent Posts:</h2>
 				</div>
-				<div class="panel-body">
+				<div class="card-body">
 					<table class="table table-striped">
 						{% for post in posts %}
 							<tr>
@@ -72,7 +71,7 @@
 							{% if post in posts_to_publish %}
 									<form method="post" action="{{ url_for('postpage', postid=post.id) }}">
 										<input type="hidden" name="action" value="publish" />
-										<input type="submit" class="btn btn-default btn-sm newbutton pull-right" value="Publish" style="" />
+										<input type="submit" class="btn btn-secondary btn-sm float-end" value="Publish" />
 									</form>
 							{% endif %}
 							</td>
@@ -86,11 +85,11 @@
 		{% if publishable_feeds %}
 
 			<div class="col-sm-6">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<h2 class="panel-title"> Feeds I can publish to:</h2>
+				<div class="card">
+					<div class="card-header">
+						<h2 class="card-title"> Feeds I can publish to:</h2>
 					</div>
-					<div class="panel-body">
+					<div class="card-body">
 						<ul class="list">
 							{% for feed in publishable_feeds %}
 								<li>
@@ -105,14 +104,14 @@
 		{% endif %} {# /publishable feeds #}
 
 		<div class="col-sm-6">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h2 class="panel-title">Other:</h2>
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title">Other:</h2>
 				</div>
-				<div class="panel-body">
-					<button type="button" class="btn btn-default" id="run_housekeeping"
+				<div class="card-body">
+					<button type="button" class="btn btn-secondary" id="run_housekeeping"
 					        title="Archive old posts, delete really old posts">
-						<span class="glyphicon glyphicon-compressed"></span>Do Housekeeping</button>
+						<span class="bi bi-archive"></span> Do Housekeeping</button>
 
 				</div>
 			</div>
@@ -122,7 +121,7 @@
 
 	<!-- endif logged in -->
 {% else %}
-	<div class="jumbotron">
+	<div class="p-5 mb-4 bg-light rounded-3">
 		<h1>{{ g.site_vars.site_title }}</h1>
 	</div>
 {% endif %}
@@ -132,8 +131,8 @@
 </div>
 <div class="row">
 	{% for client in aliases if client.show_on_dashboard %}
-		<div class="col-xs-6 col-md-3">
-			<div class="thumbnail">
+		<div class="col-6 col-md-3">
+			<div class="card card-body">
 				<a href="{{ url_for('client_alias', alias_name=client.name) }}">
 					{% if client.screen.background %}
 						<img src="/static/user_files/{{ client.screen.background }}"
@@ -147,5 +146,5 @@
 		</div>
 	{% endfor %}
 </div>
-<div class="cf"></div>
+<div class="clearfix"></div>
 {% endblock %}

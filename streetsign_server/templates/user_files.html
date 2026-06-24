@@ -24,14 +24,14 @@
 {% endfor %}
 </tbody>
 </table>
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h2 class="panel-title">Upload new file</h2>
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title">Upload new file</h2>
   </div>
-  <div class="panel-body">
-  <form method="POST" enctype="multipart/form-data" class="form-inline" role="form">
+  <div class="card-body">
+  <form method="POST" enctype="multipart/form-data" class="d-flex" role="form">
     <input type="hidden" name="action" value="upload" />
-    <input type="file" name="image_file" id="image_file" accept="image/*,application/x-font-ttf,application/x-font-otf" class="btn btn-default" />
+    <input type="file" name="image_file" id="image_file" accept="image/*,application/x-font-ttf,application/x-font-otf" class="btn btn-secondary" />
     <input type="submit" value="Upload" class="btn btn-primary" />
   </form>
   </div>

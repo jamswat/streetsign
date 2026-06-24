@@ -5,39 +5,39 @@
 <input class="form-control" type="hidden" name="action" value="update" />
 
 <div class="col-md-8">
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h2 class="panel-title"> User Details: </h2>
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title"> User Details: </h2>
   </div>
-  <div class="panel-body form-horizontal">
-    <div class="form-group">
-      <label class="col-sm-2 control-label">login name:</label>
+  <div class="card-body row">
+    <div class="mb-3">
+      <label class="col-sm-2 col-form-label">login name:</label>
       <div class="col-sm-10">
         <input class="form-control" name="loginname" value="{{user.loginname}}" />
       </div>
     </div>
 
-    <div class="form-group">
-      <label class="col-sm-2 control-label">Displayed name:</label>
+    <div class="mb-3">
+      <label class="col-sm-2 col-form-label">Displayed name:</label>
       <div class="col-sm-10">
         <input class="form-control" name="displayname" value="{{user.displayname}}" />
       </div>
     </div>
 
-    <div class="form-group">
-      <label class="col-sm-2 control-label">Email address:</label>
+    <div class="mb-3">
+      <label class="col-sm-2 col-form-label">Email address:</label>
       <div class="col-sm-10">
         <input class="form-control" name="emailaddress" value="{{user.emailaddress}}" />
       </div>
     </div>
-    <div class="form-group">
-      <label class="col-sm-2 control-label">Is admin?</label>
+    <div class="mb-3">
+      <label class="col-sm-2 col-form-label">Is admin?</label>
 
       <div class="col-sm-10">
       {% if session.display_admin_stuff and session.username != user.loginname %}
         <input class="form-control" type="checkbox" name="is_admin" {{'checked' if user.is_admin }}/>
       {% else %}
-        <p class="form-control-static">
+        <p class="form-control-plaintext">
         {{ 'Yes' if user.is_admin else 'no' }}
         {{ '(you!)' if session.username == user.loginname }}
         </p>
@@ -49,25 +49,25 @@
 </div>
 
 {% if session.display_admin_stuff or session.userid == user.id %}
-<div class="col-md-4"><div class="panel panel-default">
-  <div class="panel-heading">
-    <h2 class="panel-title"> Change Password:</h2>
+<div class="col-md-4"><div class="card">
+  <div class="card-header">
+    <h2 class="card-title"> Change Password:</h2>
   </div>
-  <div class="panel-body form">
-    <div class="form-group">
-      <label class="control-label"><strong>Your</strong> current {{ 'admin' if session.display_admin_stuff }} Password:</label>
+  <div class="card-body">
+    <div class="mb-3">
+      <label class="col-form-label"><strong>Your</strong> current {{ 'admin' if session.display_admin_stuff }} Password:</label>
       <div class="col-sm-10">
 <input class="form-control" name="currpass" type="password" />
 </div>
     </div>
-    <div class="form-group">
-      <label class="control-label">New Password:</label>
+    <div class="mb-3">
+      <label class="col-form-label">New Password:</label>
       <div class="col-sm-10">
 <input class="form-control" name="newpass" type="password" />
 </div>
     </div>
-    <div class="form-group">
-      <label class="control-label">Confirm new Password:</label>
+    <div class="mb-3">
+      <label class="col-form-label">Confirm new Password:</label>
       <div class="col-sm-10">
 <input class="form-control" name="conf_newpass" type="password" />
 </div>
@@ -77,15 +77,15 @@
 {% endif %}
 
 <div class="cf">
-<input class="btn btn-primary" style="float:right" type="submit" value="Save" />
+<input class="btn btn-primary float-end" type="submit" value="Save" />
 </div><hr/>
 
 <div class="col-md-6">
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h2 class="panel-title"> Feeds: </h2>
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title"> Feeds: </h2>
   </div>
-  <div class="panel-body">
+  <div class="card-body">
     <ul class="list">
         {% for f in user.writeable_feeds() %}
             <li>{{ linkmacros.feed(f) }}</li>
@@ -95,11 +95,11 @@
 </div></div>
 
 <div class="col-md-6">
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h2 class="panel-title"> Recent Posts: </h2>
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"> Recent Posts: </h2>
     </div>
-    <div class="panel-body">
+    <div class="card-body">
     <ul class="list">
     {% for post in posts %}
         <li>{{ linkmacros.post(post) }}</li>
@@ -109,13 +109,13 @@
 </div></div>
 
 <div class="cf"></div>
-<input class="btn btn-primary" style="float:right" type="submit" value="Save" />
+<input class="btn btn-primary float-end" type="submit" value="Save" />
 <hr/>
-<div class="panel panel-default">
-<div class="panel-heading">
-<h2 class="panel-title">Groups:</h2>
+<div class="card">
+<div class="card-header">
+<h2 class="card-title">Groups:</h2>
 </div>
-<div class="panel-body">
+<div class="card-body">
 {% if session.display_admin_stuff %}
     {{ widgets.groupselect('groups', allgroups, user.groups()) }}
 {% else %}
@@ -126,7 +126,7 @@
     </ul>
 {% endif %}
 </div>
-<div class="panel-footer">
+<div class="card-footer">
 <input class="btn btn-primary" type="submit" value="Save Changes." />
 </div>
 </div>
