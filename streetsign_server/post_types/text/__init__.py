@@ -28,7 +28,8 @@ __NAME__ = 'Plain Text'
 __DESC__ = 'Plain text, formatting etc.' \
            ' inherited from the zone it\'s displayed in'
 
-from flask import render_template_string, escape
+from flask import render_template_string
+from markupsafe import escape
 
 from streetsign_server.post_types import my
 
