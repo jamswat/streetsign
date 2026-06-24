@@ -156,6 +156,13 @@ def migrations(dbfile=False):
             MIGRATOR.add_column('Post', 'fontsize', post_fontsize)
         )
 
+    # Migration 3: merge 'complex' post type into 'html'
+    complex_count = Post.select().where(Post.type == 'complex').count()
+    if complex_count > 0:
+        print('running migration 3 - merge complex post type into html'
+              ' ({} posts)'.format(complex_count))
+        Post.update(type='html').where(Post.type == 'complex').execute()
+
 
 '''
 --------------------------------------------------------------------------------

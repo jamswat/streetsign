@@ -22,10 +22,13 @@ $( function() {
         theme: 'snow',
         modules: {
             toolbar: [
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
                 ['bold', 'italic', 'underline', 'strike'],
-                [{ 'header': [1, 2, 3, false] }],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'align': [] }],
                 [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                ['link', 'image'],
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
                 ['clean']
             ]
         }
