@@ -24,7 +24,9 @@
 
 '''
 
-from flask import render_template, g, Response, url_for
+from flask import render_template, g, Response, url_for, request, session
+from uuid import uuid4
+from markupsafe import Markup
 
 ##########################
 # views submodules:
@@ -47,6 +49,31 @@ def before_the_action():
     ''' load some variables in for template etc to use '''
 
     g.site_vars = app.config.get('SITE_VARS')
+
+    if '_csrf_token' not in session:
+        session['_csrf_token'] = str(uuid4())
+
+    if request.method in ('POST', 'PUT', 'DELETE', 'PATCH'):
+        if app.config.get('TESTING') or not app.config.get('CSRF_ENABLED', True):
+            return
+        if request.endpoint in (
+            'login', 'logout',
+            'screendisplay', 'screens_posts_from_feeds', 'screen_json',
+            'post_types_js', 'posts_housekeeping', 'json_post',
+            'external_data_source_run', 'external_data_sources_update_all',
+            'external_source_test',
+            'save_aliases', 'client_alias', 'robots_txt',
+        ):
+            return
+
+        form_token = request.form.get('_csrf_token', '')
+        if form_token != session['_csrf_token']:
+            return Response('CSRF validation failed', status=403)
+
+
+@app.context_processor
+def inject_csrf():
+    return dict(csrf_token=session.get('_csrf_token', ''))
 
 
 @app.route('/')
