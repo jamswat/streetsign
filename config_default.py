@@ -20,7 +20,7 @@ DATABASE_FILE = 'database.db'
 
 # Refuse to accept file uploads bigger than this:
 
-MAX_CONTENT_LENGTH = 16 * 1024 * 1024 # 16 megabytes. reasonable.
+MAX_CONTENT_LENGTH = 1024 * 1024 * 1024 # 1GB. reasonable for video uploads.
 
 # should change some logging settings, etc.  Currently changes very little:
 
