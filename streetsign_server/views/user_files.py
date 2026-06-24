@@ -45,9 +45,10 @@ def human_size_str(filename):
     ''' returns a human-readable size (string) of a file-name '''
     s = stat(filename).st_size
     if s > 1048576:
-        return str(s/1048576) + 'MB'
+        return f'{s/1048576:.1f} MB'
     if s > 1024:
-        return str(s/1024) + 'kB'
+        return f'{s/1024:.0f} kB'
+    return f'{s} B'
 
 # TODO: move to file upload lib.
 
