@@ -190,13 +190,6 @@ for the full list of options):
 docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" streetsign
 ```
 
-### Reverse proxy
-
-For internet-facing deployments, run the container behind a reverse proxy that
-terminates TLS (Caddy, Traefik, Nginx Proxy Manager, host nginx, Cloudflare
-Tunnel, etc.). Point the proxy at the container's `:5000` and let it handle
-HTTPS, gzip, and large-upload timeouts — there is no need for a separate nginx
-container in the compose stack.
 
 ## Production
 
