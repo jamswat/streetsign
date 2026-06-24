@@ -1,31 +1,23 @@
 # Bugs & Breakage
 
-- Fix 6 failing tests:
-  - `test_auth_decorators.py` — 3 decorator method-matching regressions from Flask 3 upgrade
-  - `test_posts_times.py` — 3 time offset test failures, datetime string vs object mismatch
-- Remove debug `print()` calls left in production:
-  - `logic/feeds_and_posts.py:142` — `print(type(form['active_start']))`
-  - `logic/feeds_and_posts.py:147` — `print(type(post.active_start))`
-  - `views/__init__.py:106` — `print(err)` in error handler
-- Add CSRF protection — No CSRF tokens anywhere; all POST endpoints are vulnerable
-- Fix bare `except:` clauses that silently swallow errors:
-  - `models.py:89` — `safe_json_load`
-  - `views/screens.py:52` — `form_json`
-  - `views/users_and_auth.py:219` — group edit
-  - `logic/feeds_and_posts.py:167` — delete callback
-- Fix `now()` mixed tab/space indentation at `models.py:80`
-- Fix `feed.set_author_groups` and `set_publisher_groups` — both incorrectly delete `publish` permissions instead of `write` (`models.py:599,609`)
+- ~~Fix 6 failing tests~~ — Done: `related_name`→`backref`, Flask 3 route registration, form KeyError fix
+- ~~Remove debug `print()` calls left in production~~ — Done
+- ~~Add CSRF protection~~ — Done: per-session token, auto-injected into all forms, exempts API/screen endpoints
+- ~~Fix bare `except:` clauses that silently swallow errors~~ — Done
+- ~~Fix `now()` mixed tab/space indentation at `models.py:80`~~ — Done
+- ~~Fix `feed.set_author_groups` deletes `publish` permissions instead of `write`~~ — Done
+- ~~Upgrade Peewee `related_name` → `backref`~~ — Done: 7 deprecation warnings → 0
 
 # High Priority
 
 - Split `models.py` (882 lines) into a package: models, auth functions, migrations, utility helpers
 - `__init__.py` does too much — DB init in two places (`__init__.py` and `models.py.init()`); needs single path
 - Remove dead/commented code:
-  - Flask-Peewee admin references in `__init__.py:25-26,44-48`
-  - Commented RSS feed generation code in `feeds_and_posts.py:35,175-198`
-  - Commented login attempt counting code in `users_and_auth.py:49`
+  - ~~Flask-Peewee admin references in `__init__.py`~~ — Done
+  - Commented RSS feed generation code in `feeds_and_posts.py`
+  - Commented login attempt counting code in `users_and_auth.py`
 - Complete `test_post_image.py` — currently a WIP stub
-- Upgrade Peewee `related_name` → `backref` — 7 deprecation warnings in test output
+- ~~Upgrade Peewee `related_name` → `backref`~~ — Done: 7 warnings → 0
 - Peewee 4.x `playhouse.migrate` needs SQLiteMigrator imported at module level; currently `MIGRATOR` is a global but `create_all`/`init` don't always set it up correctly if DB is re-created for tests
 
 # Medium Priority
