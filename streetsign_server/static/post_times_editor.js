@@ -23,16 +23,6 @@
 
 
 
-function any_time_options(newstuff) {
-    return ( $.extend( {},
-        { askEra: false,
-          askSecond: false,
-          earliest: new Date(),
-          //format: "%a - %e/%M/%y - %k:%i"
-        },
-        newstuff ));
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Date/time pickers
