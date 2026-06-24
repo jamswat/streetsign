@@ -363,7 +363,7 @@ class UserSession(DBModel):
     id = CharField(primary_key=True) #: unique id
     username = CharField() #: which username?
 
-    user = ForeignKeyField(User, related_name='sessions') #: the user
+    user = ForeignKeyField(User, backref='sessions') #: the user
     login_time = DateTimeField(default=now) #: when did they log in?
 
 def user_login(name, password):
@@ -617,7 +617,7 @@ class Feed(DBModel):
 class FeedPermission(DBModel):
     ''' Essentially a cross-reference table, but with specified permissions. '''
 
-    feed = ForeignKeyField(Feed, related_name='permissions')
+    feed = ForeignKeyField(Feed, backref='permissions')
 
     user = ForeignKeyField(User, null=True)
     # OR...
@@ -639,9 +639,9 @@ class Post(DBModel):
     type = TextField() #: used to load the content-type module for this post
     content = TextField() #: JSON data sent to the content-type module
     fontsize = IntegerField(null=True)  #: used to set a fixed font size, null for automatic
-    feed = ForeignKeyField(Feed, related_name='posts') #: which feed
+    feed = ForeignKeyField(Feed, backref='posts') #: which feed
 
-    author = ForeignKeyField(User, related_name='posts') #: who wrote it?
+    author = ForeignKeyField(User, backref='posts') #: who wrote it?
 
     write_date = DateTimeField(default=now) #: when was it written?
 
@@ -649,7 +649,7 @@ class Post(DBModel):
     published = BooleanField(default=False) #: is this post published?
     publish_date = DateTimeField(null=True) #: when was it published?
     #: who published it?
-    publisher = ForeignKeyField(User, related_name='published_posts', null=True)
+    publisher = ForeignKeyField(User, backref='published_posts', null=True)
 
     # Should it actually be displayed?
     status = IntegerField(default=0) #: can be 0:active/1:finished/2:archived.
@@ -768,7 +768,7 @@ class ExternalSource(DBModel):
     last_checked = DateTimeField(null=True)
 
     #: Which feed should posts from this source show up in?
-    feed = ForeignKeyField(Feed, related_name='external_sources')
+    feed = ForeignKeyField(Feed, backref='external_sources')
 
     #: Where the actual per-type-specific settings are saved:
     settings = CharField(default='{}')
@@ -777,7 +777,7 @@ class ExternalSource(DBModel):
     publish = BooleanField(default=False)
 
     #: Which user should be set as the owner / author of these?
-    post_as_user = ForeignKeyField(User, related_name='external_sources')
+    post_as_user = ForeignKeyField(User, backref='external_sources')
 
     #: initial post settings. (TODO)
     post_template = CharField(default='{}')

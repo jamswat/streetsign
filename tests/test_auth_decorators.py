@@ -15,15 +15,30 @@ from streetsign_server.views.utils import admin_only, registered_users_only
 
 from unittest_helpers import StreetSignTestCase
 
+
+# Register test routes at module level before any test sends requests.
+# Flask 3.x forbids @app.route() after the first request.
+
+@streetsign_server.app.route('/tests/admin_only_get')
+@admin_only('GET')
+def admin_only_get():
+    return jsonify({'test': 'success'})
+
+@streetsign_server.app.route('/tests/admin_only_post_all_get', methods=['GET', 'POST'])
+@admin_only('POST')
+@registered_users_only('GET')
+def admin_only_post_all_get():
+    return jsonify({'test': 'success'})
+
+@streetsign_server.app.route('/tests/blah')
+def blah():
+    return jsonify({'test': 'success'})
+
+
 class TestDecorators(StreetSignTestCase):
     ''' test for valid HTML & JSON of the main views. '''
 
     def test_new_only_admins_get_only(self):
-
-        @streetsign_server.app.route('/tests/admin_only_get')
-        @admin_only('GET')
-        def admin_only_get():
-            return jsonify({'test':'success'})
 
         # without logging in:
 
@@ -54,12 +69,6 @@ class TestDecorators(StreetSignTestCase):
     def test_admin_post_only_must_be_logged_in_to_get(self):
         route = '/tests/admin_only_post_all_get'
 
-        @streetsign_server.app.route(route, methods=['GET','POST'])
-        @admin_only('POST')
-        @registered_users_only('GET')
-        def admin_only_post_all_get():
-            return jsonify({'test':'success'})
-
         # without logging in:
 
         self.validate(route, code=403)
@@ -87,8 +96,4 @@ class TestDecorators(StreetSignTestCase):
         self.validate(route, req='POST', lang='json')
 
     def test_new_route(self):
-        @streetsign_server.app.route('/tests/blah')
-        def blah():
-            return jsonify({'test':'success'})
-
         self.validate('/tests/blah', lang='json')
