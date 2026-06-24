@@ -148,10 +148,20 @@ Zone.prototype = {
                 post.el.remove();
                 post.el = post_render(post, that);
             }
+
+            post.changed = newData.changed;
         }
 
         if (this.type === 'fade') {
             post.display_time = newData.display_time;
+            if (post === this.current_post && this.next_post_timer) {
+                clearTimeout(this.next_post_timer);
+                if (newData.display_time > 0) {
+                    this.next_post_timer = setTimeout(
+                        this.postTimeFinished.bind(this), newData.display_time
+                    );
+                }
+            }
         }
     },
 
