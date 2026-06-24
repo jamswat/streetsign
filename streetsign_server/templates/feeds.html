@@ -2,99 +2,94 @@
 {% block title %} Feed Lists {% endblock %}
 
 {% block body %}
-	<div class="col-md-12">
-		<table class="table table-striped">
-			<thead>
+	<h1>Feeds</h1>
+	<table class="table table-striped">
+		<thead>
+		<tr>
+			<th>Feed Name</th>
+			<th></th>
+			<th>
+				{% if session.display_admin_stuff %}
+					<form action="{{ url_for('feeds') }}" method="POST">
+						<input type="hidden" name="title" />
+						<button type="submit" class="btn btn-primary popup_ask"
+						        data-inputname="title" data-prompt="New Feed Name?"
+						        data-autofill="newfeed">New</button>
+					</form>
+				{% endif %}
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for feed in feeds %}
 			<tr>
-				<th>Feed Name</th>
-				<th></th>
-				<th>
-					{% if session.display_admin_stuff %}
-						<form action="{{ url_for('feeds') }}" method="POST">
-							<input type="hidden" name="title" />
-							<button type="submit" class="btn btn-primary popup_ask"
-							        data-inputname="title" data-prompt="New Feed Name?"
-							        data-autofill="newfeed">New</button>
-						</form>
-					{% endif %}
-				</th>
+					<td>
+							<a href="{{url_for('feedpage', feedid=feed.id)}}">{{ feed.name }}</a>
+							 <span class="badge bg-secondary">{{ feed.post_count(expired=True, published=False) }} posts</span>
+							 <span class="badge bg-secondary">{{ feed.post_count() }} active</span>
+					</td>
+					<td>
+					 {% if feed.user_can_write(user) %}
+							<a href="{{ url_for('post_new', feed_id=feed.id) }}"
+								 class="btn btn-secondary btn-sm">Create New Post</a>
+					 {% endif %}
+					</td>
+					<td>
+						{% if session.display_admin_stuff %}
+							<form method="POST" action="{{ url_for('feedpage', feedid=feed.id) }}">
+								<input type="hidden" name="action" value="delete" />
+								<button type="submit"
+								       class="btn btn-close confirm_delete" aria-label="Delete feed"></button>
+							</form>
+						{% endif %}
+					</td>
 			</tr>
-		</thead>
-		<tbody>
-			{% for feed in feeds %}
+		{% endfor %}
+	</tbody>
+</table>
+
+{% if session.display_admin_stuff %}
+
+	<div class="card mt-4">
+		<div class="card-header">
+			<h2 class="card-title">External Data Importers</h2>
+		</div>
+		<div class="card-body">
+			<table class="table table-striped">
+			<thead>
 				<tr>
-						<td>
-								<a href="{{url_for('feedpage', feedid=feed.id)}}">{{ feed.name }}</a>
-								 <span class="badge bg-secondary">{{ feed.post_count(expired=True, published=False) }} posts</span>
-								 <span class="badge bg-secondary">{{ feed.post_count() }} active</span>
-						</td>
-						<td>
-						 {% if feed.user_can_write(user) %}
-								<a href="{{ url_for('post_new', feed_id=feed.id) }}"
-									 class="btn btn-secondary btn-sm">Create New Post</a>
-						 {% endif %}
-						</td>
-						<td>
-							{% if session.display_admin_stuff %}
-								<form method="POST" action="{{ url_for('feedpage', feedid=feed.id) }}">
-									<input type="hidden" name="action" value="delete" />
-									<button type="submit"
-									       class="btn btn-close confirm_delete" aria-hidden="true"></button>
-								</form>
-							{% endif %}
-						</td>
+					<th>Data Type</th>
+					<th>Name</th>
+					<th>Feed</th>
+					<th>Publish New Posts?</th>
+					<th>
+						<div class="btn-group">
+						<button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">New</button>
+						<ul class="dropdown-menu" role="menu">
+						{% for data_type in source_types %}
+							<li><a class="dropdown-item" href="{{ url_for('external_data_source_edit', type=data_type.id) }}">{{ data_type.name}}</a></li>
+						{% endfor %}
+						</ul>
+						</div>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for source in external_sources %}
+				<tr data-item="{{ url_for('external_data_source_edit', source_id=source.id) }}">
+					<td>{{ source.type }}</td>
+					<td><a href="{{ url_for('external_data_source_edit', source_id=source.id) }}">{{ source.name }}</a></td>
+					<td>{{ source.feed.name }}</td>
+					<td>{{ source.publish }}</td>
+					<td>
+							<a class="btn btn-secondary" href="{{ url_for('external_data_source_edit', source_id=source.id) }}">Edit</a>
+							<a class="btn btn-danger confirm_ajax_delete" href="#" aria-label="Delete source">&times;</a>
+					</td>
 				</tr>
 			{% endfor %}
-		</tbody>
-	</table>
+			</tbody>
+			</table>
+		</div>
 	</div>
-
-	{% if session.display_admin_stuff %}
-
-		<div class="col-md-12">
-		<div class="card">
-			<div class="card-header">
-				<h2 class="card-title">External Data Importers</h2>
-			</div>
-			<div class="card-body">
-			<div class="col-md-12">
-				<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>Data Type</th>
-						<th>Name</th>
-						<th>Feed</th>
-						<th>Publish New Posts?</th>
-						<th>
-							<div class="btn-group">
-							<button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">New</button>
-							<ul class="dropdown-menu" role="menu">
-							{% for data_type in source_types %}
-								<li><a href="{{ url_for('external_data_source_edit', type=data_type.id) }}">{{ data_type.name}}</a></li>
-							{% endfor %}
-							</ul>
-							</div>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-				{% for source in external_sources %}
-					<tr data-item="{{ url_for('external_data_source_edit', source_id=source.id) }}">
-						<td>{{ source.type }}</td>
-						<td><a href="{{ url_for('external_data_source_edit', source_id=source.id) }}">{{ source.name }}</a></td>
-						<td>{{ source.feed.name }}</td>
-						<td>{{ source.publish }}</td>
-						<td>
-								<a class="btn btn-secondary" href="{{ url_for('external_data_source_edit', source_id=source.id) }}">Edit</a>
-								<a class="btn btn-danger confirm_ajax_delete" href="#"> &times;</a>
-						</td>
-					</tr>
-				{% endfor %}
-				</tbody>
-				</table>
-				</div>
-			</div>
-		</div>
-		</div>
-	{% endif %}
+{% endif %}
 {% endblock %}
