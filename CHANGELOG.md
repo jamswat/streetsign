@@ -6,7 +6,6 @@ Based on StreetSign Server by Daniel Fairhead (2013–2019) and Daniel Lang (202
 - Replaced Knockout.js with Alpine.js (44KB, zero-build, same MVVM paradigm)
 - Replaced Spectrum color picker with native `<input type="color">`
 - Replaced jQuery Cookie with localStorage API
-- Removed jQuery Migrate plugin
 - Removed abandoned Intel AppFramework mobile UI (3,500+ lines)
 - Rebuilt mobile screen with vanilla CSS flexbox and modern JS
 
@@ -33,8 +32,7 @@ Based on StreetSign Server by Daniel Fairhead (2013–2019) and Daniel Lang (202
 - Added CSRF protection to all forms and AJAX requests
 
 ## Rich Text Editor
-- Replaced Summernote → SunEditor → Quill v2 (zero jQuery dependency)
-- Fixed HTML content auto-escaping bug (missing `|safe` filter)
+- Move to Quill v2 (zero jQuery dependency)
 
 ## Features
 - Added "Show permanently" post option
@@ -42,19 +40,11 @@ Based on StreetSign Server by Daniel Fairhead (2013–2019) and Daniel Lang (202
 - Added raw HTML post type with Prism.js syntax highlighting
 - Added external data source test button
 
-## Bug Fixes
-- Fixed NOT NULL title crash in RSS external source importer
-- Fixed KeyError in post form intake
-- Fixed CSRF token injection for AJAX requests
-- Fixed form ID for Quill submit handler
-- Fixed file size display formatting
-- Fixed hidden login button visibility on dark navbar
 
 ## Upgraded Libraries
 - jQuery 1.10.1 → 3.x
 - Bootstrap 3 → 5.3
 - Prism → 1.30
-- Summernote → Quill 2.0.3
 - Moment.js → Day.js
 - Choices.js (added)
 - Alpine.js (added)
