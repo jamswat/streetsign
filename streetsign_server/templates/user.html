@@ -1,44 +1,45 @@
 {% extends "index.html" %}
 
 {% block body %}
+<h1>User: {{ user.displayname }}</h1>
 <form method="POST" role="form">
 <input class="form-control" type="hidden" name="action" value="update" />
 
+<div class="row">
 <div class="col-md-8">
 <div class="card">
   <div class="card-header">
-    <h2 class="card-title"> User Details: </h2>
+    <h2 class="card-title">User Details</h2>
   </div>
-  <div class="card-body row">
-    <div class="mb-3">
+  <div class="card-body">
+    <div class="row mb-3">
       <label class="col-sm-2 col-form-label">login name:</label>
       <div class="col-sm-10">
         <input class="form-control" name="loginname" value="{{user.loginname}}" />
       </div>
     </div>
 
-    <div class="mb-3">
+    <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Displayed name:</label>
       <div class="col-sm-10">
         <input class="form-control" name="displayname" value="{{user.displayname}}" />
       </div>
     </div>
 
-    <div class="mb-3">
+    <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Email address:</label>
       <div class="col-sm-10">
         <input class="form-control" name="emailaddress" value="{{user.emailaddress}}" />
       </div>
     </div>
-    <div class="mb-3">
+    <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Is admin?</label>
-
       <div class="col-sm-10">
       {% if session.display_admin_stuff and session.username != user.loginname %}
-        <input class="form-control" type="checkbox" name="is_admin" {{'checked' if user.is_admin }}/>
+        <input class="form-check-input" type="checkbox" name="is_admin" {{'checked' if user.is_admin }}/>
       {% else %}
         <p class="form-control-plaintext">
-        {{ 'Yes' if user.is_admin else 'no' }}
+        {{ 'Yes' if user.is_admin else 'No' }}
         {{ '(you!)' if session.username == user.loginname }}
         </p>
       {% endif %}
@@ -49,85 +50,91 @@
 </div>
 
 {% if session.display_admin_stuff or session.userid == user.id %}
-<div class="col-md-4"><div class="card">
+<div class="col-md-4">
+<div class="card">
   <div class="card-header">
-    <h2 class="card-title"> Change Password:</h2>
+    <h2 class="card-title">Change Password</h2>
   </div>
   <div class="card-body">
     <div class="mb-3">
       <label class="col-form-label"><strong>Your</strong> current {{ 'admin' if session.display_admin_stuff }} Password:</label>
-      <div class="col-sm-10">
-<input class="form-control" name="currpass" type="password" />
-</div>
+      <input class="form-control" name="currpass" type="password" />
     </div>
     <div class="mb-3">
       <label class="col-form-label">New Password:</label>
-      <div class="col-sm-10">
-<input class="form-control" name="newpass" type="password" />
-</div>
+      <input class="form-control" name="newpass" type="password" />
     </div>
     <div class="mb-3">
       <label class="col-form-label">Confirm new Password:</label>
-      <div class="col-sm-10">
-<input class="form-control" name="conf_newpass" type="password" />
-</div>
+      <input class="form-control" name="conf_newpass" type="password" />
     </div>
   </div>
-</div></div>
+</div>
+</div>
 {% endif %}
+</div>
 
-<div class="cf">
-<input class="btn btn-primary float-end" type="submit" value="Save" />
-</div><hr/>
-
+<div class="row mt-4">
 <div class="col-md-6">
 <div class="card">
   <div class="card-header">
-    <h2 class="card-title"> Feeds: </h2>
+    <h2 class="card-title">Feeds</h2>
   </div>
   <div class="card-body">
-    <ul class="list">
+    {% if user.writeable_feeds() %}
+    <ul class="list-unstyled">
         {% for f in user.writeable_feeds() %}
             <li>{{ linkmacros.feed(f) }}</li>
         {% endfor %}
     </ul>
+    {% else %}
+    <p class="text-muted">No feeds assigned.</p>
+    {% endif %}
   </div>
-</div></div>
+</div>
+</div>
 
 <div class="col-md-6">
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title"> Recent Posts: </h2>
+        <h2 class="card-title">Recent Posts</h2>
     </div>
     <div class="card-body">
-    <ul class="list">
+    {% if posts %}
+    <ul class="list-unstyled">
     {% for post in posts %}
         <li>{{ linkmacros.post(post) }}</li>
     {% endfor %}
     </ul>
+    {% else %}
+    <p class="text-muted">No posts yet.</p>
+    {% endif %}
     </div>
-</div></div>
+</div>
+</div>
+</div>
 
-<div class="cf"></div>
-<input class="btn btn-primary float-end" type="submit" value="Save" />
-<hr/>
-<div class="card">
+<div class="card mt-4">
 <div class="card-header">
-<h2 class="card-title">Groups:</h2>
+<h2 class="card-title">Groups</h2>
 </div>
 <div class="card-body">
 {% if session.display_admin_stuff %}
     {{ widgets.groupselect('groups', allgroups, user.groups()) }}
 {% else %}
-    <ul>
+    {% if user.groups() %}
+    <ul class="list-unstyled">
     {% for group in user.groups() %}
         <li>{{group.name}}</li>
     {% endfor %}
     </ul>
+    {% else %}
+    <p class="text-muted">No groups assigned.</p>
+    {% endif %}
 {% endif %}
 </div>
 <div class="card-footer">
-<input class="btn btn-primary" type="submit" value="Save Changes." />
+<input class="btn btn-primary" type="submit" value="Save Changes" />
 </div>
 </div>
 </form>
