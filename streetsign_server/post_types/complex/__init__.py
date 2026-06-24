@@ -15,74 +15,24 @@
 #    You should have received a copy of the GNU General Public License
 #    along with StreetSign.  If not, see <http://www.gnu.org/licenses/>.
 #
-"""
----------------------------------
-streetsign_server.post_types.complex
----------------------------------
+'''
+Backward-compatibility shim.  The 'complex' type has been merged into
+the 'html' (Rich Text) post type.  This stub keeps existing complex posts
+working by re-exporting from html, while storing 'complex' as the type
+for backward database compatibility.
+'''
 
-'ckeditor' Advanced HTML / rich text post type.
-
-"""
+from streetsign_server.post_types.html import *
 
 __NAME__ = 'Advanced Document / HTML'
-__DESC__ = 'Complex HTML'
+__DESC__ = 'Complex HTML (deprecated - use Rich Text instead)'
 
-from flask import render_template_string
-import re
-import bleach
-from bleach.css_sanitizer import CSSSanitizer
+# Override receive to keep the 'complex' type label for existing posts.
+# All other functions (form, display, screen_js, delete) come from html.
 
-from streetsign_server.post_types import my
-
-def form(data):
-    ''' the form for editing this type of post '''
-    # pylint: disable=star-args
-    return render_template_string(my('form.html'), **data)
-
-def safehtml(text):
-    ''' used by 'receive' to clean html,
-        and not allow scripts and other nasties. '''
-
-    css_sanitizer = CSSSanitizer(
-        allowed_css_properties=['background-color', 'color', 'height',
-                                'width', 'font-family', 'text-align'])
-
-    return bleach.clean(text, strip=True,
-        tags=["div", "span", "b", "i", "u",
-              "em", "ul", "li", "ol", "a", "br",
-              "code", "blockquote", "strong",
-              "small", "big", "img", "table",
-              "tr", "td", "th", "thead", "tbody",
-              "tfoot", "h1", "h2", "h3", "h4", "h5", "h6", "p"],
-        attributes=['class', 'href', 'alt', 'src', 'style', 'width',
-                     'height', 'cellspacing', 'cellpadding', 'border'],
-        css_sanitizer=css_sanitizer)
-
-def safecolor(text, default="#fff"):
-    ''' check that a color string is actually a html hex-type color... '''
-    if not text:
-        return default
-    try:
-        return re.search("#[0-9a-fA-F]+", text).group()
-    except AttributeError:
-        return default
+_html_receive = receive
 
 def receive(data):
-    ''' turn the contents posted back to us from the form into
-        a dict which can be JSON'd by the system, and dumped as
-        text into the database. '''
-    #############
-    # TODO: sanify color input.
-
-    return {'type': 'complex',
-            'owntextcolor': data.get('owntextcolor', False),
-            'color': safecolor(data.get('color', False)),
-            'content': safehtml(data.get('content', ''))}
-
-def display(data):
-    ''' return the data ready for the display js to do stuff with. '''
-    return data['content']
-
-def screen_js():
-    ''' return the js needed to display this content. '''
-    return my('screen.js')
+    result = _html_receive(data)
+    result['type'] = 'complex'
+    return result

@@ -25,11 +25,12 @@ HTML / rich text post type.
 """
 
 __NAME__ = 'Rich Text'
-__DESC__ = 'HTML / Rich Text Post'
+__DESC__ = 'Rich text and HTML editor'
 
 from flask import render_template_string
 import re
 import bleach
+from bleach.css_sanitizer import CSSSanitizer
 
 from streetsign_server.post_types import my
 
@@ -39,17 +40,23 @@ def form(data):
     return render_template_string(my('form.html'), **data)
 
 def safehtml(text):
-    ''' used by 'recieve' to clean html,
+    ''' used by 'receive' to clean html,
         and not allow scripts and other nasties. '''
+
+    css_sanitizer = CSSSanitizer(
+        allowed_css_properties=['background-color', 'color', 'height',
+                                'width', 'font-family', 'text-align'])
 
     return bleach.clean(text, strip=True,
         tags=["div", "span", "b", "i", "u",
               "em", "ul", "li", "ol", "a", "br",
               "code", "blockquote", "strong",
               "small", "big", "img", "table",
-              "tr", "td", "th", "thead",
+              "tr", "td", "th", "thead", "tbody",
               "tfoot", "h1", "h2", "h3", "h4", "h5", "h6", "p"],
-        attributes=['class', 'href', 'alt', 'src', 'style', 'width','height'])
+        attributes=['class', 'href', 'alt', 'src', 'style', 'width',
+                     'height', 'cellspacing', 'cellpadding', 'border'],
+        css_sanitizer=css_sanitizer)
 
 def safecolor(text, default="#fff"):
     ''' check that a color string is actually a html hex-type color... '''
