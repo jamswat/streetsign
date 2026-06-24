@@ -1,17 +1,11 @@
-$('.post_type_button').click(function (e) {
-    // POST_TYPE_URL dynamically from page.
+$('.post_type_button').click(function(e) {
     $('#postcontentblock-type').load(
         window.POST_TYPE_URL($(this).data('posttype'))
-        );
+    );
 
-    $(this).parent('li').addClass("active").siblings().removeClass("active");
-    $(this).addClass("active").closest('.nav-tabs').find('.nav-link').not(this).removeClass("active");
+    $(this).parent('li').addClass('active').siblings().removeClass('active');
+    $(this).addClass('active').closest('.nav-tabs').find('.nav-link').not(this).removeClass('active');
     $('#title-input').show();
-
-    // TODO: put these in CSS classes...
-    // $('.post_type_button').parent().css('background','#ccc');
-    // $(this).parent().css('background','#aaa');
-
 });
 
 $('#title-input').hide();

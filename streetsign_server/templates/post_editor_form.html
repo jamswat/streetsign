@@ -96,7 +96,7 @@
     </div>
     </div>
 </div>
-<div class="card">
+<div class="card" x-data="makeTimesEditor(TIME_RESTRICTIONS)">
     <div class="card-header">
         <h3 class="card-title">Time restrictions:</h3>
     </div>
@@ -106,7 +106,7 @@
 <table style="min-width:80%" class="table table-striped">
 <thead>
   <tr>
-    <th colspan=4 style="text-align: right">
+    <th scope="col" colspan=4 style="text-align: right">
         <label>Do NOT show during the following times:
             <input type="radio" name="times_mode" value="do_not_show"
                    {{ 'checked' if not post.time_restrictions_show }} /></label><br/>
@@ -117,42 +117,43 @@
     </th>
   </tr>
 <tr>
- <th class="col-sm-2">Start</th>
- <th class="col-sm-2">End</th>
- <th>Why? (optional)</th>
- <th>{% if post.feed.user_can_write(user) %}<a class="btn btn-primary" href="#"
-                          data-bind="click: $root.addTime">New</a>
+ <th scope="col" class="col-sm-2">Start</th>
+ <th scope="col" class="col-sm-2">End</th>
+ <th scope="col">Why? (optional)</th>
+ <th scope="col">{% if post.feed.user_can_write(user) %}<a class="btn btn-primary" href="#"
+                          x-on:click.prevent="addTime">New</a>
      {% endif %}</th>
 </tr>
 </thead>
-<tbody data-bind="foreach: times">
+<tbody>
+<template x-for="(time, idx) in times" :key="idx">
   <tr>
     <td>
         <div class="mb-3"> <div class="input-group date">
-            <input type="time" data-bind="timeHandler: start" class="form-control"
+            <input type="time" x-model="time.start" class="form-control"
                 data-date-format="HH:mm" />
             <span class="input-group-text">
-            <span class="bi bi-clock"></span></span>
+            <span class="bi bi-clock" aria-hidden="true"></span></span>
         </div> </div>
     </td>
     <td>
         <div class="mb-3"> <div class="input-group date">
-            <input type="time" data-bind="timeHandler: end" class="form-control"
+            <input type="time" x-model="time.end" class="form-control"
                 data-date-format="HH:mm" />
             <span class="input-group-text">
-            <span class="bi bi-clock"></span></span>
+            <span class="bi bi-clock" aria-hidden="true"></span></span>
         </div> </div>
     </td>
-    <td><input data-bind="value: note" class="form-control" /></td>
+    <td><input x-model="time.note" class="form-control" /></td>
     <td>{% if post.feed.user_can_write(user) %}<a href="#" class="btn delbutton"
-                             data-bind="click: $root.removeTime">&times;</a>
+                             x-on:click.prevent="removeTime(idx)">&times;</a>
         {% endif %}</td>
   </tr>
+</template>
 </tbody>
 </table>
 </div>
-<input type="hidden" name="time_restrictions_json" data-bind="value: ko.toJSON($root.times)" />
-<!--<input style="width: 80%; height: 90px" data-bind="value: ko.toJSON($root.times)"/>-->
+<input type="hidden" name="time_restrictions_json" :value="serializedTimes" />
 </div>
 </div>
 
@@ -162,12 +163,12 @@
 
 <script type="text/javascript">
 (function() {
-    var checkbox = document.getElementById('permanent-check'),
+    const checkbox = document.getElementById('permanent-check'),
         endGroup = document.getElementById('lifetime-end-group'),
         displayGroup = document.getElementById('displaytime-group');
 
     function update() {
-        var permanent = checkbox.checked;
+        const permanent = checkbox.checked;
         endGroup.style.display = permanent ? 'none' : '';
         displayGroup.style.display = permanent ? 'none' : '';
     }

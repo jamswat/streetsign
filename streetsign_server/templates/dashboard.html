@@ -116,9 +116,9 @@
 					<h2 class="card-title">Other:</h2>
 				</div>
 				<div class="card-body">
-					<button type="button" class="btn btn-secondary" id="run_housekeeping"
-					        title="Archive old posts, delete really old posts">
-						<span class="bi bi-archive"></span> Do Housekeeping</button>
+		<button type="button" class="btn btn-secondary" id="run_housekeeping"
+		        aria-label="Archive old posts and delete expired ones">
+			<span class="bi bi-archive" aria-hidden="true"></span> Do Housekeeping</button>
 
 				</div>
 			</div>
@@ -143,7 +143,7 @@
 				<a href="{{ url_for('client_alias', alias_name=client.name) }}">
 					{% if client.screen.background %}
 						<img src="/static/user_files/{{ client.screen.background }}"
-								 style="width:100%;height:auto" alt="...">
+								 style="width:100%;height:auto" alt="Screen preview for {{ client.name }}" loading="lazy">
 					{% else %}
 						<div style="width:100%;height:2em;background:black"></div>
 					{% endif %}

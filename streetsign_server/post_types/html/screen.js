@@ -1,23 +1,20 @@
 {
-    render: function(zone, data) {
+    render(zone, data) {
         'use strict';
-        var newhtml = '';                   // html to append in to the zone.
+        let newhtml;
 
         console.log('making new html');
 
-        if (('type' in data.zone ) && ( data.zone.type == 'scroll')) {
-            newhtml = $('<div class="post post_html post_scrolling"><div class="post_inner">'
-                           + magic_vars(data.content.content).replace('<br/>',' ')
-                           + '</div></div>').prependTo(zone);
+        if (data.zone && data.zone.type === 'scroll') {
+            newhtml = $(`<div class="post post_html post_scrolling"><div class="post_inner">`
+                           + magic_vars(data.content.content).replace('<br/>', ' ')
+                           + `</div></div>`).prependTo(zone);
         } else {
-
-            newhtml = $('<div class="post post_html"><div class="post_inner">'
+            newhtml = $(`<div class="post post_html"><div class="post_inner">`
                     + magic_vars(data.content.content)
-                    + '</div></div>')
+                    + `</div></div>`)
                     .prependTo(zone);
         }
-
-        // Reduce font size until it fits nicely:
 
         if (data.fontsize > 0) {
             newhtml.children('.post_inner').css('font-size', data.fontsize + 'pt');
@@ -25,11 +22,9 @@
             reduce_font_size_to_fit(newhtml.children('.post_inner'), $(zone));
         }
 
-        // Set font color:
         if (data.content.owntextcolor) {
-            try{newhtml.css('color',data.content.color);}catch(e){};
+            try { newhtml.css('color', data.content.color); } catch (e) {}
         }
-        // Return the HTML object, hiding it along the way.
 
         return newhtml;
     }

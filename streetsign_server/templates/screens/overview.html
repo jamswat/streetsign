@@ -1,7 +1,8 @@
 {%- import "link-macros.html" as linkmacros -%}
 <!doctype html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8" />
   <title>Screen</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='screens/main.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='screens/screen-content.css') }}" />
@@ -19,33 +20,31 @@
   <script type="text/javascript" src="{{ url_for('post_types_js') }}"></script>
   <script type="text/javascript">
 
-    var LOCALOPTS={{ request.args | tojson|safe }},
-        SCREEN_DATA={{screen.to_dict() | tojson|safe }},
-        POSTS_URL = "{{ url_for('screens_posts_from_feeds', json_feeds_list='-1') }}";
+    window.LOCALOPTS = {{ request.args | tojson|safe }};
+    window.SCREEN_DATA = {{screen.to_dict() | tojson|safe }};
+    window.POSTS_URL = "{{ url_for('screens_posts_from_feeds', json_feeds_list='-1') }}";
 
     SCREEN_DATA.md5 = "{{screen.md5()}}";
 
     window.SCREEN = new StreetScreen($('#zones'), SCREEN_DATA);
 
-    setTimeout(function(){window.SCREEN.start_zones();}, 2000);
-
-    // automatic housekeeping:
+    setTimeout(() => { window.SCREEN.start_zones(); }, 2000);
 
     (function() {
-         function housekeeping() {
-             $.post("{{ url_for('posts_housekeeping') }}");
-         }
+        function housekeeping() {
+            $.post("{{ url_for('posts_housekeeping') }}");
+        }
 
-         function update_external_sources() {
-             $.post("{{ url_for('external_data_sources_update_all') }}");
-         }
+        function update_external_sources() {
+            $.post("{{ url_for('external_data_sources_update_all') }}");
+        }
 
-         housekeeping();
-         update_external_sources();
+        housekeeping();
+        update_external_sources();
 
-         setInterval(housekeeping, 3600000); // every hour
-         setInterval(update_external_sources, 60000); // every minute
-     })();
+        setInterval(housekeeping, 3600000); // every hour
+        setInterval(update_external_sources, 60000); // every minute
+    })();
 
   </script>
 {% endblock %}

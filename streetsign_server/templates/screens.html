@@ -49,89 +49,92 @@
 	<hr/>
 	{% if session.display_admin_stuff %}
 		<h2> Aliases </h2>
+		<div x-data="makeAliasesEditor(aliasesList, screenNames, screenTypes)">
 		<div class="float-end">
-			<button data-bind="click: addAlias" class="btn">Add</button>
-			<button data-bind="click: saveAliases" class="btn btn-primary">Save</button>
+			<button x-on:click="addAlias" class="btn">Add</button>
+			<button x-on:click="saveAliases" class="btn btn-primary">Save</button>
 		</div>
 		<div class="table-responsive">
 		<table class="table table-striped">
 		<thead>
 			<tr>
-				<th>Access Key / Client ID</th>
-				<th>Layout &amp; Engine</th>
-				<th>Display Options</th>
-				<th></th>
+				<th scope="col">Access Key / Client ID</th>
+				<th scope="col">Layout &amp; Engine</th>
+				<th scope="col">Display Options</th>
+				<th scope="col"></th>
 			</tr>
 		</thead>
-		<tbody data-bind="foreach: aliases">
+		<tbody>
+			<template x-for="(alias, idx) in aliases" :key="idx">
 			<tr>
 				<td>
-						<input data-bind="value: name" class="form-control" /><br/>
-						URL: <a data-bind="attr: {href: url}, text: url">URL</a><br/>
+						<input x-model="alias.name" class="form-control" /><br/>
+						URL: <a :href="urlFor(alias)" x-text="'/client/' + alias.name">URL</a><br/>
 						{% if session.display_admin_stuff %}
 							Display on public dashboard:
-							<input type=checkbox data-bind="checked: show_on_dashboard" />
+							<input type=checkbox x-model="alias.show_on_dashboard" />
 						{% endif %}
 				</td>
 				<td>
 					{% if session.display_admin_stuff %}
 						<label>Layout:
-							<select class="form-control"
-							        data-bind="options: SCREEN_NAMES, value:screen_name"></select>
+							<select class="form-control" x-model="alias.screen_name">
+								<template x-for="name in screenNames" :key="name">
+									<option :value="name" x-text="name"></option>
+								</template>
+							</select>
 						</label><br/>
 						<label>Engine:
-							<select class="form-control"
-							        data-bind="options: SCREEN_TYPES,
-							                   optionsText: 'name',
-							                   optionsValue:'engine',
-							                   value: screen_type"></select>
+							<select class="form-control" x-model="alias.screen_type">
+								<template x-for="st in screenTypes" :key="st.engine">
+									<option :value="st.engine" x-text="st.name"></option>
+								</template>
+							</select>
 						</label>
 					{% else %}
-						<b>Layout:</b> <span data-bind="text: screen_name"></span><br/>
-						<b>Engine:</b> <span data-bind="text: screen_type"></span><br/>
+						<b>Layout:</b> <span x-text="alias.screen_name"></span><br/>
+						<b>Engine:</b> <span x-text="alias.screen_type"></span><br/>
 					{% endif %}
 				</td>
 				<td>
 					<small>
 					<label>fadetime:
-						<input type="number" class="form-control"
-						       data-bind="value: fadetime" />
+						<input type="number" class="form-control" x-model="alias.fadetime" />
 					</label><br/>
 					<label>scrollspeed:
-						<input type="number" class="form-control"
-						       data-bind="value: scrollspeed" />
+						<input type="number" class="form-control" x-model="alias.scrollspeed" />
 					</label><br/>
-					<label>aspect radio:
-						<input type="number" class="form-control"
-						       data-bind="value: forceaspect" />
+					<label>aspect ratio:
+						<input type="number" class="form-control" x-model="alias.forceaspect" />
 					</label><br/>
 					<label>vertical offset:
-						<input type="number" class="form-control"
-						       data-bind="value: forcetop" />
+						<input type="number" class="form-control" x-model="alias.forcetop" />
 					</label><br/>
 					</small>
 				</td>
 				<td>
 					{% if session.display_admin_stuff %}
-						 <button class="btn btn-close" data-bind="click: $root.deleteAlias"></button>
+						 <button class="btn btn-close" x-on:click="deleteAlias(idx)"></button>
 					{% endif %}
 				</td>
 			</tr>
+			</template>
 		</tbody>
 		</table>
+		</div>
 		</div>
 	{% endif %}
 
 	{% endblock %}
 
-	{% block end_of_page_javascript %}
-	{{ super() }}
-	{{ linkmacros.static_js('alias_editor.js') }}
-	<script>
-	SCREEN_NAMES=[{% for s in screens %}"{{ s.urlname}}",{% endfor %}"(unset)"];
-	SCREEN_TYPES=[{'engine': 'basic', 'name': 'CSS3 Transitions'},
-								{'engine': 'notrans', 'name': 'JS Transitions (use on pi)'},
-								{'engine': 'mobile', 'name': 'Mobile devices'}];
-	ko.applyBindings(new AliasesView({{ aliases | tojson| safe }}));
-	</script>
+{% block end_of_page_javascript %}
+{{ super() }}
+{{ linkmacros.static_js('alias_editor.js') }}
+<script>
+    screenNames=[{% for s in screens %}"{{ s.urlname}}",{% endfor %}"(unset)"];
+    screenTypes=[{'engine': 'basic', 'name': 'CSS3 Transitions'},
+                 {'engine': 'notrans', 'name': 'JS Transitions (use on pi)'},
+                 {'engine': 'mobile', 'name': 'Mobile devices'}];
+    aliasesList = {{ aliases | tojson| safe }};
+</script>
 {% endblock %}

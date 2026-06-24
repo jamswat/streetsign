@@ -1,19 +1,19 @@
 {
-    render: function(zone, data) {
+    render(zone, data) {
         'use strict';
 
         console.log('rendering video post');
 
-        var audioEnabled = data.content.audio_enabled,
-            $video = $('<video loop playsinline>')
-                .attr('width', $(zone).width())
-                .attr('height', $(zone).height())
-                .attr('src', data.content.file_url)
-                .css({ objectFit: 'contain' }),
-            $wrapper;
+        const audioEnabled = data.content.audio_enabled;
+        const $video = $(`<video loop playsinline>`)
+            .attr('width', $(zone).width())
+            .attr('height', $(zone).height())
+            .attr('src', data.content.file_url)
+            .css({ objectFit: 'contain' });
+        let $wrapper;
 
         if (audioEnabled) {
-            var $overlay = $('<div>Tap to start audio</div>')
+            const $overlay = $('<div>Tap to start audio</div>')
                 .css({
                     position: 'absolute', top: 0, left: 0,
                     width: '100%', height: '100%',
@@ -28,18 +28,16 @@
                     fontWeight: 'bold'
                 });
 
-            $overlay.on('click', function() {
+            $overlay.on('click', () => {
                 $video[0].play();
                 $overlay.remove();
             });
 
-            if (('type' in data.zone) && (data.zone.type == 'scroll')) {
-                $wrapper = $('<div class="post post_html post_scrolling">'
-                    + '<div class="post_inner post_reset_fontsize"></div></div>')
+            if (data.zone && data.zone.type === 'scroll') {
+                $wrapper = $(`<div class="post post_html post_scrolling"><div class="post_inner post_reset_fontsize"></div></div>`)
                     .prependTo(zone);
             } else {
-                $wrapper = $('<div class="post post_html">'
-                    + '<div class="post_inner post_reset_fontsize"></div></div>')
+                $wrapper = $(`<div class="post post_html"><div class="post_inner post_reset_fontsize"></div></div>`)
                     .prependTo(zone);
             }
 
@@ -48,13 +46,11 @@
         } else {
             $video.attr('autoplay', true).attr('muted', true);
 
-            if (('type' in data.zone) && (data.zone.type == 'scroll')) {
-                $wrapper = $('<div class="post post_html post_scrolling">'
-                    + '<div class="post_inner post_reset_fontsize"></div></div>')
+            if (data.zone && data.zone.type === 'scroll') {
+                $wrapper = $(`<div class="post post_html post_scrolling"><div class="post_inner post_reset_fontsize"></div></div>`)
                     .prependTo(zone);
             } else {
-                $wrapper = $('<div class="post post_html">'
-                    + '<div class="post_inner post_reset_fontsize"></div></div>')
+                $wrapper = $(`<div class="post post_html"><div class="post_inner post_reset_fontsize"></div></div>`)
                     .prependTo(zone);
             }
 

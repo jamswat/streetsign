@@ -3,7 +3,6 @@
 
 {% block htmlhead %}
 {{ super() }}
-{{ linkmacros.static_css('lib/colorpicker/bgrins-spectrum-2c2010c/spectrum.css') }}
 {{ linkmacros.static_css('lib/flatpickr/flatpickr.min.css') }}
 {{ linkmacros.static_css('lib/quill/quill.snow.css') }}
 {% endblock %}
@@ -21,18 +20,12 @@
 {{ super() }}
 {{ linkmacros.static_js('lib/flatpickr/flatpickr.min.js') }}
 
-{{ linkmacros.static_js('lib/colorpicker/bgrins-spectrum-2c2010c/spectrum.js') }}
 {{ linkmacros.static_js('lib/quill/quill.js') }}
 
 {{ linkmacros.static_js('post_times_editor.js') }}
 {% block page_specific_js %}}
     <script type="text/javascript">
-        var TIME_RESTRICTIONS={{ post.time_restrictions |safe }};
+        window.TIME_RESTRICTIONS = {{ post.time_restrictions |safe }};
     </script>
 {% endblock %}
-<script type="text/javascript">
-var viewTimesModel = new TimesModel(TIME_RESTRICTIONS);
-
-ko.applyBindings(viewTimesModel);
-</script>
 {% endblock %}

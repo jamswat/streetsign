@@ -1,9 +1,8 @@
 {
-    render: function(zone, data) {
-
-        var newhtml = $('<div class="post post_text"><div class="post_inner">'
-                + magic_vars( data.content.content)
-                + '</div></div>')
+    render(zone, data) {
+        const newhtml = $(`<div class="post post_text"><div class="post_inner">`
+                + magic_vars(data.content.content)
+                + `</div></div>`)
                 .prependTo(zone);
 
         console.log('making new text-post');

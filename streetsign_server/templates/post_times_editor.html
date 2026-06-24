@@ -1,18 +1,20 @@
 {% import "link-macros.html" as linkmacros -%}
-<h2>Display time restrictions <a href="#" data-bind="click: $root.addTime">New</a></h2>
+<div x-data="makeTimesEditor([])">
+<h2>Display time restrictions <a href="#" x-on:click.prevent="addTime">New</a></h2>
 
-<style rel="css">
-input.third { max-width: 28%;};
-</style>
-<label>Active From: <input type="datetime" /></label>
+<label for="from_input">Active From: <input type="datetime-local" id="from_input" /></label>
 
-<ul data-bind="foreach: times">
-    <li><input class="third" type="time" data-bind="value: start" />
-        <input class="third" type="time" data-bind="value: end" />
-        <input class="third" data-bind="value: note" />
-        <a href="#" data-bind="click: $root.removeTime">X</a>
+<ul>
+    <template x-for="(time, idx) in times" :key="idx">
+    <li>
+        <input class="third" type="time" x-model="time.start" />
+        <input class="third" type="time" x-model="time.end" />
+        <input class="third" x-model="time.note" />
+        <a href="#" x-on:click.prevent="removeTime(idx)">X</a>
     </li>
+    </template>
 </ul>
+</div>
 
-{{ linkmacros.static_js('lib/knockout-3.5.3.js') }}
 {{ linkmacros.static_js('post_times_editor.js') }}
+{{ linkmacros.static_js('lib/alpine.js') }}

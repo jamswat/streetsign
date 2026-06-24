@@ -1,11 +1,13 @@
 /*jslint browser:true, regexp: true, debug: true */
 /*global $, jLater, confirm, alert */
+'use strict';
+
 ////////////////////////////////////////////////
 // CSRF token auto-injection for AJAX requests:
 
-$(function() {
-    var token = $('meta[name="csrf-token"]').attr('content');
-    $(document).ajaxSend(function(event, xhr, settings) {
+$(() => {
+    const token = $('meta[name="csrf-token"]').attr('content');
+    $(document).ajaxSend((event, xhr, settings) => {
         if (settings.type && settings.type.toUpperCase() !== 'GET') {
             if (settings.data instanceof FormData) {
                 settings.data.append('_csrf_token', token);
@@ -16,36 +18,34 @@ $(function() {
         }
     });
 });
+
 ////////////////////////////////////////////////
 // Flashed notices:
-$('#flashed_notices').children('li').click(function(){
+
+$('#flashed_notices').children('li').click(function() {
     $(this).fadeOut();
 });
-setTimeout( function () { $('#flashed_notices > li').fadeOut('slow'); }, 15000);
+setTimeout(() => { $('#flashed_notices > li').fadeOut('slow'); }, 15000);
 
 function flash(text) {
-    $('#flashed_notices').append($('<li>' + text + ' </li>').click(function(){$(this).fadeOut();}));
+    $('#flashed_notices').append($(`<li>${text} </li>`).click(function() { $(this).fadeOut(); }));
 }
 
 ////////////////////////////////////////////////
 // Nice select boxes:
 
 $('select.chosen').each(function() {
-    new Choices(this, {searchEnabled: true, itemSelectText: '', shouldSort: false});
+    new Choices(this, { searchEnabled: true, itemSelectText: '', shouldSort: false });
 });
 
 /* Confirmation buttons: */
 
-$('.confirm_delete').click(function () {
-    return (confirm('Really delete?'));
+$('.confirm_delete').click(function() {
+    return confirm('Really delete?');
 });
 
 $('a.confirm_ajax_delete').click(function(evt) {
-    /* smart ajax class, sends DELETE HTTP request to specified URL,
-       and looks for parent specified in data-item, which it hides upon
-       request sent, and deletes upon success, or restores on failure. */
-
-    var dom_item = $(this).parents('*[data-item]');
+    const dom_item = $(this).parents('*[data-item]');
 
     evt.preventDefault();
 
@@ -54,42 +54,35 @@ $('a.confirm_ajax_delete').click(function(evt) {
         $.ajax({
             url: $(dom_item).data('item'),
             type: 'DELETE'
-            }).done(function(resp) {
-                dom_item.slideUp('fast', dom_item.remove);
-                flash('deleted');
-            }).fail(function(resp) {
-                dom_item.slideDown();
-                flash('could not delete!');
-            });
+        }).done(function(resp) {
+            dom_item.slideUp('fast', dom_item.remove);
+            flash('deleted');
+        }).fail(function() {
+            dom_item.slideDown();
+            flash('could not delete!');
+        });
     }
-
 });
 
 $('.popup_ask').click(function(evt) {
-  /* fills in a form value.  If attached to a submit button,
-     will submit the form as well. */
+    const input = $(this.form).find(`input[name="${$(this).data('inputname')}"]`);
+    const value = prompt($(this).data('prompt'), $(this).data('autofill'));
 
-  var input = $(this.form).find("input[name=" + $(this).data("inputname") + "]"),
-      value = prompt($(this).data("prompt"), $(this).data("autofill"));
-
-  if (value) {
-      input.val(value);
-  } else {
-      evt.preventDefault();
-  }
-  //$.post( this.form.getAttribute('action'), $(this.form).serialize(), function(data) {
+    if (value) {
+        input.val(value);
+    } else {
+        evt.preventDefault();
+    }
 });
 
 // focus on username input box when 'login' clicked.
-$('#user_login_button').click(function(){
-    setTimeout( function() {
-        $('input[name="username"]').focus();
-    }, 500);
+$('#user_login_button').click(() => {
+    setTimeout(() => { $('input[name="username"]').focus(); }, 500);
 });
 
-// hide expired posts, unless cookie says don't.
+// hide expired posts, unless localStorage says don't.
 
-if ($.cookie('show_past_posts') === "true") {
+if (localStorage.getItem('show_past_posts') === 'true') {
     $('.time_past').show();
     $('#show_past_posts').addClass('active');
 } else {
@@ -99,19 +92,15 @@ if ($.cookie('show_past_posts') === "true") {
 $('#show_past_posts').click(function() {
     $('.time_past').toggle();
     $(this).toggleClass('active');
-    $.cookie('show_past_posts', $.cookie('show_past_posts') === "true" ? "false" : "true",
-             {"path": "/"});
+    localStorage.setItem('show_past_posts',
+        localStorage.getItem('show_past_posts') === 'true' ? 'false' : 'true');
 });
 
 $('#run_housekeeping').click(function() {
     $.post(window.HOUSEKEEPING_URL, {}, function(data) {
-        alert("Housekeeping Done! \n" +
-              data.archived + " posts archived. \n" +
-              data.deleted + " posts deleted");
-        }, 'json');
-
+        alert(`Housekeeping Done!\n${data.archived} posts archived.\n${data.deleted} posts deleted`);
+    }, 'json');
 });
-
 
 // and run any js which was inserted by a template, which needs jQuery.
 
@@ -122,24 +111,24 @@ while (jLater.length) {
 ////////////////////////////////
 
 $(document).on('click', '.item_ajax_toggle', function() {
-    var toggle_class = $(this).data('ajaxtoggle'),
-        item = $(this).parents('.item').first().toggleClass(toggle_class),
-        data = {};
+    const toggle_class = $(this).data('ajaxtoggle');
+    const item = $(this).parents('.item').first().toggleClass(toggle_class);
+    const data = {};
 
     data[$(this).data('name')] = $(this).data('value');
 
-    $.ajax($(this).parents('[data-uri]').data('uri'),
-           { type: $(this).data('ajaxtype'),
-             data: data
-           }).fail(function() {
-                item.toggleClass(toggle_class);
-                alert('Request failed — check your permissions.');
-           });
+    $.ajax($(this).parents('[data-uri]').data('uri'), {
+        type: $(this).data('ajaxtype'),
+        data: data
+    }).fail(function() {
+        item.toggleClass(toggle_class);
+        alert('Request failed — check your permissions.');
+    });
 });
 
-$(function() {
+$(() => {
     $('.autopost').change(function() {
-        $.post( this.form.getAttribute('action'), $(this.form).serialize(), function(data) {
+        $.post(this.form.getAttribute('action'), $(this.form).serialize(), function(data) {
             if (data.message) {
                 flash(data.message);
             } else {
@@ -148,5 +137,3 @@ $(function() {
         });
     });
 });
-
-

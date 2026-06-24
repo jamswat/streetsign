@@ -2,14 +2,13 @@
 
 {% block htmlhead %}
     {{ super() }}
-    {{ linkmacros.static_css('lib/colorpicker/bgrins-spectrum-2c2010c/spectrum.css') }}
-<link rel="stylesheet" href="{{ url_for('user_fonts_css') }}" />
+    <link rel="stylesheet" href="{{ url_for('user_fonts_css') }}" />
 {% endblock %}
 {% block title %}Edit Screen:{{ screen.id }}{% endblock %}
 {% block body %}
 <h1>Edit Screen</h1>
 
-<div class="row">
+<div x-data="makeScreenEditor(screenEditorConfig)" class="row">
 <div class="col-md-6">
 <form id="screen_form" method="post">
   <div class="card">
@@ -37,20 +36,16 @@
         </select>
       </div>
       </div>
-    <!--
-      <label>Default Text color:
-      <input name="color" data-bind="value: color" type="color"><br/>-->
       <div class="col-md-12">
         <span style="display:none;">
         <label>Other Settings:</label><br/>
-        <textarea name="settings" data-bind="value: other_settings" class="form-control"></textarea>
+        <textarea name="settings" x-model="settings" class="form-control"></textarea>
         </span>
         <label>CSS:</label><br/>
-        <textarea name="css" data-bind="value: css" class="form-control"></textarea>
+        <textarea name="css" x-model="css" class="form-control"></textarea>
       </div>
-      <!-- where the actual saved data happens -->
-      <input type="hidden" name="zones" data-bind="value: ko.mapping.toJSON(zones)"/>
-    </div> <!-- card-body -->
+      <input type="hidden" name="zones" :value="serializedZones" />
+    </div>
   </div>
 </form>
 
@@ -58,37 +53,44 @@
   <div class="card-header">
     <h2 class="card-title">Zones:
     <span class="float-end">
-    <button data-bind="click: addZone" class="btn btn-sm btn-primary">New Zone</button>
+    <button x-on:click="addZone" class="btn btn-sm btn-primary">New Zone</button>
     </span>
     </h2>
   </div>
   <div class="card-body">
-  <!-- ko foreach: zones -->
-    <div class="card" data-bind="attr: {'data-zoneedit': name}">
+  <template x-for="(zone, idx) in zones" :key="idx">
+    <div class="card" :data-zoneedit="zone.name">
       <div class="card-header">
         <div class="input-group">
-          <input name="urlname" data-bind="value: name"
+          <input name="urlname" x-model="zone.name"
                  placeholder="zone name" class="form-control" />
-          <button data-bind="click:$root.removeZone " class="btn delbutton">&times;</button>
+          <button x-on:click="removeZone(idx)" class="btn delbutton">&times;</button>
         </div>
       </div>
-      <div class="card-body" data-bind="click: $root.selectZone, event: {mouseover: $root.selectZone}">
+      <div class="card-body" x-on:click="selectZone(idx)" x-on:mouseover="selectZone(idx)">
         <div class="col-md-12">
             <label>Feeds:</label>
             <select multiple autocomplete="off" class="form-control"
-                    data-bind="options: AVAILABLE_FEEDS, optionsText:'name',
-                               optionsValue: 'id', selectedOptions: feeds, chosen:42" >
+                    :id="'zonefeeds_' + idx"
+                    x-on:change="zone.feeds = Array.from($event.target.selectedOptions).map(o => o.value)"
+                    x-init="$nextTick(() => { const el = document.getElementById('zonefeeds_' + idx); if (el) new Choices(el, {searchEnabled: true, itemSelectText: '', shouldSort: false}); })">
+                <template x-for="feed in availableFeeds" :key="feed.id">
+                    <option :value="String(feed.id)" :selected="zone.feeds.includes(String(feed.id))" x-text="feed.name"></option>
+                </template>
             </select>
         </div>
         <div class="col-md-6">
           <label>Zone type:</label>
-          <select class="form-control" data-bind="options: ZONE_TYPES, 
-              optionsText:'display', optionsValue:'name', value: type"></select>
+          <select class="form-control" x-model="zone.type">
+              <template x-for="zt in zoneTypes" :key="zt.name">
+                  <option :value="zt.name" x-text="zt.display"></option>
+              </template>
+          </select>
         </div>
         <div class="col-md-6">
           <label>Fade time:</label>
           <div class="input-group">
-            <input type="number" data-bind="value: fadetime"
+            <input type="number" x-model="zone.fadetime"
                    class="form-control" />
             <span class="input-group-text">msec</span>
           </div>
@@ -96,45 +98,51 @@
 
         <div class="col-md-6">
           <label>Default Text Color:</label>
-            <input type="color" data-bind="spectrum: color" class="form-control" />
+            <input type="color" x-model="zone.color" class="form-control" />
           <br/>
           <label>Font</label>
           <select name="fontfamily" class="form-control" autocomplete="off"
-              data-bind="options: AVAILABLE_FONTS, value:fontfamily">
+              x-model="zone.fontfamily">
+              <template x-for="font in availableFonts" :key="font">
+                  <option :value="font" x-text="font"></option>
+              </template>
           </select>
           <label>Other CSS:</label>
-            <textarea name="css" data-bind="value: css" class="form-control"></textarea>
+            <textarea name="css" x-model="zone.css" class="form-control"></textarea>
         </div>
         <div class="col-md-6">
           <label>Size:</label>
           <div class="sizes_box" style="margin:auto;background:#777;border-radius:90px">
-            <input data-bind="value: top" placeholder="top" /><br/>
-            <input data-bind="value: left" placeholder="left" />-<input data-bind="value:right" placeholder="right" /><br/>
-            <input data-bind="value: bottom" placeholder="bottom" /><br/>
+            <input x-model="zone.top" placeholder="top" /><br/>
+            <input x-model="zone.left" placeholder="left" />-<input x-model="zone.right" placeholder="right" /><br/>
+            <input x-model="zone.bottom" placeholder="bottom" /><br/>
           </div>
         </div>
-
-      </div> <!-- (zone) /card-body -->
-    </div> <!-- (zone) /card -->
-  <!-- /ko -->
-  </div> <!-- (zones-container) /card-body -->
+      </div>
+    </div>
+  </template>
+  </div>
   <div class="card-footer">
-    <button data-bind="click: addZone" class="btn btn-sm btn-primary">New Zone</button>
+    <button x-on:click="addZone" class="btn btn-sm btn-primary">New Zone</button>
   </div>
 
-</div> <!-- (zones-container) /card -->
+</div>
 
-</div> <!-- col-md-6 -->
+</div>
 
 <div class="col-md-6">
   <h2>Zones layout
       <a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname or '') }}" class="btn btn-secondary btn-sm float-end">Preview</a>
-	</h2>
+        </h2>
   <div class="card card-body">
     <div id="my_fake_screen" class="fake_screen">
-    <!-- ko foreach: zones -->
-    <div class="fake_zone" data-bind="style: { top: top, left: left, right: right, bottom: bottom, color: color, 'font-family': fontfamily}, text: name, click: $root.selectZoneScroll, css: {selected: selected}"></div>
-    <!-- /ko -->
+    <template x-for="(zone, idx) in zones" :key="idx">
+    <div class="fake_zone"
+         :class="{ selected: zone.selected }"
+         :style="{ top: zone.top, left: zone.left, right: zone.right, bottom: zone.bottom, color: zone.color, fontFamily: zone.fontfamily }"
+         x-text="zone.name"
+         x-on:click="selectZoneScroll(idx)"></div>
+    </template>
     </div>
     Preview Aspect Ratio:<select id="fake_screen_aspect" class="form-control">
     <option value=3.555555>16:4,5</option>
@@ -143,9 +151,6 @@
     <option value="0.75">3:4 (sideways 4:3)</option>
     <option value="0.5625">9:16 (sideways widescreen)</option>
     </select>
-    <!--
-    <textarea style="float: right;clear:right; width: 100%; height: 100px" data-bind="value: ko.mapping.toJSON($root, null, 2)"></textarea>
-    -->
 </div>
 </div>
 </div>
@@ -154,63 +159,38 @@
 
 {% block end_of_page_javascript %}
 {{ super() }}
-{{ linkmacros.static_js('lib/knockout.mapping-latest.js') }}
-{{ linkmacros.static_js('lib/colorpicker/bgrins-spectrum-2c2010c/spectrum.js') }}
-<script>
-//$.fn.spectrum.load=false;
-</script>
 {{ linkmacros.static_js('model_zones.js') }}
 <script type="text/javascript">
-// server specified values:
 
-BG="{{ screen.background }}";
+// Provide data for the Alpine component
+screenEditorConfig = {
+    background: "{{ screen.background }}",
+    settings: JSON.stringify({{ screen.settings|safe if screen.settings else '{}' }}),
+    css: "{{ screen.css|replace('\n', '\\n')|replace('\r', '')|replace('</', '')|safe }}",
+    zones: {{ screen.zones|safe if screen.zones else '[]' }},
+    availableFeeds: [
+        {%- for feed in feeds -%}
+            {id: "{{ feed.id }}", name: "{{ feed.name}}"} {{- ',' if not loop.last -}}
+        {%- endfor -%} ],
+    availableFonts: {{ fonts|tojson|safe }},
+    zoneTypes: [
+        {name: 'fade', display: 'Fade In, Fade Out'},
+        {name: 'scroll', display: 'Scrolling text'}]
+};
 
-SETTINGS=JSON.stringify({{ screen.settings|safe if screen.settings else '{}' }});
-CSS="{{ screen.css | replace("\n","\\n") | replace("\r",'') |replace('</','') |safe }}";
-ZONES={{ screen.zones|safe if screen.zones else '[]' }};
-AVAILABLE_FEEDS = [
-    {%- for feed in feeds -%}
-        {id: "{{ feed.id }}", name: "{{ feed.name}}"} {{- ',' if not loop.last -}}
-    {%- endfor -%} ];
-AVAILABLE_FONTS = {{ fonts|tojson|safe }};
-ZONE_TYPES= [
-    {'name': 'fade', 'display': 'Fade In, Fade Out'},
-    {'name': 'scroll', 'display': 'Scrolling text'}];
-
-// init the view model:
-
-var viewScreenModel = new ScreenModel(BG, SETTINGS, CSS, ZONES);
-ko.applyBindings(viewScreenModel);
-
-///////////////////////////////////////////////////////////////////
-// Stuff for the "fake screen" preview.
-
-// when the background value changes, so should the fake screen:
+////////////////////////////////////////////////////////////////
+// Fake screen preview
 
 $('#background').change(function(){
-    var newbg="url(/static/user_files/" + $('#background').val() + ')';
-    $('#my_fake_screen').css('background-image', newbg );
+    const newbg = `url(/static/user_files/${$('#background').val()})`;
+    $('#my_fake_screen').css('background-image', newbg);
 }).change();
 
-
-function update_fake_screen_size(e) {
-    "use strict";
-
-    // This function updates the fake screen (preview) to have the specified
-    // aspect ratio.
-
-    var fake_screen = $('#my_fake_screen');
-
-    // reset width
+function update_fake_screen_size() {
+    const fake_screen = $('#my_fake_screen');
     fake_screen.width('100%');
-    // and set it to an absolute size, so scrolling doesn't mess it up.
     fake_screen.width(fake_screen.width());
-
-    // set the height to the right aspect
-    fake_screen.height($('#my_fake_screen').width() / $('#fake_screen_aspect').val());
-
-    // and if the height is larger than the screen height, then reduce the
-    // width and re-apply the aspect ratio until it works:
+    fake_screen.height(fake_screen.width() / $('#fake_screen_aspect').val());
 
     while (fake_screen.height() > $(window).height() - 200) {
         fake_screen.width(fake_screen.width() - 10);
@@ -218,10 +198,8 @@ function update_fake_screen_size(e) {
     }
 }
 
-// initialise the aspect ratio:
 update_fake_screen_size();
-// and update the aspect when the dropdown changes.
-$('#fake_screen_aspect').change( update_fake_screen_size );
+$('#fake_screen_aspect').change(update_fake_screen_size);
 
 </script>
 

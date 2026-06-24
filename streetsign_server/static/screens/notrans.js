@@ -17,157 +17,98 @@
     along with StreetSign.  If not, see <http://www.gnu.org/licenses/>.
 
     ---------------------------------
-    screens output, this theme (basic) specifics (zonehtml, post fadein/out)
+    screens output, JS transitions theme (notrans)
+      zone HTML, post fade-in/out, scroll via requestAnimationFrame
 
 *************************************************************/
+'use strict';
 
-var _mt = function(){};
+const _mt = function() {};
 
-if (!window.hasOwnProperty('requestAnimationFrame')){
-    try {
-        window.requestAnimationFrame = mozRequestAnimationFrame;
-    } catch (ignore) {
-        window.requestAnimationFrame = webkitRequestAnimationFrame;
-    }
-}
-
-// Returns the HTML for a zone area
-// TODO: This should really be templated out.
 function zone_html(id, top, left, bottom, right, css, type) {
-    "use strict";
-
-    return ('<div id="_zone_'+id+'" class="zone zone_'+type+'" style="'
-            +'left:' + left
-            +';right:' + right
-            +';bottom:' + bottom
-            +';top:' + top
-            +';' + css.replace(/"/g,"'")
-            + '"></div>');
+    return `<div id="_zone_${id}" class="zone zone_${type}" style="`
+            + `left:${left}`
+            + `;right:${right}`
+            + `;bottom:${bottom}`
+            + `;top:${top}`
+            + `;${css.replace(/"/g, "'")}`
+            + `"></div>`;
 }
 
-/***************************************************************************/
-
-// These are the different kinds of zones, fading or scrolling only for now.
-// To add new zone types, all you need to do is add them in here, and in
-// the list of ZONE_TYPES in screen_editor.html
-
-var zone_types = {
+const zone_types = {
     fade: {
-        start: function (post, cb){
-            "use strict";
-
-            // TODO: in zone setup, set zone > post opacity fadetimes...
-            post.el.style.opacity = 1.0;
+        start(post, cb) {
+            post.el.style.opacity = 1;
             setTimeout(cb, post.zone.fadetime);
         },
-        stop: function (post, cb){
-            "use strict";
+        stop(post, cb) {
             post.el.style.opacity = 0;
-            setTimeout( function () {
-                //post.el.style.display = 'none';
-                cb && cb();
-            }, post.zone.fadetime);
+            setTimeout(() => { cb && cb(); }, post.zone.fadetime);
         }
     },
-   scroll: {
-        start: function (post, cb) {
-            "use strict";
-
-            var stylesheet,
-                prefix = "",
-                css,
-                post_width = post.el.scrollWidth,
-                total_distance = post.zone.width + post_width,
-                current_left = post.zone.width,
-                end_left = 0 - post.width,
-                start_time = null,
-                mover = (function(timestamp) {
-                    var progress, new_left;
-
-                    if (start_time === null) start_time = timestamp;
-                    progress = (timestamp - start_time);
-
-                    if (current_left > end_left) {
-                        new_left = (total_distance / post.display_time) * (post.display_time - progress) - post_width;
-                        if (new_left < current_left -1) {
-                            current_left = new_left;
-                        } else if (new_left > current_left) {
-                            return;
-                        }
-                        post.el.style.left = current_left + 'px';
-                        //requestAnimationFrame(mover);
-                        //setTimeout(function(){requestAnimationFrame(mover)},1000);
-                        requestAnimationFrame(mover);
-                    }
-                });
-
-            // Why does this need to be set here? it seems like the
-            // previous setting in main.js (Zone.prototype.addPost)
-            // gets an incorrect value...
-
+    scroll: {
+        start(post, cb) {
             post.width = post.el.scrollWidth;
 
-            requestAnimationFrame(mover);
+            const total_distance = post.zone.width + post.width;
+            const end_left = 0 - post.width;
+            let current_left = post.zone.width;
+            let start_time = null;
 
+            const mover = function(timestamp) {
+                if (start_time === null) start_time = timestamp;
+                const progress = timestamp - start_time;
+
+                if (current_left > end_left) {
+                    const new_left = (total_distance / post.display_time) * (post.display_time - progress) - post.width;
+                    if (new_left < current_left - 1) {
+                        current_left = new_left;
+                    } else if (new_left > current_left) {
+                        return;
+                    }
+                    post.el.style.left = current_left + 'px';
+                    requestAnimationFrame(mover);
+                }
+            };
+
+            requestAnimationFrame(mover);
             post.el.style.display = 'block';
             post.el.style.opacity = 1;
-
             post.display_time = (post.width + post.zone.width) * 14;
 
-            // and call the 'after starting' callback:
             cb && cb();
-
-            },
-        stop: function (post, cb) {
-            "use strict";
-
-            //post.zone.el.style.opacity = 0;
-
-            setTimeout( function () {
-                //post.el.style.display = 'none';
-
-                post.el.style.webkitAnimation = "";
-                post.el.style.mozAnimation = "";
-                post.el.style.animation = "";
-
+        },
+        stop(post, cb) {
+            setTimeout(() => {
+                post.el.style.animation = '';
                 post.el.style.opacity = 0;
-                //post.scroll_stylesheet.remove()
-                //delete post.scroll_stylesheet;
-
-               post.zone.el.style.opacity = 1.0;
-                cb && cb()
+                post.zone.el.style.opacity = 1;
+                cb && cb();
             }, 1001);
         }
     }
-    };
-
+};
 
 function post_fadein(post, cb) {
-    "use strict";
-
-    return (zone_types[post.zone.type]||zone_types.fade).start(post, cb);
+    return (zone_types[post.zone.type] || zone_types.fade).start(post, cb);
 }
 
 function post_fadeout(post, cb) {
-    "use strict";
-
-    return (zone_types[post.zone.type]||zone_types.fade).stop(post, cb);
+    return (zone_types[post.zone.type] || zone_types.fade).stop(post, cb);
 }
+
 function post_display(post) {
-    "use strict";
     if (post_types[post.type].hasOwnProperty('display')) {
         post_types[post.type].display(post);
     }
 }
 
 function post_hide(post) {
-    "use strict";
     if (post_types[post.type].hasOwnProperty('hide')) {
         post_types[post.type].hide(post);
     }
 }
 
 function post_render(post_data, zone) {
-    "use strict";
     return post_types[post_data.type].render(zone.el, post_data)[0];
 }

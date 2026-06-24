@@ -21,115 +21,87 @@
 
 *************************************************************/
 function debug() {
-	console.log(Array.prototype.slice.call(arguments));
+    console.log(Array.prototype.slice.call(arguments));
 }
 
 function nicemap(objects, func) {
     'use strict';
-    // a 'map' function which splits each iteration over a new frame,
-    // hopefully reducing jank.
-    var i=objects.length,
-        runner = (function(){
-            if (i--) {
-                func(objects[i]);
-                requestAnimationFrame(runner);
-            }
-        });
+    let i = objects.length;
+    const runner = function() {
+        if (i--) {
+            func(objects[i]);
+            requestAnimationFrame(runner);
+        }
+    };
     requestAnimationFrame(runner);
 }
 
 function safeGetJSON(url, callback, retry_time) {
-    "use strict";
+    'use strict';
     retry_time = retry_time || 60000;
-    // simple async JSON request.  Used instead of the jQuery version, which
-    // makes about 15 external function calls, delving deeper into the jQuery
-    // recursive vortex of confusion.  This simply calls the callback with the
-    // JSON data, and if it fails, keeps trying (after a delay).
-    //
-    // TODO: failure mode callback, and catch failed JSON parsing callback.
 
-    var xhr = new XMLHttpRequest(),
-        responder = (function() {
+    const xhr = new XMLHttpRequest();
+    const responder = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     try {
                         callback(JSON.parse(xhr.responseText));
                     } catch (e) {
-                        console.log('Failed to parse response from ' + url + '.' +
-                                    'Trying again in ' + (retry_time / 1000) + ' seconds');
+                        console.log(`Failed to parse response from ${url}. Trying again in ${retry_time / 1000} seconds`);
                         console.log(e);
-                        setTimeout(function() {safeGetJSON(url, callback, retry_time);},
-                                   retry_time);
+                        setTimeout(() => { safeGetJSON(url, callback, retry_time); }, retry_time);
                     }
-
                 } else {
-                    console.log('Failed to get ' + url + ' successfully. ' +
-                                'Trying again in ' + (retry_time / 1000) + ' seconds.');
-                    setTimeout(function() {safeGetJSON(url, callback, retry_time);},
-                               retry_time);
+                    console.log(`Failed to get ${url} successfully. Trying again in ${retry_time / 1000} seconds.`);
+                    setTimeout(() => { safeGetJSON(url, callback, retry_time); }, retry_time);
                 }
-            } /*else {
-                console.log('invalide XHR readystate! (supposedly unusual)', xhr.readyState);
-                setTimeout(function() {safeGetJSON(url, callback, retry_time);},
-                           retry_time);
-            }*/
-        });
+            }
+        };
 
     if (callback) {
         xhr.onreadystatechange = responder;
     }
-    xhr.ontimeout = function() {
+    xhr.ontimeout = () => {
         console.log('timeout.');
-        setTimeout(function() {safeGetJSON(url, callback, retry_time);},
-                   retry_time);
+        setTimeout(() => { safeGetJSON(url, callback, retry_time); }, retry_time);
     };
     xhr.timeout = 10000;
-    xhr.open("GET", url, true);
+    xhr.open('GET', url, true);
     xhr.send(null);
-
 }
 
-function reloadWhenThisURLContentChanges(){
-    "use strict";
-    var current_text = '',
-        reloader = (function () {
-            $.get(document.location.href, function(new_text) {
-                    if (new_text != current_text) {
-                        document.location.reload(true);
-                    }
-                });
-            });
-
-    // and start it all off:
-    $.get(document.location.href, function(first_text) {
-            current_text = first_text;
-            setInterval(reloader, 120000);
+function reloadWhenThisURLContentChanges() {
+    'use strict';
+    let current_text = '';
+    const reloader = function() {
+        $.get(document.location.href, function(new_text) {
+            if (new_text !== current_text) {
+                document.location.reload(true);
+            }
         });
-}
+    };
 
+    $.get(document.location.href, function(first_text) {
+        current_text = first_text;
+        setInterval(reloader, 120000);
+    });
+}
 
 function magic_vars(text) {
     'use strict';
-    // replaces %%TIME%% and %%DATE%% magic vars in a string with appropriate
-    // classed <span> tags, so jquery thingy can replace them later on.
-
-    return (text.replace(/%%TIME(.*?)%%/,'<span class="magic_time" data-format="$1">&nbsp;</span>')
-                .replace(/%%DATE(.*?)%%/,'<span class="magic_date" data-format="$1">&nbsp;</span>'));
+    return text.replace(/%%TIME(.*?)%%/, '<span class="magic_time" data-format="$1">&nbsp;</span>')
+               .replace(/%%DATE(.*?)%%/, '<span class="magic_date" data-format="$1">&nbsp;</span>');
 }
 
 function magic_time() {
-    // finds all %%TIME%% and %%DATE%% magic vars which have been replaced
-    // by their <span>'d equivalents, and replaces the contents with the current
-    // date or time.
+    const d = dayjs();
 
-    var d = dayjs();
-
-    $('.magic_time').each(function(i){
-        var format = $(this).data('format') || 'HH:mm';
+    $('.magic_time').each(function() {
+        const format = $(this).data('format') || 'HH:mm';
         this.innerHTML = d.format(format);
     });
-    $('.magic_date').each(function(i){
-        var format = $(this).data('format') || 'YYYY-MM-DD';
+    $('.magic_date').each(function() {
+        const format = $(this).data('format') || 'YYYY-MM-DD';
         this.innerHTML = d.format(format);
     });
     setTimeout(magic_time, 60000);
@@ -137,53 +109,36 @@ function magic_time() {
 
 function url_insert(url, data) {
     'use strict';
-    // Takes a url with a '-1' in it, and replaces the '-1' with
-    // data.  Useful with url_for(...) stored in dynamically generated
-    // pages.
     return url.replace(/-1/, data);
 }
 
 function faketime(timestring) {
     'use strict';
-    // returns time in minutes, either of time NOW, if no argument,
-    // or of parsed HH:MM string, if given.
-
-    var split, now;
-
     if (timestring) {
-        split = timestring.match(/(\d\d):(\d\d)/);
-        if ((split)&&(split.hasOwnProperty('length'))&&(split.length == 3)) {
-            return (60*parseInt(split[1]))+parseInt(split[2]);
-        } else {
-            console.log ('invalid time: ' + JSON.stringify(timestring));
-            return 0;
+        const split = timestring.match(/(\d\d):(\d\d)/);
+        if (split && split.hasOwnProperty('length') && split.length === 3) {
+            return (60 * parseInt(split[1])) + parseInt(split[2]);
         }
-    } else {
-        now = new Date();
-        return (60*now.getHours())+now.getMinutes();
+        console.log('invalid time: ' + JSON.stringify(timestring));
+        return 0;
     }
+    const now = new Date();
+    return (60 * now.getHours()) + now.getMinutes();
 }
 
 function restriction_relevant(now, restriction) {
     'use strict';
-    // returns True if we're curently within a time restriction's jurisdiction, else False;
-
-    var start = faketime(restriction.start);
-    var end = faketime(restriction.end);
-
-    return ((start<now)&&(now<end));
+    const start = faketime(restriction.start);
+    const end = faketime(restriction.end);
+    return start < now && now < end;
 }
 
 function any_relevent_restrictions(post) {
     'use strict';
+    const now = faketime();
+    let any_hits = post.time_restrictions_show;
 
-    // returns True if *any* time restriction catches the current time.
-
-    var now = faketime(),
-        i,
-        any_hits = post.time_restrictions_show;
-
-    for (i=0; i< post.time_restrictions.length; i++) {
+    for (let i = 0; i < post.time_restrictions.length; i++) {
         if (restriction_relevant(now, post.time_restrictions[i])) {
             any_hits = !post.time_restrictions_show;
         }
@@ -194,70 +149,58 @@ function any_relevent_restrictions(post) {
 
 function reload_page() {
     'use strict';
-
-    $.get(document.URL, function() { window.location.reload(); });
-    // and if that doesn't work, we'll try again later:
+    $.get(document.URL, () => { window.location.reload(); });
     setTimeout(reload_page, REFRESH_PAGE_TIMER);
 }
 
 function reduce_font_size_to_fit(inner, outer) {
     'use strict';
-    // reduce fontsize until the inner fits within outer.
-    // if it's a scrolling zone, then assume almost infinite width...
-
-    var percent = 100,
-        height = 0,
-        zone_height = $(outer).height(),
-        zone_width = $(outer).width(),
-        i = 100,
-        height = inner.height(),
-        width = inner.width(),
-        scrolling = (outer[0].className.indexOf("scroll") !== -1),
-        img_sizes = {};
-
+    let percent = 100;
+    const zone_height = $(outer).height();
+    let zone_width = $(outer).width();
+    let i = 100;
+    const scrolling = outer[0].className.indexOf('scroll') !== -1;
+    const img_sizes = {};
 
     if (scrolling) {
         zone_width = 900000;
     }
 
-    $(inner).find('img').each(function(i,img) {
-        var $img = $(img);
-        img_sizes[i] = { 'width%' : $img.attr('width')/100,
-                         'height%' : $img.attr('height')/100 };
-        });
+    $(inner).find('img').each(function(idx, img) {
+        const $img = $(img);
+        img_sizes[idx] = { 'width%': $img.attr('width') / 100,
+                           'height%': $img.attr('height') / 100 };
+    });
 
-
-    while(i > 1){
-        height = inner.height();
-        width = inner.width();
+    while (i > 1) {
+        const height = inner.height();
+        const width = inner.width();
 
         i = i / 2;
-        if ((height < zone_height - 5) || ((!scrolling) && (width < zone_width-5))) {
+        if ((height < zone_height - 5) || ((!scrolling) && (width < zone_width - 5))) {
             percent += i;
-        } else if ((height > zone_height + 5) || ((!scrolling) && (width > zone_width+5))) {
+        } else if ((height > zone_height + 5) || ((!scrolling) && (width > zone_width + 5))) {
             percent -= i;
         }
 
         inner.css('font-size', percent + '%');
-        inner.find('img').each(function(i, img){
-            var $img = $(img);
-            $img.attr('width', img_sizes[i]['width%'] * percent);
-            $img.attr('height', img_sizes[i]['height%'] * percent);
-            });
+        inner.find('img').each(function(idx, img) {
+            const $img = $(img);
+            $img.attr('width', img_sizes[idx]['width%'] * percent);
+            $img.attr('height', img_sizes[idx]['height%'] * percent);
+        });
     }
     inner.css('font-size', parseInt(percent) + '%');
-    console.log ('reducing font size to ' + parseInt(percent) + '%');
+    console.log('reducing font size to ' + parseInt(percent) + '%');
 }
 
 function get_servertime(url) {
-	var xhr = new XMLHttpRequest();
-
-	url = url || document.location;
-
-	xhr.open('GET', url, false) // get syncronously.
-	xhr.send(null);
-	return new Date(xhr.getResponseHeader('Date'))
-};
+    const xhr = new XMLHttpRequest();
+    url = url || document.location;
+    xhr.open('GET', url, false);
+    xhr.send(null);
+    return new Date(xhr.getResponseHeader('Date'));
+}
 
 setTimeout(reload_page, REFRESH_PAGE_TIMER);
 setTimeout(magic_time, 2000);

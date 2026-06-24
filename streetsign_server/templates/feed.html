@@ -7,12 +7,12 @@
 <table class="table table-striped">
 <thead>
   <tr>
-    <th>Title</th>
-    <th>Post</th>
-    <th>Author</th>
-    <th>Date</th>
-    <th>  <button type="button" class="btn btn-secondary" id="show_past_posts">Show Past Posts</button> </th>
-    <th colspan=2>{% if feed.user_can_write(user) %}<a href="{{ url_for('post_new', feed_id=feed.id) }}" class="btn btn-primary">NEW</a>{% endif %}  </th>
+    <th scope="col">Title</th>
+    <th scope="col">Post</th>
+    <th scope="col">Author</th>
+    <th scope="col">Date</th>
+    <th scope="col">  <button type="button" class="btn btn-secondary" id="show_past_posts">Show Past Posts</button> </th>
+    <th scope="col" colspan=2>{% if feed.user_can_write(user) %}<a href="{{ url_for('post_new', feed_id=feed.id) }}" class="btn btn-primary">NEW</a>{% endif %}  </th>
   </tr>
 </thead>
 <tbody>
@@ -50,7 +50,7 @@
 </div>
 {% if user.is_admin %}
     <form method="POST" id="users_and_groups" class="form">
-    <input type="submit" value="Save" class="btn btn-primary" style="float:right"/>
+    <input type="submit" value="Save" class="btn btn-primary float-end"/>
     <label for="post_types">What kind of new posts are allowed here?</label><br/>
     <select multiple autocomplete="off" data-placeholder="blank means all types" class="chosen" name="post_types">
       {% for type in all_posttypes %}
@@ -128,8 +128,8 @@
 {{ super() }}
 {% if not user.is_admin %}
 <script type="text/javascript">
-$('users_and_groups input').attr('disabled','disabled');
-$('users_and_groups select').attr('disabled','disabled');
+$('#users_and_groups input').attr('disabled','disabled');
+$('#users_and_groups select').attr('disabled','disabled');
 </script>
 {% endif %}
 {% endblock %}

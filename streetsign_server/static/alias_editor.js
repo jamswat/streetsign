@@ -1,51 +1,74 @@
-var AliasModel = function(input_data) {
-    var alias=this;
-    input_data = input_data || {};
+/************************************************************
 
-    alias.name = ko.observable(input_data.name || 'client-name...');
-    alias.show_on_dashboard = ko.observable(input_data.show_on_dashboard || false);
+    StreetSign Digital Signage Project
+     (C) Copyright 2013 Daniel Fairhead
 
-    alias.screen_name = ko.observable(input_data.screen_name || 'Default');
-    alias.screen_type = ko.observable(input_data.screen_type || 'basic');
+    StreetSign is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    alias.fadetime = ko.observable(input_data.fadetime || null);
-    alias.scrollspeed = ko.observable(input_data.scrollspeed || null);
-    alias.forceaspect = ko.observable(input_data.forceaspect || null);
-    alias.forcetop = ko.observable(input_data.forcetop || null);
+    StreetSign is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-    alias.url = ko.computed(function () {
-        return '/client/' + this.name();
-        }, alias);
+    You should have received a copy of the GNU General Public License
+    along with StreetSign.  If not, see <http://www.gnu.org/licenses/>.
 
-};
+    ---------------------------------
+    Screen Client Aliases Editor - Alpine.js data factory
 
-var AliasesView = function(initial_list) {
-    var view=this,
-        i;
+*************************************************************/
+'use strict';
 
-    view.aliases = ko.observableArray();
-    view.screen_names = ['Default', '16:9']; // TODO
-    view.view_types = ['basic', 'notrans', 'mobile'];
+window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
+    const aliases = (initialList || []).map(function(a) {
+        return {
+            name: a.name || 'client-name...',
+            show_on_dashboard: a.show_on_dashboard || false,
+            screen_name: a.screen_name || 'Default',
+            screen_type: a.screen_type || 'basic',
+            fadetime: a.fadetime || null,
+            scrollspeed: a.scrollspeed || null,
+            forceaspect: a.forceaspect || null,
+            forcetop: a.forcetop || null
+        };
+    });
 
-    for (i=0;i<initial_list.length;i++) {
-        view.aliases.push(new AliasModel(initial_list[i]));
-    }
+    return {
+        aliases: aliases,
+        screenNames: screenNames,
+        screenTypes: screenTypes,
 
-    view.addAlias = function() {
-        view.aliases.push(new AliasModel());
-    };
+        urlFor(alias) {
+            return '/client/' + alias.name;
+        },
 
-    view.deleteAlias = function(alias) {
-        if (confirm("Really delete this alias?")) {
-            view.aliases.remove(alias);
+        addAlias() {
+            this.aliases.push({
+                name: 'client-name...',
+                show_on_dashboard: false,
+                screen_name: 'Default',
+                screen_type: 'basic',
+                fadetime: null,
+                scrollspeed: null,
+                forceaspect: null,
+                forcetop: null
+            });
+        },
+
+        deleteAlias(idx) {
+            if (confirm('Really delete this alias?')) {
+                this.aliases.splice(idx, 1);
+            }
+        },
+
+        saveAliases() {
+            $.post('/aliases',
+                { 'aliases': JSON.stringify(this.aliases) },
+                function() { alert('saved!'); })
+             .fail(function() { alert('failed to save...'); });
         }
-    };
-
-    view.saveAliases = function() {
-        $.post('/aliases',
-            {'aliases': ko.toJSON(view.aliases)},
-            function(){alert('saved!');})
-         .fail(function(){alert('failed to save...');});
-
     };
 };

@@ -20,11 +20,10 @@
     global vars defaults.
 
 *************************************************************/
+'use strict';
 
-// TODO: get these from somewhere?
-//'use strict';
-UPDATE_ZONES_TIMER = 6000; // how often to check for new posts?
-REFRESH_PAGE_TIMER = 3600000; // how often to reboot the page? this is every hour...
+const UPDATE_ZONES_TIMER = 6000; // how often to check for new posts?
+const REFRESH_PAGE_TIMER = 3600000; // how often to reboot the page?
 
 window.post_types = {};
 window.zones = [];

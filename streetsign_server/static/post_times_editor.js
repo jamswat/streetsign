@@ -1,3 +1,4 @@
+/*global $, flatpickr */
 /************************************************************
 
     StreetSign Digital Signage Project
@@ -17,16 +18,38 @@
     along with StreetSign.  If not, see <http://www.gnu.org/licenses/>.
 
     ---------------------------------
-    post times editor javascript stuff...
+    Post Times Editor - Alpine.js data factory
 
 *************************************************************/
+'use strict';
 
+window.makeTimesEditor = function(initialTimes) {
+    const times = (initialTimes || []).map(function(t) {
+        return {
+            start: t.start || '00:20',
+            end: t.end || '23:30',
+            note: t.note || ''
+        };
+    });
 
+    return {
+        times: times,
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// Date/time pickers
+        get serializedTimes() {
+            return JSON.stringify(this.times);
+        },
 
+        addTime() {
+            this.times.push({ start: '00:20', end: '23:30', note: '' });
+        },
+
+        removeTime(idx) {
+            this.times.splice(idx, 1);
+        }
+    };
+};
+
+// Date/time pickers for the main post start/end fields
 flatpickr('#active_start', {
     enableTime: true,
     dateFormat: 'Y-m-d H:i:s',
@@ -46,106 +69,16 @@ $('#datetimeend .bi-calendar').parent().on('click', function() {
     document.querySelector('#active_end')._flatpickr.open();
 });
 
-/*
-$('#active_start').AnyTime_picker(
-    any_time_options({ lableTitle: 'Start' })
-).change(function(e) {
-    $('#active_end')
-        .AnyTime_noPicker()
-        .AnyTime_picker(any_time_options({
-            earliest: $('#active_start').val(),
-            labelTitle: 'End'})
-        );
-});
-$('#active_end').AnyTime_picker(
-    any_time_options({ labelTitle: 'End' }));
-*/
+// Fix number input clamping for Firefox
+$('input[type=number]').blur(function() {
+    let newnum = 1 * $(this).val();
+    const min = 1 * $(this).data('min');
+    const max = 1 * $(this).data('max');
 
+    if (isNaN(newnum)) newnum = 0;
 
-$('input[type=number]').blur( function (e) {
-    // 'fix' crap lack of type=number support in FF.
-    var newnum = 1 * $(this).val();
-    var min = (1 * $(this).data('min'));
-    var max = (1 * $(this).data('max'));
-
-    if (""+newnum == "NaN")
-        newnum = 0
-
-    // could be done with max(min) whatever, but this is actually clearer:
-    if (newnum < min)
-        newnum = min;
-    else if (newnum > max)
-        newnum = max;
+    if (newnum < min) newnum = min;
+    else if (newnum > max) newnum = max;
 
     $(this).val(newnum);
 });
-
-/* TODO: link this in sometime...
-$('input[type=time]').blur( function (e) {
-    var newtime = $(this).val();
-    
-    var HHMM = /\d{1,2}:\d{1,2}/;
-
-    var output = newtime.match(HHMM);
-
-    if (output == null)
-        $(this).val('00:00');
-        return true;
-
-    if (output.length == 3) {
-        hours = Math.max(0, Math.min(23, output[1]));
-        mins = Math.max(0, Math.min(59, output[2]));
-    }
-
-    $(this).val(hours + ':' + mins);
-}); */
-
-/***************************************************************/
-
-function make_time_observable(t){
-    // turns a simple time dict into an observable one.
-    return { start: ko.observable (t['start']),
-               end: ko.observable (t['end']),
-              note: ko.observable (t['note']) }
-}
-
-/**********************************************************/
-
-ko.bindingHandlers.timeHandler = {
-    init: function(element, valueAccessor) {
-        var initialValue = valueAccessor()();
-        var fp = flatpickr(element, {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            defaultDate: initialValue || "00:00",
-            onChange: function(selectedDates, dateStr) {
-                valueAccessor()(dateStr);
-            }
-        });
-    },
-    update: function(element, valueAccessor) {
-        if (element._flatpickr) {
-            element._flatpickr.setDate(valueAccessor()(), false);
-        }
-    }
-};
-
-var TimesModel = function(times) {
-    var self = this;
-
-    self.times = ko.observableArray(times.map(make_time_observable));
-
-    self.addTime = function() {
-        self.times.push({
-            start: ko.observable("00:20"),
-            end: ko.observable("23:30"),
-            note: ko.observable("")
-        });
-    };
-    self.removeTime = function(t) {
-        self.times.remove(t);
-    };
-};
-
-
