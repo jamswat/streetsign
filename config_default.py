@@ -14,7 +14,7 @@
 
 from os.path import dirname
 from os import environ
-import secrets
+
 SECRET_KEY = 'dev-default-key-change-in-production'
 CSRF_ENABLED = True
 DATABASE_FILE = environ.get('DATABASE_FILE', 'database.db')

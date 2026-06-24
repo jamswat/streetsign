@@ -25,7 +25,6 @@ __THREADS__ = 8 # (for waitress, only)
 # Initialise unicode:
 
 import sys
-import importlib
 
 # Load the app:
 

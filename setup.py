@@ -6,7 +6,7 @@
     to install streetsign_server as a module in its virtualenv.
 '''
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name = 'streetsign_server',

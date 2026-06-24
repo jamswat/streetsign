@@ -97,45 +97,6 @@ Logs for streetsign can then be found using the normal systemd logging utils::
 
     journalctl -u streetsign.service
 
-(Recent) upstartd systems (Ubuntu 14.x, etc)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Copy the streetsign upstart configuration file to ``/etc/init``::
-
-    sudo cp /srv/streetsign/deployment/upstart/streetsign.conf /etc/init/
-
-And then you should edit /etc/init/streetsign.conf to make sure it's all correct for your system.
-If you've followed the above instructions, then it should be.
-
-You can now start the service, to test it's all working OK::
-
-    sudo start streetsign
-
-And it should automatically run on boot as well.  To stop that, you can edit the
-``/etc/init/streetsign.conf`` file, and put a ``#`` in front of ``start on runlevel [2345]``.
-
-The streetsign log file can be found with the rest of the upstart log files at::
-
-    /var/log/upstart/streetsign.log
-
-
-SysV (initscript) systems (CentOS 6.x, etc.)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-There's a basic (hopefully OK) init script in ``deployment/init``, which should work on many
-other systems.  So just copy it in::
-
-    sudo cp /srv/streetsign/deployment/init/streetsign /etc/init.d/
-
-and then turn it on with whatever your OS uses for that.  On CentOS, for instance::
-
-    service streetsign start
-
-will start it running.  To make it run on system boot, it's::
-
-    chkconfig --add streetsign
-
-
 Getting Streetsign on to Port 80
 --------------------------------
 
