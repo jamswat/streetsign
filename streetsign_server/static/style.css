@@ -1,10 +1,6 @@
 /**********************************************************************/
-page, body {
-    height: 100%;
-}
 body {
-    padding-top: 70px;
-    height: 100%;
+    padding-top: 56px;
 }
 
 #flashed_notices {
@@ -36,13 +32,6 @@ option:checked {
     background: #222;
 }
 
-div.footerbox {
-    width: 25%;
-    border: 1px solid #123;
-    padding: 1em;
-}
-
-
 footer {
     text-align: center;
     color: #666;
@@ -50,7 +39,7 @@ footer {
     background: #eee;
     padding: 1em;
     margin-top: 200px;
-    font-weight: thin;
+    font-weight: 300;
     width: 80%;
     margin: 200px auto 20px auto;
     display: block;
@@ -116,10 +105,10 @@ input.third { max-width: 28%;}
 /***************************************/
 
 .published {
-    font-width: bold;
+    font-weight: bold;
 }
 .unpublished {
-    font-width: normal;
+    font-weight: normal;
     font-style: italic;
     opacity: 0.6;
 }
@@ -189,11 +178,4 @@ ul.optionrow > li:first-of-type {
 }
 ul.optionrow > li:last-of-type {
     border-radius: 0 10px 10px 0;
-}
-
-.chzn-container input {
-    min-height: 2em;
-}
-h1, h2, h3 {
-    display: inline; /* allows buttons next to titles... */
 }
