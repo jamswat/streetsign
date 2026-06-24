@@ -1,23 +1,11 @@
-# Bugs & Breakage
-
-- ~~Fix 6 failing tests~~ — Done: `related_name`→`backref`, Flask 3 route registration, form KeyError fix
-- ~~Remove debug `print()` calls left in production~~ — Done
-- ~~Add CSRF protection~~ — Done: per-session token, auto-injected into all forms, exempts API/screen endpoints
-- ~~Fix bare `except:` clauses that silently swallow errors~~ — Done
-- ~~Fix `now()` mixed tab/space indentation at `models.py:80`~~ — Done
-- ~~Fix `feed.set_author_groups` deletes `publish` permissions instead of `write`~~ — Done
-- ~~Upgrade Peewee `related_name` → `backref`~~ — Done: 7 deprecation warnings → 0
-
 # High Priority
 
-- Split `models.py` (882 lines) into a package: models, auth functions, migrations, utility helpers
+- Split `models.py` (898 lines) into a package: models, auth functions, migrations, utility helpers
 - `__init__.py` does too much — DB init in two places (`__init__.py` and `models.py.init()`); needs single path
 - Remove dead/commented code:
-  - ~~Flask-Peewee admin references in `__init__.py`~~ — Done
   - Commented RSS feed generation code in `feeds_and_posts.py`
   - Commented login attempt counting code in `users_and_auth.py`
 - Complete `test_post_image.py` — currently a WIP stub
-- ~~Upgrade Peewee `related_name` → `backref`~~ — Done: 7 warnings → 0
 - Peewee 4.x `playhouse.migrate` needs SQLiteMigrator imported at module level; currently `MIGRATOR` is a global but `create_all`/`init` don't always set it up correctly if DB is re-created for tests
 
 # Medium Priority
@@ -33,12 +21,9 @@
 
 # Config / Deployment
 
-- Update Dockerfile from Python 3.8.2 Alpine to 3.12+
 - `config.py` way to 'lock' certain users so they can't be deleted
 - Make sure user uploaded files have the right path for new projects
 - ConfigVar editor for admins
-- Default screen when database is first initiated
-- Default posts when database is first initiated
 
 # Post / Feed Features
 
@@ -52,7 +37,6 @@
 - Templating & defaults for posts
 - 'Unarchive' posts
 - Rename uploaded post images to `postid-imagename` to avoid conflicts
-- ~~Remove old new-post view complexity — choose types in a single view like external data importer~~ — Done: complex type merged into HTML, single type selector
 - Better post types API (better error messages, etc.)
 
 # Screen / Display Engine
@@ -65,7 +49,6 @@
 - Non-session auth for API, makes scripting easier
 - Local machine mini-proxy for offline resilience
 - Urgent alert post type, takes over whole display
-- ~~HTML5 video post type~~ — Done: video post type with audio overlay implemented
 - YouTube video post type
 - Sub-zones post type (horizontal/vertical mode with nested zones)
 
@@ -77,7 +60,6 @@
 - Favicon & other sundries (404, 301 pages, etc.)
 - Better image thumbnails
 - Default themes
-- Validate with html5lib in tests — nice, but HTML5 strict mode may be too aggressive for template rendering quirks
 
 # Future (v2.0+)
 
