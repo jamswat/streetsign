@@ -7,7 +7,9 @@
 {% endblock %}
 {% block title %}Edit Screen:{{ screen.id }}{% endblock %}
 {% block body %}
+<h1>Edit Screen</h1>
 
+<div class="row">
 <div class="col-md-6">
 <form id="screen_form" method="post">
   <div class="card">
@@ -21,6 +23,7 @@
       </h2>
     </div>
     <div class="card-body">
+      <div class="row">
       <div class="col-md-6">
         <label>Name<input type="text" name="urlname" value="{{ screen.urlname }}" class="form-control" /></label>
       </div>
@@ -33,7 +36,7 @@
           {% endfor %}
         </select>
       </div>
-      <div class="cf"></div>
+      </div>
     <!--
       <label>Default Text color:
       <input name="color" data-bind="value: color" type="color"><br/>-->
@@ -53,11 +56,11 @@
 
 <div id="zones_container" class="card">
   <div class="card-header">
-    <h3 class="card-title">Zones:
+    <h2 class="card-title">Zones:
     <span class="float-end">
     <button data-bind="click: addZone" class="btn btn-sm btn-primary">New Zone</button>
     </span>
-    </h3>
+    </h2>
   </div>
   <div class="card-body">
   <!-- ko foreach: zones -->
@@ -143,6 +146,7 @@
     <!--
     <textarea style="float: right;clear:right; width: 100%; height: 100px" data-bind="value: ko.mapping.toJSON($root, null, 2)"></textarea>
     -->
+</div>
 </div>
 </div>
 

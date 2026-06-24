@@ -59,16 +59,16 @@
 
     <input type="hidden" name="action" value="edit" />
     <h2>Permissions for this feed.</h2>
-    <div class="autowidth">
+    <div class="row">
     <div class="col-md-3"><div class="card">
-        <div class="card-header"><h3 class="card-title">Author Users:</h3>
+        <div class="card-header"><h2 class="card-title">Author Users</h2>
     </div>
     <div class="card-body">
         {{ widgets.userselect("authors", allusers, feed.authors()) }}
     </div>
     </div></div>
     <div class="col-md-3"><div class="card">
-        <div class="card-header"><h3 class="card-title">Publisher Users:</h3>
+        <div class="card-header"><h2 class="card-title">Publisher Users</h2>
     </div>
     <div class="card-body">
         {{ widgets.userselect("publishers", allusers, feed.publishers()) }}
@@ -76,43 +76,46 @@
 
     </div></div>
     <div class="col-md-3"><div class="card">
-        <div class="card-header"><h3 class="card-title">Author Groups:</h3>
+        <div class="card-header"><h2 class="card-title">Author Groups</h2>
     </div>
     <div class="card-body">
         {{ widgets.groupselect("author_groups", allgroups, feed.author_groups()) }}
     </div>
     </div></div>
     <div class="col-md-3"><div class="card">
-        <div class="card-header"><h3 class="card-title">Publisher Groups:</h3>
+        <div class="card-header"><h2 class="card-title">Publisher Groups</h2>
     </div>
     <div class="card-body">
         {{ widgets.groupselect("publisher_groups", allgroups, feed.publisher_groups()) }}
     </div>
     </div></div>
+    </div>
     <input type="submit" value="Save" class="btn btn-primary"/>
     </form>
 
 {% else %}
 
-    <div class="leftside">
+    <div class="row">
+    <div class="col-md-6">
 
-        <h3>Authors who can post here:</h3>
-        <ul class="list">
+        <h2>Authors who can post here</h2>
+        <ul class="list-unstyled">
         {% for u in feed.authors() %}
           <li>{{ linkmacros.user(u) }}</li>
         {% endfor %}
         </ul>
 
     </div>
-    <div class="rightside">
+    <div class="col-md-6">
 
-        <h3>Publishers</h3>
-        <ul class="list">
+        <h2>Publishers</h2>
+        <ul class="list-unstyled">
         {% for u in feed.publishers() %}
           <li>{{ linkmacros.user(u) }}</li>
         {% endfor %}
         </ul>
 
+    </div>
     </div>
 {% endif %}
 <div class="cf"></div>
