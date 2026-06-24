@@ -3,7 +3,8 @@
 <label>Custom Text Color:<input type="checkbox" name="owntextcolor" value="1" {{ 'checked' if owntextcolor }}></label>
 <label id="color_input" class="{{ 'hidden' if not owntextcolor }}">Color:<input type="color" name="color" value="{{color}}"/></label>
 
-<textarea id="contenttextarea" name="content" rows="10" cols="80" style="width: 100%;">{{content}}</textarea>
+<div id="contenttextarea" style="min-height:300px;">{{ content }}</div>
+<textarea name="content" id="content-hidden" style="display:none;"></textarea>
 
 <script type="text/javascript" defer>
 
@@ -16,22 +17,29 @@ $( function() {
        showButtons: false
     });
 
-    SUNEDITOR.create(document.getElementById('contenttextarea'), {
-        height: 300,
-        strictMode: false,
-        buttonList: [
-            ['bold', 'italic', 'underline', 'strike'],
-            ['fontSize', 'fontColor'],
-            ['removeFormat'],
-            ['align', 'list', 'hr'],
-            ['table', 'link', 'image', 'video'],
-            ['codeView', 'fullScreen']
-        ]
+    var quill = new Quill('#contenttextarea', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'align': [] }],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
+                ['clean']
+            ]
+        }
+    });
+
+    document.getElementById('post-editor-form').addEventListener('submit', function() {
+        document.getElementById('content-hidden').value = quill.root.innerHTML;
     });
 
     $('input[name=owntextcolor]').change(function(){
         $('#color_input').toggleClass('hidden');
-        });
+    });
 
 });
 </script>

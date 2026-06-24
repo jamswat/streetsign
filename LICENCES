@@ -20,8 +20,8 @@ Bootstrap 5 (CSS framework for the admin interface)
 Bootstrap Icons (icon font)
  - MIT Licence (https://github.com/twbs/icons)
 
-SunEditor (lightweight vanilla JS WYSIWYG editor)
- - MIT Licence (https://github.com/JiHong88/suneditor)
+Quill (modern vanilla JS rich text editor)
+ - BSD 3-Clause Licence (https://github.com/slab/quill)
 
 Flatpickr (date and time picker)
  - MIT Licence (https://github.com/flatpickr/flatpickr)

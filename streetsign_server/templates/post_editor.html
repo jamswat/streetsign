@@ -5,13 +5,13 @@
 {{ super() }}
 {{ linkmacros.static_css('lib/colorpicker/bgrins-spectrum-2c2010c/spectrum.css') }}
 {{ linkmacros.static_css('lib/flatpickr/flatpickr.min.css') }}
-{{ linkmacros.static_css('lib/suneditor/suneditor.min.css') }}
+{{ linkmacros.static_css('lib/quill/quill.snow.css') }}
 {% endblock %}
 
 {% block body %}
 <h1> Edit Post (in <a href="{{ url_for('feedpage', feedid=post.feed.id) }}">{{ post.feed.name }}</a>)</h1>
 
- <form action="{{ form_action }}" method="POST" enctype="multipart/form-data">
+ <form action="{{ form_action }}" method="POST" enctype="multipart/form-data" id="post-editor-form">
   <input type="hidden" name="action" value="update" />
   {% include "post_editor_form.html" %}
 </form>
@@ -22,7 +22,7 @@
 {{ linkmacros.static_js('lib/flatpickr/flatpickr.min.js') }}
 
 {{ linkmacros.static_js('lib/colorpicker/bgrins-spectrum-2c2010c/spectrum.js') }}
-{{ linkmacros.static_js('lib/suneditor/suneditor.min.js') }}
+{{ linkmacros.static_js('lib/quill/quill.js') }}
 
 {{ linkmacros.static_js('post_times_editor.js') }}
 {% block page_specific_js %}}
