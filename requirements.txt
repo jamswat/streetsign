@@ -16,6 +16,8 @@ simpleeval==1.0.7
 # simple python-based WSGI webserver:
 Werkzeug==3.1.8
 waitress==3.0.2
+# efficient static file serving in-process (replaces the old nginx sidecar):
+whitenoise==6.12.0
 # for tests:
 pytest==9.1.1
 coverage==7.14.3

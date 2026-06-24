@@ -112,8 +112,12 @@ Open http://localhost:5000 — default login is `admin` / `password`.
 ## Docker
 
 A multi-stage Docker image is provided — the build compiles C extensions in a
-builder stage and ships a slim final image (~80 MB) that runs as a non-root
-`streetsign` user.
+builder stage and ships a slim final image (~45 MB) that runs as a non-root
+`streetsign` user. Static assets are served efficiently in-process by
+[WhiteNoise](https://whitenoise.evans.io/) (no nginx sidecar required), so the
+container can be exposed directly or placed behind any reverse proxy.
+
+### Quick start
 
 ```bash
 docker build -t streetsign .
@@ -122,7 +126,26 @@ docker run -d --name streetsign -p 5000:5000 streetsign
 
 Open http://localhost:5000 — default login is `admin` / `password`.
 
-### Persistent data
+### docker-compose
+
+```bash
+docker compose up -d
+```
+
+This brings up a single `app` service on `${WEB_PORT:-5000}`. Two named volumes
+are created automatically and persist across rebuilds:
+
+| Volume      | Mount path                                    | Purpose                          |
+|-------------|-----------------------------------------------|----------------------------------|
+| `db_data`   | `/data`                                       | SQLite database                  |
+| `uploads`   | `/app/streetsign_server/static/user_files`    | User-uploaded images, fonts, etc.|
+
+Built-in static assets (`main.js`, `style.css`, `lib/`, `screens/`) are baked
+into the image and are **not** mounted on a volume, so changes to them appear
+on the next rebuild without stale-file masking. Only `user_files/` (runtime
+uploads) is persisted.
+
+### Persistent data (plain `docker run`)
 
 Mount volumes for the SQLite database and uploaded files, otherwise data is
 lost when the container is removed:
@@ -142,9 +165,11 @@ runs pending migrations.
 
 | Variable         | Default                | Notes                                            |
 |------------------|------------------------|--------------------------------------------------|
-| `PORT`           | `5000`                 | HTTP port the server listens on                  |
-| `HOST`           | `0.0.0.0`              | Bind address                                     |
-| `DATABASE_FILE`  | `/data/database.db`    | SQLite path (already volume-mounted in image)    |
+| `SECRET_KEY`     | `change-me`            | Flask session-signing key. The entrypoint refuses to start with the default. Generate with `python3 -c "import uuid; print(uuid.uuid4())"` and pass via `-e SECRET_KEY=...` or a `.env` file. |
+| `WEB_PORT`       | `5000`                 | Host port to publish (compose only)              |
+| `PORT`           | `5000`                 | Port the server listens on inside the container  |
+| `HOST`           | `0.0.0.0`              | Bind address inside the container                |
+| `DATABASE_FILE`  | `/data/database.db`    | SQLite path (already volume-mounted in image)   |
 
 Override at runtime, e.g. to serve on port 8080:
 
@@ -152,14 +177,26 @@ Override at runtime, e.g. to serve on port 8080:
 docker run -d -p 8080:8080 -e PORT=8080 streetsign
 ```
 
-> The Flask `SECRET_KEY` is generated at **build** time by
-> `.setup/make_initial_config_file.py` and baked into the image. For production
-> you should mount your own `config.py` (see `config_default.py` for the full
-> list of options) rather than rely on the build-time key:
->
-> ```bash
-> docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" streetsign
-> ```
+Or with compose, publish on a different host port:
+
+```bash
+WEB_PORT=8080 docker compose up -d
+```
+
+For production you should mount your own `config.py` (see `config_default.py`
+for the full list of options):
+
+```bash
+docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" streetsign
+```
+
+### Reverse proxy
+
+For internet-facing deployments, run the container behind a reverse proxy that
+terminates TLS (Caddy, Traefik, Nginx Proxy Manager, host nginx, Cloudflare
+Tunnel, etc.). Point the proxy at the container's `:5000` and let it handle
+HTTPS, gzip, and large-upload timeouts — there is no need for a separate nginx
+container in the compose stack.
 
 ## Production
 
