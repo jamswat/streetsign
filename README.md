@@ -1,106 +1,112 @@
-# StreetSign (Server)
-## Forked to update dependencies and modernize the project a bit
+# StreetSign
 
-A digital signage system, inspired by Concerto, however written in Flask/Peewee/Python,
-with a simpler basis.  This project was originally written for Teenstreet 2013 in Germany
-(http://www.teenstreet.de).
+A lightweight digital signage server written in Python by **Daniel Fairhead**.
+Originally created for [Teenstreet 2013](http://www.teenstreet.de) in Germany,
+it has been used at large conferences and in corporate environments since.
 
-Although this has been used at large conferences, and is currently used in some
-corporate environments, and has quite a lot of tests - this version was written
-pretty quickly under tight deadlines, so doesn't have the most solid archetexture
-ever.  I would like to re-write it at some point.
+Built with Flask, Peewee, and SQLite — manage content feeds, schedule posts, and
+display them on configurable screen layouts with smooth fade and scroll
+transitions.
 
-This has just recently been ported to Python3, after not having many updates in
-a while.
+---
 
-There is documentation at [streetsign.readthedocs.org](http://streetsign.readthedocs.org/en/latest/)
+## Features
 
-## Usage:
+- **Content types** — plain text, rich text (HTML), advanced documents, images,
+  external webpages, web hooks, and raw HTML. Plugin system for adding more.
+- **Screen layouts** — multi-zone displays with configurable backgrounds, CSS,
+  fonts, scroll/fade transitions, and aspect ratio override.
+- **Scheduling** — per-post start/end lifetimes, time-of-day restrictions,
+  configurable display duration.
+- **Permissions** — user and group-based read/write/publish permissions per feed.
+- **External data** — import posts automatically from RSS/Atom feeds or local
+  image folders.
+- **Client aliases** — route different display clients to different screens.
+- **Magic variables** — `%%TIME%%` and `%%DATE%%` in posts update live on screen.
 
-clone this into the directory you want to use for the project, and type
+## Quick Start
 
-    ./setup.sh
+```bash
+git clone https://github.com/jamswat/streetsign.git
+cd streetsign
+./setup.sh
+./run.py
+```
 
-and you're going!
+Open http://localhost:5000 — default login is `admin` / `password`.
+**Change the password immediately** before deploying.
 
-To run the app with the flask autoreloading magic use
+## Docker
 
-    ./run.py
+```bash
+docker build -t streetsign .
+docker run -p 5000:5000 streetsign
+```
 
-for production deployment, you can run:
+## Production
 
-    ./run.py waitress
+```bash
+./run.py waitress
+```
 
-to run the server using the waitress WSGI server, or you can use any other WSGI server of your choice.  It is recommended for 'big' deployments that you use nginx or a similar reverse proxy in front of the WSGI server, and also that you serve the static folder (javascript, css, pictures, etc) statically.
+For larger deployments, put nginx or a similar reverse proxy in front of the
+WSGI server and serve the `static/` directory directly.
 
-## Updating:
+## Upgrading
 
-These are the steps if you have used StreetSign in the past and want to update to a newer version:
-- Backup `database.db` and `config.py`.
-- Pull the new version or download it.
-- Run `make migrate` to update the database to the latest version.
-- Run `./run.py` or `./run.py waitress` depending on your needs.
+1. Backup `database.db` and `config.py`
+2. `git pull`
+3. `make migrate`
+4. Restart the server
 
-## Requirements:
+## Requirements
 
-Most packages will be installed by the ./setup.sh script into a folder called .virtualenv.
+- Python 3.9+
+- ImageMagick (for image resizing and thumbnails)
 
-You you will need Python 3.6+ and the Python headers package (python3-dev on Debian, python3-devel on CentOS),
-with a functioning gcc for compiling the various requirements.
+Debian/Ubuntu:
 
-For the thumbnail generation, and image-resizing, you'll need 'ImageMagick' installed (the 'convert' command).
+```bash
+apt-get install python3-dev python3-pip imagemagick
+```
 
-So on CentOS:
+The `setup.sh` script creates a `.virtualenv` with all Python dependencies.
+To use the virtualenv directly: `.virtualenv/bin/python`.
 
-    yum install python3-devel ImageMagick
+## Development
 
-or on Debian/Ubuntu:
+```bash
+.virtualenv/bin/python -m pytest tests/          # 158 tests
+.virtualenv/bin/python -m pylint streetsign_server/  # lint
+```
 
-    apt-get install python3-pip python3-dev imagemagick
+There is a pre-commit hook in `.setup/hooks/` that runs pylint before commits.
+Skip it with `git commit --no-verify`.
 
-## More info:
+## Documentation
 
-The virtual env is kept in .virtualenv, and usually shouldn't need to be touched.  I don't like the entering and exiting a virtualenv business, so went with the 'virtualenv stuff happens transparently when you use run.py, you shouldn't have to care about it' approach.  If you want to run python for the virtualenv, use .virtualenv/bin/python
+Full documentation at [streetsign.readthedocs.org](http://streetsign.readthedocs.org/en/latest/)
 
-The `setup.sh` script is to allow you to get up an running on a new machine in seconds. (On an old machine, minutes, while it downloads and installs flask...)  I like the github idea of 'all a new developper needs to do is run one command, and they have a whole system ready to go'.
+## Troubleshooting
 
-When first installed, the initial login credentials are:
-
-user: `admin`
-password: `password`
-
-There are also some other basic users created.  You should change the admin password, and delete those users before deployment.
-
-## pre-commit hook
-There is the [pre-commit script by Sebastian Dahlgren](https://github.com/sebdah/git-pylint-commit-hook) in the .setup/hooks/ folder, which will run pylint on python scripts to check they are valid before you commit them. The setup.sh script will copy this into your .git/hooks by default.
-
-To run a git commit *without* using this, use:
-
-    git commit --no-verify
-
-(or `git commit -an` also works...) 
-
-
-## Other notes
-
-See the [main documentation](http://streetsign.readthedocs.org/en/latest)
-
-### Magic Vars in posts:
-
-You can use 2 magic variables in html or text posts:
-
-    %%TIME%%
-
-and
-
-    %%DATE%%
-
-these will be replaced by the current time, or date, respectively, and are kept
-up to date by the system.
-
-### Why isn't my post showing up?!
-
-- Does it have time restrictions which are in the way?
+**Why isn't my post showing up?**
 - Is it published?
-- Does the output screen have the correct feeds selected?
-- Try refreshing the output screen (this shouldn't need to happen, but hey, it's currently work in progress)
+- Does the screen have the correct feeds selected?
+- Are time restrictions blocking it?
+- Is it within its active lifetime (start/end dates)?
+
+## Credits
+
+StreetSign was created by **Daniel Fairhead** for Teenstreet 2013. It is made
+available under the GPLv3 with his permission. The original source was hosted on
+Bitbucket.
+
+## AI Usage
+
+Code in this repository has been developed with assistance from AI coding tools,
+including the Bootstrap 3→5 migration, dependency updates, Python 3 fixes, bug
+fixes, CSRF protection, and the raw HTML post type.
+
+## License
+
+[GPLv3](COPYING)
