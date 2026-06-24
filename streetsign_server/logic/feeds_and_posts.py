@@ -139,12 +139,8 @@ def post_form_intake(post, form, editor):
     post.display_time = \
         getint('displaytime', 8, minimum=2, maximum=100, form=form)
 
-    print(type(form['active_start']))
-
     post.active_start = \
         getstr('active_start', post.active_start, validate=DATESTR, form=form)
-
-    print(type(post.active_start))
     post.active_end = \
         getstr('active_end', post.active_end, validate=DATESTR, form=form)
 

@@ -17,13 +17,8 @@
 
 """
 
-import sys
-import importlib
-
 from flask import Flask
-import flask
-#from flask_peewee.admin import Admin
-#from flask_peewee.auth import Auth
+
 try:
     import config
 except ImportError:
@@ -40,10 +35,4 @@ from .models import DB, ALL_MODELS, \
 
 DB.init(app.config.get('DATABASE_FILE'))
 DB.bind(ALL_MODELS)
-
-#auth = Auth(app, db)
-#admin = Admin(app, auth)
-
-#[admin.register(x) for x in (User,Group,Post,Feed,FeedPermission)]
-#admin.setup()
 

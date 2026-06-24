@@ -216,7 +216,7 @@ def group(groupid):
 
     try:
         thisgroup = Group.get(id=groupid)
-    except:
+    except Group.DoesNotExist:
         flash('Invalid group ID')
         return redirect(request.referrer if request.referrer else '/')
 

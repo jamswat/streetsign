@@ -103,8 +103,6 @@ def robots_txt():
 def not_logged_in(err):
     ''' Not Logged In handler '''
     # TODO: nicer looking.
-    print(err)
-
     return '''<!doctype html>
     <body><h1>StreetSign</h1>
     <h2>Permission Denied</h2>

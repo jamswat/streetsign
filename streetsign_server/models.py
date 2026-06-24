@@ -77,7 +77,7 @@ Useful functions
 
 def now(timestamp=False):
     if timestamp:
-         return mktime(now(False).timetuple())
+        return mktime(now(False).timetuple())
     else:
         return datetime.now() + \
                timedelta(minutes=app.config.get('TIME_OFFSET', 0))
@@ -86,7 +86,7 @@ def safe_json_load(text, default):
     ''' either parse a string from JSON into python or else return default. '''
     try:
         return json.loads(text)
-    except:  # pylint: disable=bare-except
+    except Exception:
         return default
 
 def eval_datetime_formula(string):
@@ -597,7 +597,7 @@ class Feed(DBModel):
 
         # delete old permissions first.
         FeedPermission.delete().where((FeedPermission.feed == self)
-                                     &(FeedPermission.publish == True)
+                                     &(FeedPermission.write == True)
                                      &(FeedPermission.group)).execute()
         for a in authorlist:
             assert isinstance(a, Group)

@@ -48,8 +48,8 @@ def form_json(name, default):
     ''' make sure form input is valid JSON '''
     try:
         return json.dumps(json.loads(request.form.get(name,
-                                                      json.dumps(default))))
-    except: # pylint: disable=bare-except
+                                                       json.dumps(default))))
+    except Exception:
         return json.dumps(default)
 
 

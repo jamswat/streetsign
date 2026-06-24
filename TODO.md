@@ -1,100 +1,96 @@
-# In progress
+# Bugs & Breakage
 
-- External Data Sources
-- API and other 'public' documentation.
-- Unit tests
-- RSS "output" of feeds, so mobiles(etc) can subscribe.
-- a mobile friendly 'web app' display engine for screen(s).
-- a basic 'temporary' auto-screen router which sends different mac addressed or ip addressed
-  clients to different actual screens.  This uses a JSON list in a ConfigVar for now.  If this
-  system seems to make sense to people, and seems relatively sane, then it can be refactored
-  into a new SQL table later (which will be slightly faster...).
+- Fix 6 failing tests:
+  - `test_auth_decorators.py` — 3 decorator method-matching regressions from Flask 3 upgrade
+  - `test_posts_times.py` — 3 time offset test failures, datetime string vs object mismatch
+- Remove debug `print()` calls left in production:
+  - `logic/feeds_and_posts.py:142` — `print(type(form['active_start']))`
+  - `logic/feeds_and_posts.py:147` — `print(type(post.active_start))`
+  - `views/__init__.py:106` — `print(err)` in error handler
+- Add CSRF protection — No CSRF tokens anywhere; all POST endpoints are vulnerable
+- Fix bare `except:` clauses that silently swallow errors:
+  - `models.py:89` — `safe_json_load`
+  - `views/screens.py:52` — `form_json`
+  - `views/users_and_auth.py:219` — group edit
+  - `logic/feeds_and_posts.py:167` — delete callback
+- Fix `now()` mixed tab/space indentation at `models.py:80`
+- Fix `feed.set_author_groups` and `set_publisher_groups` — both incorrectly delete `publish` permissions instead of `write` (`models.py:599,609`)
 
-## After TS this year:
+# High Priority
 
-- rename 'Screen' to 'ScreenLayout'.
-- change client aliases to Table based, rather than dumping it all in a single configvar
-- 'injest' method on all models, to simplify the form views.  Should then allow validation to
-  become a lot more declarative.
-- renaming feed(s)
+- Split `models.py` (882 lines) into a package: models, auth functions, migrations, utility helpers
+- `__init__.py` does too much — DB init in two places (`__init__.py` and `models.py.init()`); needs single path
+- Remove dead/commented code:
+  - Flask-Peewee admin references in `__init__.py:25-26,44-48`
+  - Commented RSS feed generation code in `feeds_and_posts.py:35,175-198`
+  - Commented login attempt counting code in `users_and_auth.py:49`
+- Complete `test_post_image.py` — currently a WIP stub
+- Upgrade Peewee `related_name` → `backref` — 7 deprecation warnings in test output
+- Peewee 4.x `playhouse.migrate` needs SQLiteMigrator imported at module level; currently `MIGRATOR` is a global but `create_all`/`init` don't always set it up correctly if DB is re-created for tests
 
-## Urgent:
+# Medium Priority
 
-- config.py way to 'lock' certain users so they can't be deleted...
-- make sure user uploaded files have the right place to go etc for new projects,
-- should uploaded post images still have their old names?? better that they get given
-  `postid-imagename` isn't it?  then there's less chance of confict and over-writing.
-- screen restarting every 6 hours or so
-- a configvar editor for admins.
-- float left/right for images in rich text posts??
+- Thin out the logic layer — views still call `User.select().where(...)` directly
+- Prune `# pylint: disable` list — `missing-docstring`, `wildcard-import`, `unused-wildcard-import`
+- Replace `db.py` + `run.py` with single `manage.py` script
+- Migrate ConfigVar-based screen aliases to a proper database table
+- External Data Sources — finish implementation
+- API and documentation
+- RSS output of feeds (partially implemented, feed generator import is commented out)
+- Screen restarting every 6 hours config
 
-## Needed, but copeable for alpha version.
+# Config / Deployment
 
-- Better 'CSS' editing for zones and whole-screen.
-- Post deactivation -> archive, and archive, future posts, etc view.
-- Group Editor, etc.
-- Better uploaded files editor.
-- Direction for scroller
-- abilty to have full-screen URGENT messages.
+- Update Dockerfile from Python 3.8.2 Alpine to 3.12+
+- `config.py` way to 'lock' certain users so they can't be deleted
+- Make sure user uploaded files have the right path for new projects
+- ConfigVar editor for admins
+- Default screen when database is first initiated
+- Default posts when database is first initiated
+
+# Post / Feed Features
+
+- Post deactivation → archive, and archive/future posts view
+- Better uploaded files editor
+- Float left/right for images in rich text posts
+- Ability to have full-screen URGENT messages
 - RSS post count limiter
-- HTML page importer (maybe uses md5? or last-changed? or something to know if it sould make a new post)
-- Export Screen Data (JSON) and import.
-- Better Post types API (better error messages, etc.)
-- way to move posts between feeds
-- Templating & defaults for posts?
-- 'unarchive' posts.
+- HTML page importer (maybe uses md5 or last-changed to detect new posts)
+- Way to move posts between feeds
+- Templating & defaults for posts
+- 'Unarchive' posts
+- Rename uploaded post images to `postid-imagename` to avoid conflicts
+- Remove old new-post view complexity — choose types in a single view like external data importer
+- Better post types API (better error messages, etc.)
 
-# Good things for the future:
+# Screen / Display Engine
 
-- Smarter 'live' Screen info updating, w/o reloading the whole page.
-- non-session auth as well for API, makes scripting easier.
-- Local machine mini-proxy which gets the latest info from the master server,
-  but otherwise caches everything and keeps it running locally happily until
-  it can connect again.
-- favicon & other 'sundries' (404, 301 etc pages)
-- replace db.py & run.py with a single manage.py type script
-- basic password strength checking
-- login attempts counting/stopping
-- disallow until attempts \*\* attempts seconds since last attempt?  Then UI does auto-wait after fail (so it doesn't appear to fail, but simply take a long time).
-- Better client & serverside validation.
-- try/catch enable-able blocks for screens, so that no matter what goes wrong
-  with javascript, it somehow notices and reloads the screen, or tells the
-  admin, or something.
-- better image thumbnails for 'uploaded files' & posts.
-  (possibly an auto-cache api, as part of the uploaded files section, which
-  then the images `post_type` (plugin) & the display reference?)
-  `{{ url_for('thumbnail', filename=...) }}` or something...
-- we need some nice default themes
-- default screen when the database is first initiated
-- default posts when the database is first initiated
-- remove old new-post view complexity with choosing types, etc.  It should be done as a single
-  view, like the external data importer does.
-- urgent alert post type, takes over whole display
-- draggable borders of selected zone in the zones editor
-- better docs for post types js callbacks
-- html5 video post type
-- youtube video post type
-- clicking on the text box should open up the time select for post lifetime
-- by default, don't show old posts
-- font select on zones.
-- CSS better on zones.
-- sub-zones post type, either horizontal or vertical mode, which adds two more zones to the fray, which are faded in and out due to this zone's timing.
-- post types add a repr field, also a UUID field, which can be used or set by the external data importers.
-- all feeds available as RSS feeds themselves, so streetsign can be a whole news management system.
+- WebSocket push instead of polling (every 6s for posts, 50s for screen config)
+- Smarter live screen info updating without full page reload
+- Better CSS editing for zones and whole-screen
+- Direction control for scroller
+- Font select on zones
+- Non-session auth for API, makes scripting easier
+- Local machine mini-proxy for offline resilience
+- Urgent alert post type, takes over whole display
+- HTML5 video post type
+- YouTube video post type
+- Sub-zones post type (horizontal/vertical mode with nested zones)
 
-# Random ideas:
+# UI / UX
 
-- Extra flag to send to a screen url which would disable setting a background
-  (even black) so that it can be embedded easier inside another post?  This would
-  allow the "sublayouts" concept (although I imagine performance being an issue).
-  Better for sublayouts would be a post type which added new zones to the regular zones list, but had that post div as the parent...
+- Clicking on the text box should open up the time select for post lifetime
+- By default, don't show old posts
+- Draggable borders in zone editor
+- Favicon & other sundries (404, 301 pages, etc.)
+- Better image thumbnails
+- Default themes
+- Validate with html5lib in tests — nice, but HTML5 strict mode may be too aggressive for template rendering quirks
 
+# Future (v2.0+)
 
-# Things for streetsign 2.0:
-
-- translation & internationalisation/gettext of everything.
-- Better "output" / "client" management:
-  - Output screens status, tracking which addresses are requesting info,
-    alert when one goes down, etc.
-- Separate out admin & theme designer roles? or is
-  this pointless?
+- Translation & i18n/gettext
+- Better output/client management — status tracking, alert when screens go down
+- Separate admin & theme designer roles
+- Export/Import screen data (JSON)
+- Streetsign 2.0: modular, documented API, plugin marketplace
