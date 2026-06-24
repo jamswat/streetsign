@@ -38,10 +38,55 @@ Open http://localhost:5000 — default login is `admin` / `password`.
 
 ## Docker
 
+A multi-stage Docker image is provided — the build compiles C extensions in a
+builder stage and ships a slim final image (~80 MB) that runs as a non-root
+`streetsign` user.
+
 ```bash
 docker build -t streetsign .
-docker run -p 5000:5000 streetsign
+docker run -d --name streetsign -p 5000:5000 streetsign
 ```
+
+Open http://localhost:5000 — default login is `admin` / `password`.
+
+### Persistent data
+
+Mount volumes for the SQLite database and uploaded files, otherwise data is
+lost when the container is removed:
+
+```bash
+docker run -d -p 5000:5000 \
+  -v streetsign-db:/data \
+  -v streetsign-uploads:/app/streetsign_server/static/user_files \
+  streetsign
+```
+
+On first start (empty `/data`), the container seeds a fresh database with the
+default admin user, feeds, and a sample screen. On subsequent starts it only
+runs pending migrations.
+
+### Configuration
+
+| Variable         | Default                | Notes                                            |
+|------------------|------------------------|--------------------------------------------------|
+| `PORT`           | `5000`                 | HTTP port the server listens on                  |
+| `HOST`           | `0.0.0.0`              | Bind address                                     |
+| `DATABASE_FILE`  | `/data/database.db`    | SQLite path (already volume-mounted in image)    |
+
+Override at runtime, e.g. to serve on port 8080:
+
+```bash
+docker run -d -p 8080:8080 -e PORT=8080 streetsign
+```
+
+> The Flask `SECRET_KEY` is generated at **build** time by
+> `.setup/make_initial_config_file.py` and baked into the image. For production
+> you should mount your own `config.py` (see `config_default.py` for the full
+> list of options) rather than rely on the build-time key:
+>
+> ```bash
+> docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" streetsign
+> ```
 
 ## Production
 

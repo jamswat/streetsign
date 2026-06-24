@@ -1,21 +1,36 @@
+# ---------- builder ----------
+FROM python:3.12-alpine AS builder
+
+RUN apk add --no-cache build-base python3-dev
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ---------- final ----------
 FROM python:3.12-alpine
 
-# Install packages
-RUN apk --no-cache add bash make gcc libc-dev python3-dev imagemagick
+RUN apk add --no-cache imagemagick bash su-exec \
+ && adduser -D -h /app streetsign
 
-# set environment variables so docker uses the virtual environment
-ENV VIRTUAL_ENV=./.virtualenv
-ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    DATABASE_FILE=/data/database.db
 
-WORKDIR /usr/src/app
-
-# Copy everything to the image filesystem.
+WORKDIR /app
 COPY . .
-# Run setup script
-RUN bash setup.sh
+RUN python .setup/make_initial_config_file.py > config.py \
+ && chmod +x entrypoint.sh
 
-# Tell Docker that this port is used
+VOLUME ["/data", "/app/streetsign_server/static/user_files"]
 EXPOSE 5000
 
-# Start application.
-CMD python ./run.py waitress
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -q -O /dev/null http://127.0.0.1:${PORT:-5000}/ || exit 1
+
+ENTRYPOINT ["./entrypoint.sh"]

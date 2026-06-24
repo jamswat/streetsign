@@ -13,10 +13,11 @@
 '''
 
 from os.path import dirname
+from os import environ
 import secrets
 SECRET_KEY = 'dev-default-key-change-in-production'
 CSRF_ENABLED = True
-DATABASE_FILE = 'database.db'
+DATABASE_FILE = environ.get('DATABASE_FILE', 'database.db')
 
 # Refuse to accept file uploads bigger than this:
 

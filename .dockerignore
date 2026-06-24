@@ -1,0 +1,29 @@
+# Build artifacts & local state — never enter the image context:
+.virtualenv/
+.git/
+.gitignore
+database.db
+config.py
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coveragerc
+pylintrc
+
+# Local user uploads (mounted as a volume at runtime, not baked in):
+streetsign_server/static/user_files/
+
+# Dev-only files:
+tests/
+docs/
+deployment/
+scripts/
+TODO.md
+CHANGELOG.md
+Dockerfile
+.dockerignore
+
+# OS cruft:
+*.swp
+*.bak

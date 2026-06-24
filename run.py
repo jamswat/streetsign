@@ -16,8 +16,10 @@
 
 # Configuration Options:
 
-__HOST__ = '0.0.0.0'
-__PORT__ = 5000
+from os import environ
+
+__HOST__ = environ.get('HOST', '0.0.0.0')
+__PORT__ = int(environ.get('PORT', '5000'))
 __THREADS__ = 8 # (for waitress, only)
 
 # Initialise unicode:
