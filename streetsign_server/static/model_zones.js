@@ -36,15 +36,19 @@ DEFAULT_ZONE = { name: "zone",
                  css: '',
                  classes: '' };
 
-// "chosen" plugin knockout binding:
+// Choices.js knockout binding:
 
 ko.bindingHandlers.chosen = {
     init: function(element) {
-        $(element).addClass('chzn-select');
-        $(element).chosen();
+        var choices = new Choices(element, {searchEnabled: true, itemSelectText: '', shouldSort: false});
+        ko.utils.domData.set(element, 'choices', choices);
     },
     update: function(element) {
-        $(element).trigger('liszt:updated');
+        var choices = ko.utils.domData.get(element, 'choices');
+        if (choices) {
+            choices.destroy();
+            choices.init();
+        }
     }
 };
 

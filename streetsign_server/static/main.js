@@ -12,9 +12,11 @@ function flash(text) {
 }
 
 ////////////////////////////////////////////////
-// Nice 'chosen' select boxes:
+// Nice select boxes:
 
-$('select.chosen').chosen({'width':'100%'});
+$('select.chosen').each(function() {
+    new Choices(this, {searchEnabled: true, itemSelectText: '', shouldSort: false});
+});
 
 /* Confirmation buttons: */
 

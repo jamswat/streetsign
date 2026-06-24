@@ -1,5 +1,4 @@
-<script src="//cdn.ckeditor.com/4.4.4/full/ckeditor.js"></script>
-<div class="cf"></div>
+<div class="clearfix"></div>
 <label>Complex / Advanced HTML</label><br/>
 <label>Custom Text Color:<input type="checkbox" name="owntextcolor" value="1" {{ 'checked' if owntextcolor }}></label>
 <label id="color_input" class="{{ 'hidden' if not owntextcolor }}">Color:<input type="color" name="color" value="{{color}}"/></label>
@@ -17,9 +16,18 @@ $( function() {
        showButtons: false
     });
 
-    setTimeout(function() {
-        window.CKEDITOR.replace('content');
-        }, 2000);
+    $("#contenttextarea").summernote({
+        height: 300,
+        toolbar: [
+            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table', 'hr']],
+            ['insert', ['link', 'picture', 'video']],
+            ['view', ['codeview', 'fullscreen']]
+        ]
+    });
 
     $('input[name=owntextcolor]').change(function(){
         $('#color_input').toggleClass('hidden');

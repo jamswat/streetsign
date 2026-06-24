@@ -122,15 +122,15 @@ function magic_time() {
     // by their <span>'d equivalents, and replaces the contents with the current
     // date or time.
 
-    var d = new Date();
+    var d = dayjs();
 
     $('.magic_time').each(function(i){
-        var format = $(this).data('format') || '%H:%M';
+        var format = $(this).data('format') || 'HH:mm';
         this.innerHTML = d.format(format);
     });
     $('.magic_date').each(function(i){
-        var format = $(this).data('format') || '%F';
-        this.innerHTML = d.format(format); // Date().replace(/:[^:]*$/,'');
+        var format = $(this).data('format') || 'YYYY-MM-DD';
+        this.innerHTML = d.format(format);
     });
     setTimeout(magic_time, 60000);
 }
@@ -256,7 +256,7 @@ function get_servertime(url) {
 
 	xhr.open('GET', url, false) // get syncronously.
 	xhr.send(null);
-	return Date.parse(new Date(Date.parse(xhr.getResponseHeader('Date'))))
+	return new Date(xhr.getResponseHeader('Date'))
 };
 
 setTimeout(reload_page, REFRESH_PAGE_TIMER);

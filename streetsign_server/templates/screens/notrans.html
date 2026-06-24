@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='screens/main.css') }}" />
   {% if site_mode == 'debug' %}<link rel="stylesheet" href="{{ url_for('static', filename='screens/debug.css') }}" />{% endif %}
   <link rel="stylesheet" href="{{ url_for('user_fonts_css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap-wysihtml5/default-styles.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='screens/screen-content.css') }}" />
   <style>
   {{ screen.css | replace('</', '') | safe }}
   </style>
@@ -17,7 +17,7 @@
 </div>-->
 {% block end_of_page_javascript %}
   {{ linkmacros.static_js('lib/jquery.js') }}
-  {{ linkmacros.static_js('lib/date.min.js') }}
+  {{ linkmacros.static_js('lib/dayjs/dayjs.min.js') }}
   {{ linkmacros.static_js('screens/globals.js') }}
   {{ linkmacros.static_js('screens/functions.js') }}
   {{ linkmacros.static_js('screens/notrans.js') }}

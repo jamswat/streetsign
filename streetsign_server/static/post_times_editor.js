@@ -27,8 +27,8 @@
 //
 // Date/time pickers
 
-$('#datetimestart').datetimepicker();
-$('#datetimeend').datetimepicker();
+flatpickr('#datetimestart', {enableTime: true, dateFormat: 'Y-m-d H:i:S'});
+flatpickr('#datetimeend', {enableTime: true, dateFormat: 'Y-m-d H:i:S'});
 
 /*
 $('#active_start').AnyTime_picker(
@@ -97,22 +97,21 @@ function make_time_observable(t){
 
 ko.bindingHandlers.timeHandler = {
     init: function(element, valueAccessor) {
-        $(element).val(valueAccessor()());
-
-        var inputbox = $(element).parent();
-
-        inputbox.datetimepicker({pickDate: false,
-            use24hours: true,
-            format: "HH:mm"
-            });
-
-        inputbox.on('dp.change', function(e){
-            valueAccessor()($(element).val());
-            });
+        var inputbox = element;
+        var fp = flatpickr(inputbox, {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            onChange: function(selectedDates, dateStr) {
+                valueAccessor()(dateStr);
+            }
+        });
     },
     update: function(element, valueAccessor) {
-        $(element).val(valueAccessor()());
+        if (element._flatpickr) {
+            element._flatpickr.setDate(valueAccessor()(), false);
         }
+    }
 };
 
 var TimesModel = function(times) {

@@ -4,8 +4,8 @@
 {% block htmlhead %}
 {{ super() }}
 {{ linkmacros.static_css('lib/colorpicker/bgrins-spectrum-2c2010c/spectrum.css') }}
-{{ linkmacros.static_css('lib/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css') }}
-{{ linkmacros.static_css('lib/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css') }}
+{{ linkmacros.static_css('lib/flatpickr/flatpickr.min.css') }}
+{{ linkmacros.static_css('lib/summernote/summernote-bs5.min.css') }}
 {% endblock %}
 
 {% block body %}
@@ -19,12 +19,10 @@
 
 {% block end_of_page_javascript %}
 {{ super() }}
-{{ linkmacros.static_js('lib/bootstrap-datetimepicker/moment.js') }}
-{{ linkmacros.static_js('lib/bootstrap-datetimepicker/bootstrap-datetimepicker.js') }}
+{{ linkmacros.static_js('lib/flatpickr/flatpickr.min.js') }}
 
 {{ linkmacros.static_js('lib/colorpicker/bgrins-spectrum-2c2010c/spectrum.js') }}
-{{ linkmacros.static_js('lib/bootstrap-wysihtml5/wysihtml5-0.3.0.js') }}
-{{ linkmacros.static_js('lib/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.js') }}
+{{ linkmacros.static_js('lib/summernote/summernote-bs5.min.js') }}
 
 {{ linkmacros.static_js('post_times_editor.js') }}
 {% block page_specific_js %}}
