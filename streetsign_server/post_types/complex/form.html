@@ -16,16 +16,17 @@ $( function() {
        showButtons: false
     });
 
-    $("#contenttextarea").summernote({
+    SUNEDITOR.create(document.getElementById('contenttextarea'), {
         height: 300,
-        toolbar: [
-            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
-            ['fontsize', ['fontsize']],
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['table', ['table', 'hr']],
-            ['insert', ['link', 'picture', 'video']],
-            ['view', ['codeview', 'fullscreen']]
+        strictMode: false,
+        buttonList: [
+            ['blockStyle'],
+            ['bold', 'italic', 'underline', 'strikethrough'],
+            ['fontSize', 'fontColor'],
+            ['removeFormat'],
+            ['align', 'list', 'hr'],
+            ['table', 'link', 'image', 'video'],
+            ['codeView', 'fullScreen']
         ]
     });
 
