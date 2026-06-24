@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    environment:
+      # Generate a long random key:  python3 -c "import uuid; print(uuid.uuid4())"
+      - SECRET_KEY=${SECRET_KEY:-change-me}
+    volumes:
+      - db_data:/data
+      - user_files_data:/app/streetsign_server/static/user_files
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "${PORT:-80}:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./streetsign_server/static:/usr/share/nginx/html/static:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  user_files_data:
