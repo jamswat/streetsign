@@ -13,10 +13,9 @@ means only accept integer values for ``blah``, etc.
 ------------------------------------
 
 Returns the data about this screen, including which zones are defined in it,
-which feeds are attached to those zones, etc.  Usually this is called with
-the ``basic`` template, which renders the post in place, using their
-post type javascript renderers.  This is the main view that normal screen
-outputs will use.
+which feeds are attached to those zones, etc.  The ``template`` can be one of:
+``basic`` (CSS3 transitions, modern browsers), ``notrans`` (low-power devices),
+or ``mobile`` (phones/tablets).
 
 ``/screens/json/<int:screen_id>``
 ---------------------------------

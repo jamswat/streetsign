@@ -4,10 +4,10 @@ StreetSign Admin's guide
 Here's first a guide on how to set up streetsign to play with.  For full proper
 deployment (for real live production usage) check the :doc:`deployment` page.
 
-Instalation
------------
+Installation
+------------
 
-StreetSign requires python 3.6+, imagemagick (to generate thumbnails).  If you
+StreetSign requires python 3.9+, imagemagick (to generate thumbnails).  If you
 are installing on a fresh server, you may need to install ``python3-headers``
 or ``python3-dev`` or whatever your distribution calls it.
 
@@ -19,7 +19,7 @@ want it to be, you need to run the setup script::
     ./setup.sh
 
 which will create a python virtualenv in ``.virtualenv``, and install all the
-libraries and other requirements into there.
+libraries and other requirements into there (via the ``Makefile``).
 
 Running it.
 -----------
@@ -36,7 +36,10 @@ reverse proxy, which should keep things a bit saner.  If you're on a public
 network, also remember to set up your reverse proxy to use SSL, so that you
 aren't sending log-in credentials around in plaintext.
 
-If you want to run anther WSGI server, remember the virtualenv that streetsign
+Static files are served in-process by WhiteNoise_, so no separate web server
+or reverse proxy is required for static assets.
+
+If you want to run another WSGI server, remember the virtualenv that streetsign
 is using, so any scripts you write need to use the python found in there
 (``.virtualenv/bin/python``).  You can use pip from in there to install any
 pypi packages you need too (``.virtualenv/bin/pip install gunicorn``, say).
@@ -44,8 +47,8 @@ pypi packages you need too (``.virtualenv/bin/pip install gunicorn``, say).
 Some links:
 ~~~~~~~~~~~
 
-- `The official flask deployment docs <http://flask.pocoo.org/docs/deploying/>`_
-- `The waitress server docs <https://pylons.readthedocs.org/projects/waitress/en/latest/>`_
+- `The official flask deployment docs <https://flask.palletsprojects.com/en/stable/deploying/>`_
+- `The waitress server docs <https://docs.pylonsproject.org/projects/waitress/en/stable/>`_
 
 
 Users
@@ -61,13 +64,13 @@ user for yourself as well.  Then if someone is finding something confusing, you
 can check from that non-admin user quickly.
 
 Password hashes and moving the database
----------------------------------------
+--------------------------------------
 
 The user passwords are stored in the database hashed using two salts - an
 individual salt per password (stored in standard bcrypt format in the password
-field) and also with the site-wide "secret".  This "secret" is generated
-automatically when you run the setup script, and is stored in the ``config.py``
-file.  (It's also used by flask for encrypting session data, and so should
+field) and also with the site-wide "secret".  This ``SECRET_KEY`` must be set
+in ``config.py`` or via environment variable, and should be a long random string.
+(It's also used by flask for encrypting session data, and so should
 NEVER be stored in a repository, or shared outside deployment.)
 
 What this means is that if you move a database.db file from one installation
@@ -120,4 +123,20 @@ option you can set in ``config.py``::
 
 for example, which will offset post lifetimes, etc, by an hour.  (Minutes are used
 so that half-hour-off timezones are supported).
+
+Configuration Reference
+-----------------------
+
+All configuration options can be set in ``config.py`` (do not edit
+``config_default.py``). See ``config_default.py`` for the full list of defaults.
+Key options:
+
+- ``SECRET_KEY`` — Flask session signing key (required in production)
+- ``DATABASE_FILE`` — path to the SQLite database (default: ``database.db``)
+- ``TIME_OFFSET`` — timezone offset in minutes (default: ``0``)
+- ``MODE`` — ``'production'`` or ``'development'`` (default: ``'production'``)
+- ``CSRF_ENABLED`` — enable CSRF protection (default: ``True``)
+- ``MAX_CONTENT_LENGTH`` — max upload size in bytes (default: 1 GB)
+- ``SITE_VARS`` — dict with ``site_title``, ``site_dir``, ``user_dir``,
+  ``user_url`` for paths and branding
 

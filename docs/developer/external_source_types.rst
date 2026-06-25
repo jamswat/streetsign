@@ -23,3 +23,9 @@ The RSS Source Type
 
 .. automodule:: streetsign_server.external_source_types.rss
    :members:
+
+The Local Folder Source Type
+----------------------------
+
+.. automodule:: streetsign_server.external_source_types.localfolderimages
+   :members:

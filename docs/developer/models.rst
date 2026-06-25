@@ -1,15 +1,23 @@
 streetsign_server.models
 ========================
 
-Where all the Peewee ORM models live.
+All Peewee ORM database models, organised into submodules:
+``base.py``, ``users.py``, ``auth.py``, ``feeds.py``, ``screens.py``,
+``config.py``.  Everything is re-exported from the ``__init__.py`` package root.
 
-Useful functions
-----------------
+Utility functions
+-----------------
 
 .. autofunction:: streetsign_server.models.safe_json_load
 .. autofunction:: streetsign_server.models.eval_datetime_formula
-.. autofunction:: streetsign_server.models.create_all
 .. autofunction:: streetsign_server.models.by_id
+
+Database initialisation
+-----------------------
+
+.. autofunction:: streetsign_server.models.init
+.. autofunction:: streetsign_server.models.create_all
+.. autofunction:: streetsign_server.models.migrations
 
 
 Users and Groups

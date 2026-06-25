@@ -76,11 +76,14 @@ Rendering Screen Zones
 .. automodule:: streetsign_server.post_types.image
    :members:
 
-And finally
------------
+.. automodule:: streetsign_server.post_types.video
+   :members:
 
-There is also a 'weird' experimental web-hook post type included.
-If you find it confusing for your users, feel free to remove it.
+.. automodule:: streetsign_server.post_types.external_webpage
+   :members:
+
+.. automodule:: streetsign_server.post_types.raw_html
+   :members:
 
 .. automodule:: streetsign_server.post_types.web_hook
    :members:

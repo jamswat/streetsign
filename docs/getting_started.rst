@@ -10,7 +10,7 @@ easy on any linux/OSX or other unixy type computer.
 System Requirements
 -------------------
 
-- Python 3.7 (or later) is recommended, but from 3.6 should work too.
+- Python 3.9 (or later) is required.
 - Python development headerfiles & capable compiler:
   `yum install python3-devel` on CentOS/RPM based distros,
   `apt-get install python3-dev` on Debian/Ubuntu
@@ -28,7 +28,8 @@ Essentially, once you've downloaded or cloned the project::
     ./setup.sh
 
 Should download and install a virtualenv, and set up all the dependencies and
-the initial database (a local sqlite file).  Then ::
+the initial database (a local sqlite file).  (The script delegates to
+``make all``.)  Then ::
 
     ./run.py
 
@@ -37,6 +38,7 @@ To actually run a local test server.
 To deploy streetsign for production use, check out the :doc:`deployment` guide.
 
 The initial administration user 'admin' is created, with a password of 'password'.
+A default "News" feed and a "Default" screen are also created.
 
 If you need to start again with a fresh database, then delete the `database.db` file,
 and re-run `./setup.sh`.
@@ -73,9 +75,10 @@ Posts
 
 Individual items of content, be these news items, photos, clocks, whatever,
 are known as 'posts'.  Kind of like on a blog or other news system.  There
-are different types of posts: Pure text posts, Picture posts, and 'Rich'
-content HTML posts, which can have formatted text, mixing in pictures and
-so on as well.
+are different types of posts: Pure text posts, Picture posts, 'Rich'
+content HTML posts, Video posts, External Web Page posts (embed any URL),
+Web Hook posts (fire HTTP requests on events), and Raw HTML posts
+(unsanitized HTML in a sandboxed iframe).
 
 Feeds
 `````
@@ -133,6 +136,13 @@ and a 4:3 point of sales screen) you will want to design different layouts.
 
 You can set up specific screens for certain areas, say a dining room screen,
 a lounge area screen, a welcome desk one, and so on.
+
+Three rendering engines are available, selected per client alias:
+
+- **basic** — CSS3 transitions for modern browsers
+- **notrans** — JavaScript ``requestAnimationFrame`` scroll for low-powered
+  devices (Raspberry Pi, etc.)
+- **mobile** — lightweight vanilla CSS for phones and tablets
 
 
 Screen Zones
@@ -224,8 +234,9 @@ In HTML and plain text posts, you can put the following "magic variables":
 ``%%TIME%%`` and ``%%DATE%%`` which will show up on the output screens as
 the current date and time, respectively.
 
-*Note: this time is local to that screen's computer!
-So if you are using a raspberry pi or similar, and you're
+*Note: these magic variables are replaced client-side by the screen's
+JavaScript, so they reflect the display device's local time.
+If you are using a raspberry pi or similar, and you're
 on a closed network without internet access,
 then you'll also need to set up some kind of NTP server too.*
 

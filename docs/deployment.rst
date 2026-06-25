@@ -44,7 +44,7 @@ We'll use git to get the latest version, and set it up as normal::
 
     cd /srv/streetsign
     sudo su streetsign
-    git clone https://bitbucket.org/dfairhead/streetsign-server.git .
+    git clone https://github.com/jamswat/streetsign.git .
     ./setup.sh
 
 Test it's all ready to go
@@ -80,7 +80,7 @@ then copy the ``deployment/systemd/streetsign.service`` file to ``/var/systemd/s
 edit it to make sure it's all correct for your system (which it should be, if you've followed
 the above instructions)::
 
-    sudo cp /etc/streetsign/deployment/systemd/streetsign.service /var/systemd/system/
+    sudo cp /srv/streetsign/deployment/systemd/streetsign.service /var/systemd/system/
 
 And then tell enable the service::
 
@@ -103,7 +103,8 @@ Getting Streetsign on to Port 80
 If streetsign is going to be 'public facing', and so you want it to be running on the regular
 HTTP port 80, or over HTTPS, then it's best to run a 'reverse proxy' in front of it.
 
-The most popular options are NGiNX and Apache.
+Static assets are served in-process by WhiteNoise_, so nginx or Apache is only
+needed for SSL termination and URL routing — not for static file serving.
 
 nginx
 ~~~~~
@@ -139,61 +140,18 @@ And of course, restart nginx::
 
     sudo service nginx restart
 
-Apache
-~~~~~~
+Docker
+~~~~~
 
-Apache is pretty easy to install::
-
-    sudo apt-get install apache2
-
-or::
-
-    sudo yum install httpd
-
-is usually enough.  There's a default configuration file to put streetsign on its own
-virtualhost in the ``deployment/apache`` folder.  If streetsign is the only site running behind
-apache here, then that configuration file may be enough.  Usually, however, you'll need to
-modify the VirtualHost / Server Name / other settings a bit yourself.
-
-You will need the apache ``mod_proxy``  and ``proxy_http`` modules enabled.  On Debian based systems::
-
-    sudo a2enmod proxy proxy_http
-
-on others you need to check in your apache config (usually ``/etc/httpd/conf/httpd.conf``
-or similar) that the modules are enabled.  These two lines (wherever they are) need to be uncommented::
-
-    LoadModule proxy_module module/mod_proxy.so
-    LoadModule proxy_http_module module/mod_proxy_http.so
-
-Or similar.
-
-You can then copy in the config file. On Debian based systems::
-
-    sudo cp /srv/streetsign/deployment/apache/streetsign.conf /etc/apache2/sites-available/
-
-Or on CentOS::
-
-    sudo cp /srv/streetsign/deployment/apache/streetsign.conf /etc/httpd/conf.d
-
-Edit it to have the settings you need, and enable it.  (Debian only)::
-
-    sudo a2ensite streetsign
-
-And if you want to, disable the default apache welcome-page/site::
-
-    sudo a2dissite 000-default
-
-Finally, restart apache::
-
-    sudo service apache2 restart
-
-and it should all be working.
+A Dockerfile is provided that produces a slim (~45 MB) production image.
+See the `README <https://github.com/jamswat/streetsign#docker>`_ for
+Docker-specific configuration, volume mounts, and docker-compose usage.
 
 CentOS Notes: (Esp. SELinux)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CentOS has SELinux installed often, and is locked down pretty hard.  You will probably need to allow the HTTPD
-to make outgoing connections, and also to access files in the `/srv/streetsign/streetsign_server/static` folders.
+to make outgoing connections.
 
 (All of the following commands are as root.)
 
@@ -208,11 +166,3 @@ Then open up HTTPD to have outgoing-network access (to the actual python server)
 And to make that permanent::
 
     /usr/sbin/setsebool -P httpd_can_network_connect 1
-
-Then give read access for HTTPD to the ``/srv/streetsign/streetsign_server/static`` and all subdirectories::
-
-    semanage fcontext -a -t httpd_sys_content_t "/srv/streetsign/streetsign_server/static(/.*)?"
-
-And apply the policies::
-
-    restorecon -Rv /srv/streetsign

@@ -37,6 +37,7 @@ pygments_style = 'sphinx'
 rst_epilog = """
 .. _Python: http://python.org/
 .. _Flask: http://flask.pocoo.org/
+.. _Peewee: http://peewee.readthedocs.org/en/latest/
 .. _peewee: http://peewee.readthedocs.org/en/latest/
 .. _jQuery: http://jquery.com/
 .. _Alpine.js: https://alpinejs.dev/
@@ -45,11 +46,18 @@ rst_epilog = """
 .. _Day.js: https://day.js.org/
 .. _Prism.js: https://prismjs.com/
 .. _Bootstrap: https://getbootstrap.com/
+.. _Bootstrap 5: https://getbootstrap.com/
+.. _Bootstrap Icons: https://icons.getbootstrap.com/
+.. _jQuery 3: https://jquery.com/
 .. _Flatpickr: https://flatpickr.js.org/
-.. _pylint: http://www.pylint.org/ 
+.. _pylint: http://www.pylint.org/
 .. _sqlite: http://www.sqlite.org/
 .. _FeedParser: http://pythonhosted.org/feedparser/
 .. _Waitress: http://docs.pylonsproject.org/projects/waitress/en/latest/
+.. _WhiteNoise: https://whitenoise.evans.io/
+.. _Bleach: https://bleach.readthedocs.io/
+.. _Passlib: https://passlib.readthedocs.io/
+.. _simpleeval: https://github.com/danthedeckie/simpleeval
 """
 
 # ---------------------------------------------
