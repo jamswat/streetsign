@@ -111,7 +111,8 @@ def index():
         (Post.active_end >= datetime.datetime.now())
     ).count()
 
-    for alias in aliases:
+    recent_posts = Post.select().where(Post.published == True)\
+                       .order_by(Post.write_date.desc()).limit(5)
 
     for alias in aliases:
         for screen in screens:
@@ -136,6 +137,7 @@ def index():
                            total_posts=total_posts,
                            unpublished_posts=unpublished_posts,
                            active_posts_count=active_posts_count,
+                           recent_posts=recent_posts,
                            breadcrumbs=[('Dashboard', None)])
 
 @app.route('/robots.txt')

@@ -214,6 +214,34 @@
 
 	</div>
 
+	{% if recent_posts.count() > 0 %}
+	<div class="row mt-4">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title">Recent Activity</h2>
+				</div>
+				<div class="card-body p-0">
+					<div class="table-responsive">
+					<table class="table table-striped mb-0">
+					<tbody>
+						{% for post in recent_posts %}
+						<tr class="clickable-row" data-uri="{{ url_for('postpage', postid=post.id) }}">
+							<td>{{ linkmacros.post_title(post) }}</td>
+							<td><span class="text-muted small">{{ post.write_date.strftime('%Y-%m-%d %H:%M') if post.write_date else '' }}</span></td>
+							<td>{{ linkmacros.user(post.author) if post.author else '—' }}</td>
+							<td>{{ linkmacros.feed(post.feed) if post.feed else '—' }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+					</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endif %}
+
 	<!-- endif logged in -->
 {% else %}
 	<div class="p-5 mb-4 rounded-3">
@@ -250,4 +278,33 @@
 </p>
 {% endif %}
 <div class="clearfix"></div>
+
+{% if screens.count() > 0 %}
+<div class="row mt-4">
+	<h2>Screen Status</h2>
+</div>
+<div class="row">
+	{% for s in screens %}
+		<div class="col-md-4 mb-3">
+			<div class="card h-100">
+				<div class="card-body">
+					<h3 class="card-title h5">{{ s.urlname }}</h3>
+					<div class="d-flex gap-2 align-items-center">
+						<span class="badge bg-secondary">{{ s.zones|length if s.zones else 0 }} zones</span>
+						{% if s.background %}
+						<span class="badge bg-info">{{ s.background }}</span>
+						{% endif %}
+					</div>
+					<div class="mt-2">
+						<a href="{{ url_for('screendisplay', template='basic', screenname=s.urlname) }}" class="btn btn-sm btn-outline-primary">View</a>
+						{% if session.display_admin_stuff %}
+						<a href="{{ url_for('screenedit', screenid=s.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endfor %}
+</div>
+{% endif %}
 {% endblock %}
