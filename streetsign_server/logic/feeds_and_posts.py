@@ -26,13 +26,16 @@ logic for feeds_and_posts views, separated out for clarity.
 """
 
 from datetime import datetime
+import os
+import re
+from os.path import join as pathjoin, isfile, isdir
 
-from flask import flash, url_for, json
+from flask import flash, url_for, json, g
 
 from streetsign_server.views.utils import PleaseRedirect, \
                                           getstr, getint, getbool, \
                                           STRIPSTR, DATESTR
-from streetsign_server.models import Feed, now
+from streetsign_server.models import Feed, Post, now
 
 def try_to_set_feed(post, new_feed_id, user):
     ''' Is this user actually allowed to set the feed of this post to what
@@ -126,7 +129,22 @@ def post_form_intake(post, form, editor):
     '''
 
     post.title = form.get('post_title', post.title) or 'Untitled'
-    post.content = json.dumps(editor.receive(form))
+    existing = post.content
+    try:
+        post.content = json.dumps(editor.receive(form))
+    except Exception:
+        if not existing:
+            raise
+
+    # If no title was provided, derive one from the uploaded filename
+    if not form.get('post_title', '').strip():
+        try:
+            content_data = json.loads(post.content)
+            filename = content_data.get('filename', '')
+            if filename:
+                post.title = re.sub(r'^[0-9a-f\-]{36}', '', filename)
+        except Exception:
+            pass
 
     post.status = 0 # any time a post is edited, remove it from archive.
 
@@ -171,3 +189,57 @@ def delete_post_and_run_callback(post, typemodule):
         flash(str(excp))
 
     return post.delete_instance()
+
+def cleanup_orphaned_media_files():
+    ''' Scan post_images/ and post_videos/ directories for files that have
+        no corresponding Post record in the database, and remove them.
+        Also removes orphaned thumbnails.
+        Returns a dict with counts of removed files and thumbnails. '''
+
+    user_dir = g.site_vars['user_dir']
+    removed_files = 0
+    removed_thumbs = 0
+
+    # Build the set of known filenames from all image and video posts:
+    known_filenames = set()
+    for post in Post.select().where(Post.type << ['image', 'video']):
+        try:
+            data = json.loads(post.content)
+            filename = data.get('filename', '')
+            if filename:
+                known_filenames.add(filename)
+        except Exception:
+            pass
+
+    # Scan post_images/ directory:
+    image_dir = pathjoin(user_dir, 'post_images')
+    if isdir(image_dir):
+        for f in os.listdir(image_dir):
+            filepath = pathjoin(image_dir, f)
+            if isfile(filepath) and f not in known_filenames:
+                try:
+                    os.remove(filepath)
+                    removed_files += 1
+                except OSError:
+                    pass
+                thumb_path = pathjoin(user_dir, '.thumbnails', 'post_images', f)
+                if isfile(thumb_path):
+                    try:
+                        os.remove(thumb_path)
+                        removed_thumbs += 1
+                    except OSError:
+                        pass
+
+    # Scan post_videos/ directory:
+    video_dir = pathjoin(user_dir, 'post_videos')
+    if isdir(video_dir):
+        for f in os.listdir(video_dir):
+            filepath = pathjoin(video_dir, f)
+            if isfile(filepath) and f not in known_filenames:
+                try:
+                    os.remove(filepath)
+                    removed_files += 1
+                except OSError:
+                    pass
+
+    return {'removed_files': removed_files, 'removed_thumbs': removed_thumbs}

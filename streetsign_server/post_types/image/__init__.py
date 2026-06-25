@@ -30,7 +30,7 @@ __DESC__ = 'An image file, stored locally on the streetsign server'
 
 from flask import render_template_string, request, g, flash
 from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
-from os.path import splitext, join as pathjoin, isdir, abspath, dirname, basename
+from os.path import splitext, join as pathjoin, isdir, isfile, abspath, dirname, basename
 from subprocess import check_call
 from os import makedirs, remove
 from uuid import uuid4
@@ -144,3 +144,9 @@ def screen_js():
 def delete(data):
     ''' when a post is deleted, this is called first, so we can clean up. '''
     remove(pathjoin(image_path(), secure_filename(data['filename'])))
+    try:
+        thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails', 'post_images', secure_filename(data['filename']))
+        if isfile(thumb_path):
+            remove(thumb_path)
+    except OSError:
+        pass

@@ -45,7 +45,8 @@ from streetsign_server.logic.feeds_and_posts import try_to_set_feed, \
                                       if_i_cant_write_then_i_quit, \
                                       can_user_write_and_publish, \
                                       post_form_intake, \
-                                      delete_post_and_run_callback
+                                      delete_post_and_run_callback, \
+                                      cleanup_orphaned_media_files
 
 from streetsign_server import app
 from streetsign_server.models import User, Group, Feed, Post, ExternalSource, \
@@ -261,7 +262,12 @@ def posts():
                       ' left join feed on feed.id = post.feed_id'
                       ' where feed.id is null;')
         for p in ps:
-            p.delete_instance()
+            try:
+                full_post = Post.get(Post.id == p.id)
+                post_type_module = post_types.load(full_post.type)
+                delete_post_and_run_callback(full_post, post_type_module)
+            except Post.DoesNotExist:
+                pass
         flash('Cleaned up old posts...')
 
     if user.is_admin:
@@ -324,11 +330,7 @@ def post_new(feed_id):
                                             ('New Post', None)])
 
     # POST. new post!
-    if not request.form.get('post_title', '').strip():
-        flash("I'm not making you an un-named post!")
-        return redirect(url_for('posts'))
-
-    post_title = request.form.get('post_title').strip()
+    post_title = request.form.get('post_title', '').strip()
     post_type = request.form.get('post_type')
     try:
         post_type_module = post_types.load(post_type)
@@ -502,11 +504,15 @@ def posts_housekeeping():
 
     # And done.
 
+    gc_result = cleanup_orphaned_media_files()
+
     return jsonify({"deleted": delete_count,
                     "archived": archive_count,
                     "delete_before": delete_time,
                     "archive_before": archive_time,
-                    "now": time_now})
+                    "now": time_now,
+                    "orphaned_files_removed": gc_result['removed_files'],
+                    "orphaned_thumbs_removed": gc_result['removed_thumbs']})
 
 ###############################################################
 

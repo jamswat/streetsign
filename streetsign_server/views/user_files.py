@@ -116,6 +116,12 @@ def user_files_list(dir_name=""):
             full_filename = pathjoin(full_path, filename)
             if isfile(full_filename):
                 remove(full_filename)
+                try:
+                    thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails', dir_name, filename)
+                    if isfile(thumb_path):
+                        remove(thumb_path)
+                except OSError:
+                    pass
                 flash('Deleted ' + filename)
             else:
                 flash('Cannot delete directory: ' + filename)
