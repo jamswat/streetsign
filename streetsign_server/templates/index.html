@@ -103,6 +103,19 @@
 	</nav> <!-- /navbar -->
 
 	<article class="container">
+		{% if breadcrumbs %}
+		<nav aria-label="breadcrumb" class="d-none d-md-block mt-2">
+			<ol class="breadcrumb">
+				{% for name, url in breadcrumbs %}
+					{% if url %}
+						<li class="breadcrumb-item"><a href="{{ url }}">{{ name }}</a></li>
+					{% else %}
+						<li class="breadcrumb-item active" aria-current="page">{{ name }}</li>
+					{% endif %}
+				{% endfor %}
+			</ol>
+		</nav>
+		{% endif %}
 		{% block body %}{% endblock %}
 		<div class="clearfix"></div>
 	</article>

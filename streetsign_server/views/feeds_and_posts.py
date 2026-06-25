@@ -110,7 +110,8 @@ def feeds():
                            feeds=Feed.select(),
                            user=user,
                            external_sources=ExternalSource.select(),
-                           source_types=external_source_types.types())
+                           source_types=external_source_types.types(),
+                           breadcrumbs=[('Dashboard', url_for('index')), ('Feeds', None)])
 
 @app.route('/feeds/<int:feedid>', methods=['GET', 'POST'])
 def feedpage(feedid):
@@ -165,7 +166,10 @@ def feedpage(feedid):
                            user=user,
                            all_posttypes=post_types.types(),
                            allusers=User.select(),
-                           allgroups=Group.select()
+                           allgroups=Group.select(),
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('Feeds', url_for('feeds')),
+                                        (feed.name, None)]
                           )
 
 
@@ -243,10 +247,14 @@ def posts():
 
     try:
         if user.is_admin:
-            return render_template('posts.html', posts=Post.select(), user=user)
+            return render_template('posts.html', posts=Post.select(), user=user,
+                                   breadcrumbs=[('Dashboard', url_for('index')),
+                                                ('All Posts', None)])
         return render_template('posts.html',
                                posts=Post.select() \
-                                         .where(Post.status == 0), user=user)
+                                         .where(Post.status == 0), user=user,
+                               breadcrumbs=[('Dashboard', url_for('index')),
+                                            ('All Posts', None)])
     except Feed.DoesNotExist:
         # Ah. Database inconsistancy! Not good, lah.
         ps = Post.raw('select post.id from post'
@@ -257,10 +265,14 @@ def posts():
         flash('Cleaned up old posts...')
 
     if user.is_admin:
-        return render_template('posts.html', posts=Post.select(), user=user)
+        return render_template('posts.html', posts=Post.select(), user=user,
+                               breadcrumbs=[('Dashboard', url_for('index')),
+                                            ('All Posts', None)])
     return render_template('posts.html',
                            posts=Post.select()\
-                                    .where(Post.status == 0), user=user)
+                                    .where(Post.status == 0), user=user,
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('All Posts', None)])
 
 @registered_users_only('GET', 'POST')
 @app.route('/posts/new/<int:feed_id>', methods=['GET', 'POST'])
@@ -305,7 +317,11 @@ def post_new(feed_id):
                                current_feed=feed,
                                post=post,
                                user=user,
-                               post_types=allowed_post_types)
+                               post_types=allowed_post_types,
+                               breadcrumbs=[('Dashboard', url_for('index')),
+                                            ('Feeds', url_for('feeds')),
+                                            (feed.name, url_for('feedpage', feedid=feed.id)),
+                                            ('New Post', None)])
 
     # POST. new post!
     if not request.form.get('post_title', '').strip():
@@ -427,7 +443,12 @@ def postpage(postid):
                            current_feed=post.feed.id,
                            feedlist=user.writeable_feeds(),
                            user=user,
-                           form_content=post_type_module.form(json.loads(post.content)))
+                           form_content=post_type_module.form(json.loads(post.content)),
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('Feeds', url_for('feeds')),
+                                        (post.feed.name,
+                                         url_for('feedpage', feedid=post.feed.id)),
+                                        (post.title, None)])
 
 @app.route('/posts/edittype/<typeid>')
 def postedit_type(typeid):
@@ -563,7 +584,9 @@ def external_data_source_edit(source_id):
     return render_template("external_source.html",
                            source=source,
                            feeds=Feed.select(),
-                           form=module.form(json.loads(source.settings)))
+                           form=module.form(json.loads(source.settings)),
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('External Source', None)])
 
 
 @app.route('/external_data_sources/test')

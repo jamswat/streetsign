@@ -93,7 +93,9 @@ def users_and_groups():
 
     return render_template('users_and_groups.html',
                            users=User.select(),
-                           groups=Group.select())
+                           groups=Group.select(),
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('Users & Groups', None)])
 
 
 def update_user(user=None, form=None, current_user=None):
@@ -201,7 +203,11 @@ def user_edit(userid=-1):
 
     return render_template('user.html',
                            allgroups=Group.select(),
-                           posts=users_posts, user=user)
+                           posts=users_posts, user=user,
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('Users & Groups',
+                                         url_for('users_and_groups')),
+                                        (user.displayname, None)])
 
 
 @app.route('/group/<int:groupid>', methods=['GET', 'POST'])
@@ -231,4 +237,8 @@ def group(groupid):
             thisgroup.set_users(groupusers)
             flash('saved')
 
-    return render_template('group.html', group=thisgroup, allusers=User.select())
+    return render_template('group.html', group=thisgroup, allusers=User.select(),
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('Users & Groups',
+                                         url_for('users_and_groups')),
+                                        (thisgroup.name, None)])

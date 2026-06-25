@@ -126,7 +126,9 @@ def user_files_list(dir_name=""):
     return render_template('user_files.html',
                            full_path=full_path,
                            file_list=files,
-                           dirname=dir_name)
+                           dirname=dir_name,
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('Uploaded Files', None)])
 
 @app.route('/thumbnail/<path:filename>')
 def thumbnail(filename):

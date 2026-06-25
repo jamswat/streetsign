@@ -116,7 +116,8 @@ def index():
                                      .limit(15),
                            posts_to_publish=posts_to_publish,
                            screens=screens,
-                           user=user)
+                           user=user,
+                           breadcrumbs=[('Dashboard', None)])
 
 @app.route('/robots.txt')
 def robots_txt():

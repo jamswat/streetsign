@@ -66,7 +66,9 @@ def screens():
     ''' HTML listing of all screens  '''
     return render_template('screens.html',
                            aliases=config_var('screens.aliases', []),
-                           screens=Screen.select())
+                           screens=Screen.select(),
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('Screens', None)])
 
 
 @app.route('/screens-edit/<screenid>', methods=['GET', 'POST'])
@@ -131,7 +133,10 @@ def screenedit(screenid):
                            feeds=Feed.select(),
                            backgrounds=backgrounds,
                            fonts=fonts,
-                           screen=screen)
+                           screen=screen,
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('Screens', url_for('screens')),
+                                        (screen.urlname or 'New Screen', None)])
 
 
 @app.route('/screens/<template>/<screenname>')
