@@ -150,8 +150,8 @@ footer {
     border-radius: 8px;
     background: var(--color-footer-bg);
     padding: 1em;
-    width: 80%;
-    margin: 40px auto 20px auto;
+    width: 100%;
+    margin: 40px 0 0 0;
     font-weight: 300;
 }
 

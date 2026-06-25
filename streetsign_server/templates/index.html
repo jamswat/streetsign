@@ -143,6 +143,11 @@
 		{% endif %}
 		{% block body %}{% endblock %}
 		<div class="clearfix"></div>
+		<footer>
+			StreetSign &copy; 2013-2026. Daniel Fairhead.
+			An <a href="http://omnivision.om.org/">OMNIvision</a> Project.
+			<a href="https://github.com/jamswat/streetsign">github.com/jamswat/streetsign</a>
+		</footer>
 	</main>
 
 	<div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
@@ -264,12 +269,6 @@
 			</div>
 		</div>
 	</div>
-
-	<footer>
-		StreetSign &copy; 2013-2026. Daniel Fairhead.
-		An <a href="http://omnivision.om.org/">OMNIvision</a> Project.
-		<a href="https://github.com/jamswat/streetsign">github.com/jamswat/streetsign</a>
-	</footer>
 
 	{% block end_of_page_javascript %}
 		{{ linkmacros.static_js('lib/bootstrap5/js/bootstrap.bundle.min.js') }}
