@@ -4,7 +4,13 @@
 {% block body %}
 <h1>Users &amp; Groups</h1>
 
-<h1>Users</h1>
+<h1>Users
+	{% if session.display_admin_stuff %}
+	<a href="{{url_for('user_edit',userid=-1)}}" class="btn btn-primary float-end">
+		<span class="bi bi-plus-lg"></span> New User
+	</a>
+	{% endif %}
+</h1>
 
 <div class="table-responsive">
 <table class="table table-striped">
@@ -13,9 +19,7 @@
 			<th>Display Name</th>
 			<th>login name</th>
 			<th>Email</th>
-			<th>
-				<a href="{{url_for('user_edit',userid=-1)}}" class="btn btn-primary float-end">New</a>
-			</th>
+			<th></th>
 		</tr>
 	</thead>
 	<tbody>
@@ -39,7 +43,13 @@
 </table>
 </div>
 
-<h1>Groups</h1>
+<h1>Groups
+	{% if session.display_admin_stuff %}
+	<button type="button" class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#new-group-modal">
+		<span class="bi bi-plus-lg"></span> New Group
+	</button>
+	{% endif %}
+</h1>
 
 <div class="table-responsive">
 <table class="table table-striped">
@@ -47,18 +57,7 @@
 		<tr>
 			<th>Group Name</th>
 			<th>Members</th>
-			<th>
-				{% if session.display_admin_stuff %}
-					<form action="{{ url_for('users_and_groups') }}" method="POST"
-					      class="d-flex" role="form">
-						<input name="action" value="creategroup" type="hidden" />
-						<input name="name" type="hidden" />
-						<button type="submit" class="btn btn-primary popup_ask float-end"
-						        data-inputname="name" data-prompt="New Group Name?"
-						        data-autofill="newgroup">New</button>
-					</form>
-				{% endif %}
-			</th>
+			<th></th>
 		</tr>
 	</thead>
 	<tbody>

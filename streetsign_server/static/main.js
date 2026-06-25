@@ -146,17 +146,6 @@ $('a.confirm_ajax_delete').click(function(evt) {
     });
 });
 
-$('.popup_ask').click(function(evt) {
-    const input = $(this.form).find(`input[name="${$(this).data('inputname')}"]`);
-    const value = prompt($(this).data('prompt'), $(this).data('autofill'));
-
-    if (value) {
-        input.val(value);
-    } else {
-        evt.preventDefault();
-    }
-});
-
 // focus on username input box when 'login' clicked.
 $('#user_login_button').click(() => {
     setTimeout(() => { $('input[name="username"]').focus(); }, 500);

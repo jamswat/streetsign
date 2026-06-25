@@ -192,6 +192,28 @@
 			</div>
 		</div>
 	</div>
+
+	<div id="new-group-modal" class="modal fade" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form action="{{ url_for('users_and_groups') }}" method="POST">
+					<input type="hidden" name="action" value="creategroup" />
+					<div class="modal-header">
+						<h2 class="modal-title">New Group</h2>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<label class="form-label" for="new-group-name">Group Name:</label>
+						<input id="new-group-name" name="name" class="form-control" placeholder="Enter group name..." required autofocus>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-primary">Create Group</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 	{% endif %}
 
 	{############################################
