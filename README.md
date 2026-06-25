@@ -165,7 +165,7 @@ runs pending migrations.
 
 | Variable         | Default                | Notes                                            |
 |------------------|------------------------|--------------------------------------------------|
-| `SECRET_KEY`     | `change-me`            | Flask session-signing key. The entrypoint refuses to start with the default. Generate with `python3 -c "import uuid; print(uuid.uuid4())"` and pass via `-e SECRET_KEY=...` or a `.env` file. |
+| `SECRET_KEY`     | `change-me`            | Flask session-signing key. **Change this before deploying.** Generate a key with `python3 -c "import uuid; print(uuid.uuid4())"` and pass via `-e SECRET_KEY=...` or a `.env` file. |
 | `WEB_PORT`       | `5000`                 | Host port to publish (compose only)              |
 | `PORT`           | `5000`                 | Port the server listens on inside the container  |
 | `HOST`           | `0.0.0.0`              | Bind address inside the container                |

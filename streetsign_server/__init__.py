@@ -31,22 +31,20 @@ except ImportError:
 app = Flask(__name__) # pylint: disable=invalid-name
 app.config.from_object(config)
 
-# Serve built-in static assets efficiently in-process (with proper cache and
-# conditional-request handling) instead of via an nginx sidecar. User uploads
-# live under the same /static/ tree but are persisted on a volume at runtime;
-# autorefresh keeps newly uploaded files visible without a restart. Requests
-# that don't match a static file fall through to Flask's normal routing.
 def _static_security_headers(headers, _path, _url):
     ''' Add security headers to WhiteNoise-served static file responses,
         matching those applied to dynamic responses by set_security_headers. '''
     headers['X-Content-Type-Options'] = 'nosniff'
     headers['X-Frame-Options'] = 'SAMEORIGIN'
 
-# Serve built-in static assets efficiently in-process (with proper cache and
-# conditional-request handling) instead of via an nginx sidecar. User uploads
-# live under the same /static/ tree but are persisted on a volume at runtime;
-# autorefresh keeps newly uploaded files visible without a restart. Requests
-# that don't match a static file fall through to Flask's normal routing.
+# Serve static assets in-process via WhiteNoise instead of an nginx sidecar.
+# Built-in assets (main.js, style.css, etc.) are baked into the image.
+# User uploads live under /static/user_files/ on a persistent volume and are
+# served through the same WhiteNoise pipeline. autorefresh=True is load-bearing
+# here — without it, newly uploaded files would 404 until a restart because
+# WhiteNoise only scans the filesystem at startup. For a signage server with
+# a handful of always-on displays the extra stat() per static request is
+# negligible. Requests that don't match a static file fall through to Flask.
 app.wsgi_app = WhiteNoise(
     app.wsgi_app,
     root=pathjoin(dirname(__file__), 'static'),
