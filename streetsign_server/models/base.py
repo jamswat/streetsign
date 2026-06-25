@@ -43,7 +43,11 @@ from streetsign_server import app
 
 SECRET_KEY = app.config.get('SECRET_KEY')
 
-DB = SqliteDatabase(None)
+DB = SqliteDatabase(None, pragmas={
+    'journal_mode': 'wal',
+    'busy_timeout': 5000,
+    'foreign_keys': 1,
+})
 
 
 '''
