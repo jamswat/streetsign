@@ -206,6 +206,8 @@ $(document).on('click', '.clickable-row', function(evt) {
         window.location.href = $(this).data('uri');
     }
 });
+
+$(document).on('click', '.item_ajax_toggle', function(evt) {
     const btn = $(this);
     if (btn.attr('data-confirm') !== undefined) {
         evt.preventDefault();
