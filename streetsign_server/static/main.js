@@ -41,6 +41,20 @@ $(() => {
 });
 
 ////////////////////////////////////////////////
+// Sidebar toggle for mobile:
+$('#sidebar-toggle').click(function() {
+    $('.sidebar').toggleClass('open');
+    $('#sidebar-overlay').toggleClass('show');
+    $('body').toggleClass('overflow-hidden');
+});
+
+$('#sidebar-overlay').click(function() {
+    $('.sidebar').removeClass('open');
+    $(this).removeClass('show');
+    $('body').removeClass('overflow-hidden');
+});
+
+////////////////////////////////////////////////
 // Dark mode toggle:
 
 $(() => {

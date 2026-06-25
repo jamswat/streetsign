@@ -44,65 +44,90 @@
 		<div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
 	</div>
 
-	<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark" aria-label="Main navigation">
-		<div class="container-fluid">
-			<a class="navbar-brand" href="{{ url_for('index') }}">{{ g.site_vars.site_title }}:{{ display_title }}</a>
-			<button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
+	{# Sidebar #}
+	<aside class="sidebar">
+		<div class="sidebar-brand">
+			<a href="{{ url_for('index') }}" class="text-decoration-none text-reset">
+				<span class="fs-5 fw-bold">{{ g.site_vars.site_title }}</span>
+			</a>
+		</div>
 
-		<div class="collapse navbar-collapse">
-			{% block nav %}
-			<ul class="navbar-nav">
-					{% macro navitem(view, text, icon) -%}
-						<li class="nav-item"><a class="nav-link" href="{{ url_for(view) }}"><span class="bi bi-{{icon}}"></span> {{text}}</a></li>
-					{%- endmacro %}
+		<nav class="sidebar-nav flex-grow-1">
+			<ul class="nav flex-column">
+				{% macro navitem(view, text, icon, active_on) -%}
+					<li class="nav-item">
+						<a class="nav-link sidebar-link {% if request.endpoint and request.endpoint in active_on %}active{% endif %}"
+						   href="{{ url_for(view) }}">
+							<span class="bi bi-{{icon}} me-2"></span> {{text}}
+						</a>
+					</li>
+				{%- endmacro %}
 
-					{% if session.display_admin_stuff %}
-						{{ navitem('users_and_groups',  'Users & Groups', 'person') }}
-						{{ navitem('user_files_list', 'Uploaded Files', 'image') }}
-				{% endif %}
-
-					{% if session.logged_in %}
-						{{ navitem('feeds',  'Feeds', 'list') }}
-						{{ navitem('posts',  'All Posts', 'card-list') }}
-						{{ navitem('screens', 'Screens', 'credit-card') }}
-					{% endif %}
-			</ul>
-			{% endblock %}
-
-			<ul class="navbar-nav ms-auto">
 				<li class="nav-item">
-					<button id="theme-toggle" class="btn btn-link nav-link" aria-label="Toggle dark mode" title="Toggle dark mode">
-						<span class="bi bi-moon-stars-fill"></span>
-					</button>
+					<span class="sidebar-section">Content</span>
 				</li>
 				{% if session.logged_in %}
-					<li class="nav-item dropdown">
-						<a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><span class="bi bi-person"></span> {{session.username}}</a>
-						<ul class="dropdown-menu">
-							<li><a class="dropdown-item" href="{{ url_for('user_edit', userid=session.userid) }}">Preferences</a></li>
-							<li class="dropdown-divider"></li>
-							<li>
-								<form action="{{ url_for('logout') }}" method="POST" class="d-flex">
-									<input type="hidden" name="from" value="{{ request.endpoint }}" />
-									<input class="dropdown-item d-block w-100" type="submit" value="Log out">
-								</form>
-							</li>
-						</ul>
-					</li>
-				{% else %}
-					<li class="nav-item">
-						<button class="btn btn-sm btn-outline-primary" id="user_login_button"
-										data-bs-toggle="modal" data-bs-target="#login_box" >Login</button>
-					</li>
+					{{ navitem('feeds', 'Feeds', 'list', ['feeds', 'feedpage', 'external_data_source_edit', 'post_new', 'feedsrss']) }}
+					{{ navitem('posts', 'All Posts', 'card-list', ['posts', 'postpage', 'postedit_type']) }}
+				{% endif %}
+
+				<li class="nav-item">
+					<span class="sidebar-section">Display</span>
+				</li>
+				{% if session.logged_in %}
+					{{ navitem('screens', 'Screens', 'credit-card', ['screens', 'screenedit', 'screendisplay']) }}
+				{% endif %}
+
+				{% if session.display_admin_stuff %}
+				<li class="nav-item">
+					<span class="sidebar-section">Admin</span>
+				</li>
+					{{ navitem('users_and_groups', 'Users & Groups', 'people', ['users_and_groups', 'user_edit', 'group']) }}
+					{{ navitem('user_files_list', 'Uploaded Files', 'image', ['user_files_list']) }}
 				{% endif %}
 			</ul>
-		</div> <!-- /navbar-collapse -->
-		</div> <!-- /container-fluid -->
-	</nav> <!-- /navbar -->
+		</nav>
 
-	<article class="container">
+		<div class="sidebar-footer">
+			<button id="theme-toggle" class="btn btn-link nav-link w-100 text-start" aria-label="Toggle dark mode" title="Toggle dark mode">
+				<span class="bi bi-moon-stars-fill me-2"></span> Dark Mode
+			</button>
+			{% if session.logged_in %}
+				<div class="dropup">
+					<a href="#" class="nav-link sidebar-link d-flex align-items-center" data-bs-toggle="dropdown">
+						<span class="bi bi-person me-2"></span> {{session.username}}
+					</a>
+					<ul class="dropdown-menu">
+						<li><a class="dropdown-item" href="{{ url_for('user_edit', userid=session.userid) }}">Preferences</a></li>
+						<li class="dropdown-divider"></li>
+						<li>
+							<form action="{{ url_for('logout') }}" method="POST" class="d-flex">
+								<input type="hidden" name="from" value="{{ request.endpoint }}" />
+								<input class="dropdown-item d-block w-100" type="submit" value="Log out">
+							</form>
+						</li>
+					</ul>
+				</div>
+			{% else %}
+				<button class="btn btn-sm btn-outline-primary w-100" id="user_login_button"
+				        data-bs-toggle="modal" data-bs-target="#login_box">Login</button>
+			{% endif %}
+		</div>
+	</aside>
+
+	{# Mobile header #}
+	<header class="mobile-header d-md-none">
+		<button type="button" class="btn btn-link text-reset sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">
+			<span class="bi bi-list fs-4"></span>
+		</button>
+		<span class="fw-bold">{{ g.site_vars.site_title }}</span>
+	</header>
+
+	{# Sidebar overlay for mobile #}
+	<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+	{# Main content #}
+	<main class="main-content">
 		{% if breadcrumbs %}
 		<nav aria-label="breadcrumb" class="mt-2">
 			<ol class="breadcrumb">
@@ -118,9 +143,9 @@
 		{% endif %}
 		{% block body %}{% endblock %}
 		<div class="clearfix"></div>
-	</article>
+	</main>
 
-		<div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+	<div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
 	</div>
 
 	{% set flash_messages = get_flashed_messages() %}
@@ -168,9 +193,6 @@
 		</div>
 	</div>
 
-	{############################################
-	 # New Feed dialog
-	 ############################################}
 	{% if session.display_admin_stuff %}
 	<div id="new-feed-modal" class="modal fade" tabindex="-1">
 		<div class="modal-dialog">
@@ -239,10 +261,8 @@
 	</div>
 
 	<footer>
-		StreetSign<br/>
-		&copy; 2013-2026. Daniel Fairhead.
-		An <a href="http://omnivision.om.org/">OMNIvision</a> Project.<br/>
-		This project released under the <a href="https://www.gnu.org/licenses/gpl.html">GPL</a>.<br/>
+		StreetSign &copy; 2013-2026. Daniel Fairhead.
+		An <a href="http://omnivision.om.org/">OMNIvision</a> Project.
 		<a href="https://github.com/jamswat/streetsign">github.com/jamswat/streetsign</a>
 	</footer>
 
