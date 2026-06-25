@@ -63,6 +63,7 @@
 					<h2 class="card-title"> Unpublished Posts I can publish:</h2>
 				</div>
 				<div class="card-body">
+					{% if posts_to_publish.count() > 0 %}
 					<div class="table-responsive">
 					<table class="table table-striped">
 						{% for post in posts_to_publish %}
@@ -80,6 +81,13 @@
 						{% endfor %}
 					</table>
 					</div>
+					{% else %}
+					<p class="text-muted mb-0">No posts waiting for publish.
+						{% if user.writeable_feeds() %}
+						<a href="{{ url_for('post_new', feed_id=user.writeable_feeds()[0].id) }}">Create a new post</a>.
+						{% endif %}
+					</p>
+					{% endif %}
 				</div>
 			</div>
 		</div>
@@ -90,23 +98,28 @@
 					<h2 class="card-title">Feeds I can write for:</h2>
 				</div>
 				<div class="card-body">
+				{% set ns = namespace(has_writeable=false) %}
+				{% for feed in feeds %}
+					{% if feed.user_can_write(user) %}
+						{% set ns.has_writeable = true %}
+					{% endif %}
+				{% endfor %}
+				{% if ns.has_writeable %}
 					<div class="table-responsive">
 					<table class="table table-striped">
 					{% for feed in feeds %}
 						{% if feed.user_can_write(user) %}
 							<tr>
-								<td>
-								<a href="{{url_for('feedpage', feedid=feed.id)}}">{{ feed.name }}</a>
-								</td>
-								<td>
-									<a href="{{ url_for('post_new', feed_id=feed.id) }}"
-										 class="btn btn-sm btn-secondary float-end">New Post</a>
-								</td>
+								<td><a href="{{url_for('feedpage', feedid=feed.id)}}">{{ feed.name }}</a></td>
+								<td><a href="{{ url_for('post_new', feed_id=feed.id) }}" class="btn btn-sm btn-secondary float-end">New Post</a></td>
 							</tr>
 						{% endif %}
 					{% endfor %}
 					</table>
 					</div>
+				{% else %}
+					<p class="text-muted mb-0">You don't have write access to any feeds yet. Contact an admin to get started.</p>
+				{% endif %}
 				</div>
 			</div>
 		</div>
@@ -117,6 +130,7 @@
 					<h2 class="card-title"> My recent Posts:</h2>
 				</div>
 				<div class="card-body">
+					{% if posts.count() > 0 %}
 					<div class="table-responsive">
 					<table class="table table-striped">
 						{% for post in posts %}
@@ -137,6 +151,13 @@
 						{% endfor %}
 					</table>
 					</div>
+					{% else %}
+					<p class="text-muted mb-0">No posts yet.
+						{% if user.writeable_feeds() %}
+						<a href="{{ url_for('post_new', feed_id=user.writeable_feeds()[0].id) }}">Create your first post</a>.
+						{% endif %}
+					</p>
+					{% endif %}
 				</div>
 			</div>
 		</div>
@@ -149,13 +170,15 @@
 						<h2 class="card-title"> Feeds I can publish to:</h2>
 					</div>
 					<div class="card-body">
-						<ul class="list">
+						{% if publishable_feeds.count() > 0 %}
+						<ul class="list-unstyled mb-0">
 							{% for feed in publishable_feeds %}
-								<li>
-									<a href="{{url_for('feedpage', feedid=feed.id)}}">{{ feed.name }}</a>
-								</li>
+								<li><a href="{{url_for('feedpage', feedid=feed.id)}}">{{ feed.name }}</a></li>
 							{% endfor %}
 						</ul>
+						{% else %}
+						<p class="text-muted mb-0">No publishable feeds assigned. Contact an admin for publish permissions.</p>
+						{% endif %}
 					</div>
 				</div>
 			</div>
@@ -201,6 +224,7 @@
 <div class="row">
 	<h2>Public Screens</h2>
 </div>
+{% if aliases %}
 <div class="row">
 	{% for client in aliases if client.show_on_dashboard %}
 		<div class="col-6 col-md-3">
@@ -218,5 +242,12 @@
 		</div>
 	{% endfor %}
 </div>
+{% else %}
+<p class="text-muted">No public screens configured yet.
+	{% if session.display_admin_stuff %}
+	<a href="{{ url_for('screens') }}">Set up your first screen</a>.
+	{% endif %}
+</p>
+{% endif %}
 <div class="clearfix"></div>
 {% endblock %}
