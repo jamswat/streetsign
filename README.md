@@ -296,7 +296,7 @@ Tests run against an in-memory SQLite database, so they're fast and isolated:
 ## Documentation
 
 Full documentation at
-[streetsign.readthedocs.org](http://streetsign.readthedocs.org/en/latest/).
+[https://jamswat.github.io/streetsign/](https://jamswat.github.io/streetsign/).
 
 ## Troubleshooting
 
