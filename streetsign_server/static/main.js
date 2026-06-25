@@ -1,5 +1,5 @@
 /*jslint browser:true, regexp: true, debug: true */
-/*global $, jLater, confirm, alert */
+/*global $, jLater */
 'use strict';
 
 ////////////////////////////////////////////////
@@ -18,6 +18,93 @@ $(() => {
         }
     });
 });
+
+////////////////////////////////////////////////
+// AJAX loading progress bar:
+
+$(() => {
+    const $bar = $('#ajax-progress');
+    let reqs = 0;
+
+    $(document).ajaxStart(() => {
+        reqs += 1;
+        $bar.show();
+    });
+
+    $(document).ajaxStop(() => {
+        reqs = Math.max(0, reqs - 1);
+        if (reqs <= 0) {
+            reqs = 0;
+            $bar.fadeOut('fast');
+        }
+    });
+});
+
+////////////////////////////////////////////////
+// Dark mode toggle:
+
+$(() => {
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    updateThemeIcon(theme);
+
+    $('#theme-toggle').click(() => {
+        const current = document.documentElement.getAttribute('data-bs-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-bs-theme', next);
+        localStorage.setItem('theme', next);
+        updateThemeIcon(next);
+    });
+});
+
+function updateThemeIcon(theme) {
+    const icon = $('#theme-toggle span.bi');
+    icon.removeClass('bi-sun-fill bi-moon-stars-fill');
+    icon.addClass(theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill');
+}
+
+////////////////////////////////////////////////
+// Bootstrap toast helper:
+
+function showToast(message, type) {
+    type = type || 'info';
+    const bgClass = {
+        info: 'text-bg-secondary',
+        success: 'text-bg-success',
+        error: 'text-bg-danger',
+        warning: 'text-bg-warning'
+    }[type] || 'text-bg-secondary';
+
+    const id = 'toast-' + Date.now();
+    const toast = $(`
+        <div id="${id}" class="toast align-items-center ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `);
+    $('.toast-container').append(toast);
+    const bsToast = new bootstrap.Toast(toast[0], { delay: 5000 });
+    bsToast.show();
+    toast.on('hidden.bs.toast', () => toast.remove());
+}
+
+////////////////////////////////////////////////
+// Bootstrap confirm modal:
+
+function confirmAction(message, onConfirm) {
+    $('#confirm-modal-message').text(message || 'Are you sure?');
+    const modal = new bootstrap.Modal('#confirm-modal');
+    const okBtn = $('#confirm-modal-ok');
+
+    okBtn.off('click').click(() => {
+        modal.hide();
+        if (onConfirm) { onConfirm(); }
+    });
+
+    modal.show();
+}
 
 ////////////////////////////////////////////////
 // Flashed notices:
@@ -40,8 +127,12 @@ $('select.chosen').each(function() {
 
 /* Confirmation buttons: */
 
-$('.confirm_delete').click(function() {
-    return confirm('Really delete?');
+$('.confirm_delete').click(function(evt) {
+    const form = this.form;
+    evt.preventDefault();
+    confirmAction('Really delete?', function() {
+        form.submit();
+    });
 });
 
 $('a.confirm_ajax_delete').click(function(evt) {
@@ -49,7 +140,7 @@ $('a.confirm_ajax_delete').click(function(evt) {
 
     evt.preventDefault();
 
-    if (confirm('Really delete?')) {
+    confirmAction('Really delete?', function() {
         dom_item.slideUp();
         $.ajax({
             url: $(dom_item).data('item'),
@@ -59,9 +150,9 @@ $('a.confirm_ajax_delete').click(function(evt) {
             flash('deleted');
         }).fail(function() {
             dom_item.slideDown();
-            flash('could not delete!');
+            showToast('Could not delete!', 'error');
         });
-    }
+    });
 });
 
 $('.popup_ask').click(function(evt) {
@@ -98,7 +189,10 @@ $('#show_past_posts').click(function() {
 
 $('#run_housekeeping').click(function() {
     $.post(window.HOUSEKEEPING_URL, {}, function(data) {
-        alert(`Housekeeping Done!\n${data.archived} posts archived.\n${data.deleted} posts deleted`);
+        showToast(
+            'Housekeeping: ' + data.archived + ' archived, ' + data.deleted + ' deleted.',
+            'success'
+        );
     }, 'json');
 });
 
@@ -122,7 +216,7 @@ $(document).on('click', '.item_ajax_toggle', function() {
         data: data
     }).fail(function() {
         item.toggleClass(toggle_class);
-        alert('Request failed — check your permissions.');
+        showToast('Request failed — check your permissions.', 'error');
     });
 });
 

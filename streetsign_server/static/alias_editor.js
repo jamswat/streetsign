@@ -59,16 +59,16 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
         },
 
         deleteAlias(idx) {
-            if (confirm('Really delete this alias?')) {
+            confirmAction('Really delete this alias?', () => {
                 this.aliases.splice(idx, 1);
-            }
+            });
         },
 
         saveAliases() {
             $.post('/aliases',
                 { 'aliases': JSON.stringify(this.aliases) },
-                function() { alert('saved!'); })
-             .fail(function() { alert('failed to save...'); });
+                function() { showToast('Aliases saved.', 'success'); })
+             .fail(function() { showToast('Failed to save aliases.', 'error'); });
         }
     };
 };

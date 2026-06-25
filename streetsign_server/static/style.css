@@ -81,6 +81,15 @@ footer a {
     font-weight: bold;
 }
 
+[data-bs-theme="dark"] footer {
+    background: #1a1a1a;
+    color: #aaa;
+}
+
+[data-bs-theme="dark"] footer a {
+    color: #8ab4f8;
+}
+
 .cf {
     display: flow-root;
 }
