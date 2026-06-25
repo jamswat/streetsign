@@ -204,20 +204,30 @@ while (jLater.length) {
 
 ////////////////////////////////
 
-$(document).on('click', '.item_ajax_toggle', function() {
-    const toggle_class = $(this).data('ajaxtoggle');
-    const item = $(this).parents('.item').first().toggleClass(toggle_class);
-    const data = {};
+$(document).on('click', '.item_ajax_toggle', function(evt) {
+    const btn = $(this);
+    if (btn.attr('data-confirm') !== undefined) {
+        evt.preventDefault();
+        confirmAction('Really delete?', doToggle);
+    } else {
+        doToggle();
+    }
 
-    data[$(this).data('name')] = $(this).data('value');
+    function doToggle() {
+        const toggle_class = btn.data('ajaxtoggle');
+        const item = btn.parents('.item').first().toggleClass(toggle_class);
+        const data = {};
 
-    $.ajax($(this).parents('[data-uri]').data('uri'), {
-        type: $(this).data('ajaxtype'),
-        data: data
-    }).fail(function() {
-        item.toggleClass(toggle_class);
-        showToast('Request failed — check your permissions.', 'error');
-    });
+        data[btn.data('name')] = btn.data('value');
+
+        $.ajax(btn.parents('[data-uri]').data('uri'), {
+            type: btn.data('ajaxtype'),
+            data: data
+        }).fail(function() {
+            item.toggleClass(toggle_class);
+            showToast('Request failed — check your permissions.', 'error');
+        });
+    }
 });
 
 $(() => {
