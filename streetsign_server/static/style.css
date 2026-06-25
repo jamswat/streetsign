@@ -95,6 +95,14 @@ footer a {
     color: #ddd;
 }
 
+[data-bs-theme="dark"] {
+    --choices-bg-color: #2b2b2b;
+    --choices-bg-color-dropdown: #333;
+    --choices-bg-color-disabled: #1a1a1a;
+    --choices-highlighted-color: #444;
+    --choices-primary-color: #4d94ff;
+}
+
 .cf {
     display: flow-root;
 }
