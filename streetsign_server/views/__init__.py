@@ -27,6 +27,7 @@
 from flask import render_template, g, Response, url_for, request, session
 from uuid import uuid4
 from markupsafe import Markup
+import datetime
 
 ##########################
 # views submodules:
@@ -99,6 +100,19 @@ def index():
     screens = Screen.select()
     aliases = config_var('screens.aliases', [])
 
+    # Summary stats for dashboard cards
+    total_screens = Screen.select().count()
+    total_feeds = Feed.select().count()
+    total_posts = Post.select().count()
+    unpublished_posts = Post.select().where(Post.published == False).count()
+    active_posts_count = Post.select().where(
+        (Post.published == True) &
+        (Post.active_start <= datetime.datetime.now()) &
+        (Post.active_end >= datetime.datetime.now())
+    ).count()
+
+    for alias in aliases:
+
     for alias in aliases:
         for screen in screens:
             if screen.urlname == alias['screen_name']:
@@ -117,6 +131,11 @@ def index():
                            posts_to_publish=posts_to_publish,
                            screens=screens,
                            user=user,
+                           total_screens=total_screens,
+                           total_feeds=total_feeds,
+                           total_posts=total_posts,
+                           unpublished_posts=unpublished_posts,
+                           active_posts_count=active_posts_count,
                            breadcrumbs=[('Dashboard', None)])
 
 @app.route('/robots.txt')

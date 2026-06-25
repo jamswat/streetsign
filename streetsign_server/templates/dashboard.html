@@ -4,6 +4,58 @@
 {% block body %}
 {% if session.logged_in %}
 	<h1>Dashboard</h1>
+
+	<div class="row g-3 mb-4">
+		<div class="col-6 col-md-4 col-lg-2">
+			<div class="card text-center border-primary h-100">
+				<div class="card-body py-3">
+					<div class="fs-1 fw-bold text-primary">{{ active_posts_count }}</div>
+					<div class="text-muted small">Active Posts</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-6 col-md-4 col-lg-2">
+			<div class="card text-center border-warning h-100">
+				<div class="card-body py-3">
+					<div class="fs-1 fw-bold text-warning">{{ posts_to_publish.count() }}</div>
+					<div class="text-muted small">Pending Publish</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-6 col-md-4 col-lg-2">
+			<div class="card text-center border-info h-100">
+				<div class="card-body py-3">
+					<div class="fs-1 fw-bold text-info">{{ total_feeds }}</div>
+					<div class="text-muted small">Feeds</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-6 col-md-4 col-lg-2">
+			<div class="card text-center border-success h-100">
+				<div class="card-body py-3">
+					<div class="fs-1 fw-bold text-success">{{ total_screens }}</div>
+					<div class="text-muted small">Screens</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-6 col-md-4 col-lg-2">
+			<div class="card text-center border-secondary h-100">
+				<div class="card-body py-3">
+					<div class="fs-1 fw-bold text-secondary">{{ total_posts }}</div>
+					<div class="text-muted small">Total Posts</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-6 col-md-4 col-lg-2">
+			<div class="card text-center border-success-subtle h-100">
+				<div class="card-body py-3">
+					<div class="fs-1 fw-bold text-success-emphasis">{{ aliases|length }}</div>
+					<div class="text-muted small">Clients</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div class="row">
 		<div class="col-sm-6">
 			<div class="card">
@@ -113,13 +165,26 @@
 		<div class="col-sm-6">
 			<div class="card">
 				<div class="card-header">
-					<h2 class="card-title">Other:</h2>
+					<h2 class="card-title">Quick Actions</h2>
 				</div>
-				<div class="card-body">
-		<button type="button" class="btn btn-secondary" id="run_housekeeping"
-		        aria-label="Archive old posts and delete expired ones">
-			<span class="bi bi-archive" aria-hidden="true"></span> Do Housekeeping</button>
-
+				<div class="card-body d-grid gap-2">
+					{% if user.writeable_feeds() %}
+						<div class="btn-group">
+							<button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">New Post</button>
+							<ul class="dropdown-menu">
+								{% for feed in user.writeable_feeds() %}
+									<li><a class="dropdown-item" href="{{ url_for('post_new', feed_id=feed.id) }}">{{ feed.name }}</a></li>
+								{% endfor %}
+							</ul>
+						</div>
+					{% endif %}
+					{% if session.display_admin_stuff %}
+						<a href="{{ url_for('screenedit', screenid=-1) }}" class="btn btn-outline-primary">New Screen</a>
+						<a href="{{ url_for('feeds') }}" class="btn btn-outline-primary">Manage Feeds</a>
+					{% endif %}
+					<button type="button" class="btn btn-outline-secondary" id="run_housekeeping">
+						<span class="bi bi-archive" aria-hidden="true"></span> Housekeeping
+					</button>
 				</div>
 			</div>
 		</div>
