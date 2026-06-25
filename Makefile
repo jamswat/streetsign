@@ -6,11 +6,15 @@ _INSTRUCTIONS:
 clean:
 	rm -rf .virtualenv/ database.db config.py
 
-all: .virtualenv config.py database.db migrate
+all: .virtualenv .githooks config.py database.db migrate
 
 .virtualenv:
 	python3 -m venv .virtualenv
 	./.virtualenv/bin/pip install -r requirements.txt
+
+.githooks:
+	cp .setup/hooks/pre-commit .git/hooks/pre-commit
+	chmod +x .git/hooks/pre-commit
 
 config.py:
 	python3 .setup/make_initial_config_file.py > config.py
