@@ -150,6 +150,11 @@
 
 	{% set flash_messages = get_flashed_messages() %}
 	{% if flash_messages %}
+	<div id="flash-data" style="display:none">
+	{% for msg in flash_messages %}
+		<span class="flash-message">{{ msg }}</span>
+	{% endfor %}
+	</div>
 	<script type="text/javascript">
 		jLater.push(function($) {
 			{% for msg in flash_messages %}

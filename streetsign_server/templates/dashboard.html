@@ -170,7 +170,7 @@
 						<h2 class="card-title"> Feeds I can publish to:</h2>
 					</div>
 					<div class="card-body">
-						{% if publishable_feeds.count() > 0 %}
+						{% if publishable_feeds|length > 0 %}
 						<ul class="list-unstyled mb-0">
 							{% for feed in publishable_feeds %}
 								<li><a href="{{url_for('feedpage', feedid=feed.id)}}">{{ feed.name }}</a></li>

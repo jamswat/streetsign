@@ -513,7 +513,7 @@ def posts_housekeeping():
 ###############################################################
 
 @app.route('/posts/bulk_delete', methods=['POST'])
-@registered_users_only
+@registered_users_only('POST')
 def posts_bulk_delete():
     ''' delete multiple posts at once via AJAX '''
     user = user_session.get_user()
