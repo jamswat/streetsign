@@ -146,9 +146,18 @@
 
 	<!-- endif logged in -->
 {% else %}
-	<div class="p-5 mb-4 rounded-3">
-		<h1>{{ g.site_vars.site_title }}</h1>
+	<div class="text-center py-5">
+		<div class="mb-3">
+			<span style="font-size:3rem">📺</span>
+		</div>
+		<h1 class="display-4 fw-bold">{{ g.site_vars.site_title }}</h1>
+		<p class="lead text-muted">Lightweight digital signage server</p>
+		<p class="text-muted">Create and manage content feeds, schedule posts, and display them on configurable screen layouts.</p>
+		<button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#login_box">
+			<span class="bi bi-box-arrow-in-right"></span> Log In
+		</button>
 	</div>
+	<hr/>
 {% endif %}
 
 <div class="row mt-4">

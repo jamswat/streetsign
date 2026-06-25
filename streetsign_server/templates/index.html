@@ -63,20 +63,18 @@
 					</li>
 				{%- endmacro %}
 
+{% if session.logged_in %}
 				<li class="nav-item">
 					<span class="sidebar-section">Content</span>
 				</li>
-				{% if session.logged_in %}
-					{{ navitem('feeds', 'Feeds', 'list', ['feeds', 'feedpage', 'external_data_source_edit', 'post_new', 'feedsrss']) }}
-					{{ navitem('posts', 'All Posts', 'card-list', ['posts', 'postpage', 'postedit_type']) }}
-				{% endif %}
+				{{ navitem('feeds', 'Feeds', 'list', ['feeds', 'feedpage', 'external_data_source_edit', 'post_new', 'feedsrss']) }}
+				{{ navitem('posts', 'All Posts', 'card-list', ['posts', 'postpage', 'postedit_type']) }}
 
 				<li class="nav-item">
 					<span class="sidebar-section">Display</span>
 				</li>
-				{% if session.logged_in %}
-					{{ navitem('screens', 'Screens', 'credit-card', ['screens', 'screenedit', 'screendisplay']) }}
-				{% endif %}
+				{{ navitem('screens', 'Screens', 'credit-card', ['screens', 'screenedit', 'screendisplay']) }}
+			{% endif %}
 
 				{% if session.display_admin_stuff %}
 				<li class="nav-item">
