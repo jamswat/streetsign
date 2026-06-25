@@ -213,7 +213,8 @@ div.sizes_box {
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    touch-action: none;
+    user-select: none;
     transition: background 0.2s;
 }
 

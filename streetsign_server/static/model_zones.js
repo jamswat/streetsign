@@ -23,7 +23,7 @@
 *************************************************************/
 'use strict';
 
-const DEFAULT_ZONE = {
+var DEFAULT_ZONE = {
     name: 'zone',
     top: '30%',
     left: '30%',
@@ -38,14 +38,14 @@ const DEFAULT_ZONE = {
 };
 
 window.makeScreenEditor = function(config) {
-    const zones = config.zones.map(function(z) {
-        const zone = Object.assign({ selected: false }, DEFAULT_ZONE, z);
+    var zones = config.zones.map(function(z) {
+        var zone = Object.assign({ selected: false }, DEFAULT_ZONE, z);
         zone.feeds = zone.feeds.map(String);
         if (!zone.css) zone.css = '';
         return zone;
     });
 
-    return {
+    var editor = {
         background: config.background,
         settings: config.settings,
         css: config.css,
@@ -72,33 +72,162 @@ window.makeScreenEditor = function(config) {
             }));
         },
 
-        addZone() {
+        init: function() {
+            var self = this;
+            this.$nextTick(function() { self.initDragResize(); });
+        },
+
+        initDragResize: function() {
+            var container = document.getElementById('my_fake_screen');
+            if (!container) return;
+            var self = this;
+            var state = null;
+            var hoverEl = null;
+            var EDGE = 14;
+            var SNAP = 5;
+            var MIN_W = 8;
+            var MIN_H = 6;
+
+            function clamp(v, lo, hi) {
+                return v < lo ? lo : v > hi ? hi : v;
+            }
+
+            function cursorFor(edgeL, edgeR, edgeT, edgeB) {
+                if (edgeT && edgeL) return 'nwse-resize';
+                if (edgeT && edgeR) return 'nesw-resize';
+                if (edgeB && edgeL) return 'nesw-resize';
+                if (edgeB && edgeR) return 'nwse-resize';
+                if (edgeT || edgeB) return 'ns-resize';
+                if (edgeL || edgeR) return 'ew-resize';
+                return 'move';
+            }
+
+            function resetCursor() {
+                if (hoverEl) { hoverEl.style.cursor = ''; hoverEl = null; }
+            }
+
+            container.addEventListener('pointermove', function(e) {
+                if (state) return;
+                var el = e.target.closest('.fake_zone');
+                if (!el) { resetCursor(); return; }
+                if (el !== hoverEl) { resetCursor(); hoverEl = el; }
+                var r = el.getBoundingClientRect();
+                var L = e.clientX - r.left < EDGE;
+                var R = r.right - e.clientX < EDGE;
+                var T = e.clientY - r.top < EDGE;
+                var B = r.bottom - e.clientY < EDGE;
+                el.style.cursor = cursorFor(L, R, T, B);
+            });
+
+            container.addEventListener('pointerleave', function() {
+                if (!state) resetCursor();
+            });
+
+            container.addEventListener('pointerdown', function(e) {
+                var el = e.target.closest('.fake_zone');
+                if (!el) return;
+                var idx = self.getZoneIndex(el);
+                if (idx < 0) return;
+
+                var zone = self.zones[idx];
+                var rect = el.getBoundingClientRect();
+                var cRect = container.getBoundingClientRect();
+                var cw = cRect.width;
+                var ch = cRect.height;
+
+                resetCursor();
+                self.selectZone(idx);
+
+                var nearL = e.clientX - rect.left < EDGE;
+                var nearR = rect.right - e.clientX < EDGE;
+                var nearT = e.clientY - rect.top < EDGE;
+                var nearB = rect.bottom - e.clientY < EDGE;
+                var isResize = nearL || nearR || nearT || nearB;
+
+                el.style.cursor = cursorFor(nearL, nearR, nearT, nearB);
+
+                state = {
+                    el: el,
+                    idx: idx,
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    cw: cw,
+                    ch: ch,
+                    sLeft: parseFloat(zone.left),
+                    sTop: parseFloat(zone.top),
+                    sRight: parseFloat(zone.right),
+                    sBottom: parseFloat(zone.bottom),
+                    edgeL: nearL, edgeR: nearR, edgeT: nearT, edgeB: nearB,
+                    isResize: isResize
+                };
+
+                el.setPointerCapture(e.pointerId);
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            document.addEventListener('pointermove', function(e) {
+                if (!state) return;
+                var zone = self.zones[state.idx];
+                var dx = (e.clientX - state.startX) / state.cw * 100;
+                var dy = (e.clientY - state.startY) / state.ch * 100;
+                var sdx = Math.round(dx / SNAP) * SNAP;
+                var sdy = Math.round(dy / SNAP) * SNAP;
+
+                if (state.isResize) {
+                    if (state.edgeL) zone.left  = clamp(state.sLeft + sdx, 0, 100 - state.sRight - MIN_W).toFixed(1) + '%';
+                    if (state.edgeR) zone.right = clamp(state.sRight - sdx, 0, 100 - state.sLeft - MIN_W).toFixed(1) + '%';
+                    if (state.edgeT) zone.top   = clamp(state.sTop + sdy, 0, 100 - state.sBottom - MIN_H).toFixed(1) + '%';
+                    if (state.edgeB) zone.bottom = clamp(state.sBottom - sdy, 0, 100 - state.sTop - MIN_H).toFixed(1) + '%';
+                } else {
+                    var nl = clamp(state.sLeft + sdx, 0, state.sLeft + state.sRight);
+                    var nt = clamp(state.sTop + sdy, 0, state.sTop + state.sBottom);
+                    zone.left = nl.toFixed(1) + '%';
+                    zone.top = nt.toFixed(1) + '%';
+                    zone.right = (state.sLeft + state.sRight - nl).toFixed(1) + '%';
+                    zone.bottom = (state.sTop + state.sBottom - nt).toFixed(1) + '%';
+                }
+            });
+
+            document.addEventListener('pointerup', function() {
+                if (state) {
+                    state.el.style.cursor = '';
+                    state = null;
+                }
+            });
+        },
+
+        getZoneIndex: function(el) {
+            return parseInt(el.getAttribute('data-zone-index') || '-1');
+        },
+
+        addZone: function() {
             this.zones.push(Object.assign({ selected: false }, DEFAULT_ZONE, {
                 name: 'zone' + (this.zones.length + 1)
             }));
         },
 
-        removeZone(idx) {
+        removeZone: function(idx) {
             this.zones.splice(idx, 1);
         },
 
-        selectZone(idx) {
+        selectZone: function(idx) {
             this.zones.forEach(function(z, i) { z.selected = (i === idx); });
         },
 
-        selectZoneScroll(idx) {
+        selectZoneScroll: function(idx) {
             this.selectZone(idx);
             this.scrollToZoneEditor(idx);
         },
 
-        scrollToZoneEditor(idx) {
-            const el = document.getElementById('zone-editor-' + idx);
+        scrollToZoneEditor: function(idx) {
+            var el = document.getElementById('zone-editor-' + idx);
             if (el) {
                 el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         },
 
-        zoneStyle(zone) {
+        zoneStyle: function(zone) {
             return {
                 top: zone.top || '30%',
                 left: zone.left || '30%',
@@ -109,8 +238,10 @@ window.makeScreenEditor = function(config) {
             };
         },
 
-        initChoices(el) {
+        initChoices: function(el) {
             new Choices(el, { searchEnabled: true, itemSelectText: '', shouldSort: false });
         }
     };
+
+    return editor;
 };

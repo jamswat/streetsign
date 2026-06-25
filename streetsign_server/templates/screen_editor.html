@@ -33,6 +33,7 @@
 			<div class="fake_zone"
 				 :class="{ selected: zone.selected }"
 				 :style="zoneStyle(zone)"
+				 :data-zone-index="idx"
 				 x-text="zone.name"
 				 x-on:click.stop="selectZone(idx)"
 				 x-on:dblclick="scrollToZoneEditor(idx)"></div>

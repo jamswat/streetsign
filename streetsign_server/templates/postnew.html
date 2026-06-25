@@ -19,7 +19,6 @@
 {% endblock %}
 
    {% block page_specific_js %}
-   {{ linkmacros.static_js('post_editor.js') }}
    <script type="text/javascript">
     // As the static js is static, we need to inject URLs here.
     window.POST_TYPE_URL = function(id) {
@@ -30,4 +29,5 @@
     // Used by the timesEditor Alpine component, initialised in post_editor_form.html
     window.TIME_RESTRICTIONS = [];
     </script>
-    {% endblock %}
+   {{ linkmacros.static_js('post_editor.js') }}
+   {% endblock %}
