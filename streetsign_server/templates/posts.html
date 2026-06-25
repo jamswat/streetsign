@@ -18,6 +18,7 @@
 			<th scope="col">Author</th>
 			<th scope="col">Feed</th>
 			<th scope="col">
+			<th scope="col">
 				{% if user.id %}
 					<div class="btn-group">
 						<button type="button" class="btn btn-secondary" id="show_past_posts">
@@ -72,13 +73,7 @@
 					{% endif %}
 				</td>
 				<td>
-					{% if post.active_status()=="now" %}Active
-					{% elif post.active_status()=="future" %}Display later
-					{% elif post.active_status()=="past" %}
-						{% if post.status == 0 %}Finished display lifetime
-						{% else %}Archived
-						{% endif %}
-					{% endif %}
+					{{ linkmacros.post_status_badge(post) }}
 
 					{# publish & delete buttons #}
 

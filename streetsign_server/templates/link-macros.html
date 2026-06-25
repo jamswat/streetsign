@@ -25,3 +25,23 @@
 {% macro admin_lock() %}
 {{- ' locked '  if sessions.display_admin_stuff else '' -}}
 {% endmacro %}
+
+{% macro post_status_badge(post) %}
+{% set status = post.active_status() %}
+{% if status == 'now' %}
+	<span class="badge bg-success">Active</span>
+{% elif status == 'future' %}
+	<span class="badge bg-info">Upcoming</span>
+{% elif status == 'past' %}
+	{% if post.status == 0 %}
+		<span class="badge bg-secondary">Expired</span>
+	{% else %}
+		<span class="badge bg-dark">Archived</span>
+	{% endif %}
+{% endif %}
+{% if post.published %}
+	<span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">Published</span>
+{% else %}
+	<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Draft</span>
+{% endif %}
+{% endmacro %}

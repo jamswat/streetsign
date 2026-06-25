@@ -14,7 +14,13 @@
 </div>
 </div>
 
-{% if post.id %}<p>{{ 'Published' if post.published else 'Unpublished' }}</p>{% endif %}
+{% if post.id %}<p>
+	{% if post.published %}
+		<span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">Published</span>
+	{% else %}
+		<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Draft</span>
+	{% endif %}
+</p>{% endif %}
 
 <div class="card">
     <div class="card-header">

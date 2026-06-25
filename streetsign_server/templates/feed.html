@@ -23,8 +23,8 @@
         <td>{{ linkmacros.post(post) }}</td>
         <td>{{ linkmacros.user(post.author) }}</td>
         <td><b>Written:</b> {{ post.write_date.date() }}<br/>
-            <b>Lifetime:</b> {{ post.active_status() }}</td>
-        <td>{{ 'Published' if post.published }}
+            {{ linkmacros.post_status_badge(post) }}</td>
+        <td>
             {% if feed.user_can_publish(user) %}
             <span class="onlyunpublished">
                 <button class="btn btn-secondary item_ajax_toggle"
