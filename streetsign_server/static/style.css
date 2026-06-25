@@ -164,3 +164,35 @@ tr.time_now:nth-child(odd) {
 [data-bs-theme="dark"] .clickable-row:hover {
     background-color: rgba(255, 255, 255, 0.05) !important;
 }
+
+.skeleton {
+    background: linear-gradient(90deg, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.06) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+[data-bs-theme="dark"] .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.06) 75%);
+    background-size: 200% 100%;
+}
+
+.skeleton-text {
+    height: 1em;
+    margin-bottom: 0.5em;
+}
+
+.skeleton-text-sm {
+    height: 0.75em;
+    width: 60%;
+}
+
+.skeleton-btn {
+    height: 2.25em;
+    width: 5em;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

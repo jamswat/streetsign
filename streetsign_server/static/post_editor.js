@@ -1,5 +1,7 @@
 $('.post_type_button').click(function(e) {
-    $('#postcontentblock-type').load(
+    const container = $('#postcontentblock-type');
+    container.html('<div class="skeleton skeleton-text" style="width:80%"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-sm"></div><div class="skeleton skeleton-text" style="width:40%"></div>');
+    container.load(
         window.POST_TYPE_URL($(this).data('posttype'))
     );
 
