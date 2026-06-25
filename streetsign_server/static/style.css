@@ -185,7 +185,14 @@ tr.time_now:nth-child(odd) {
     font-style: italic;
 }
 
-.clickable-row {
+.breadcrumb {
+    flex-wrap: wrap;
+    white-space: normal;
+}
+
+.breadcrumb-item {
+    white-space: nowrap;
+}
     cursor: pointer;
 }
 
