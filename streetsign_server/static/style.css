@@ -90,6 +90,11 @@ footer a {
     color: #8ab4f8;
 }
 
+[data-bs-theme="dark"] #flashed_notices > li {
+    background: rgba(255,255,255,0.2);
+    color: #ddd;
+}
+
 .cf {
     display: flow-root;
 }
