@@ -9,150 +9,181 @@
 <h1>Edit Screen</h1>
 
 <div x-data="makeScreenEditor(screenEditorConfig)" class="row">
-<div class="col-md-6">
+<div class="col-md-7">
+	<div class="card mb-3">
+		<div class="card-header">
+			<h2 class="card-title h5">Preview
+			<div class="float-end">
+			<a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname or '') }}" class="btn btn-secondary btn-sm">Full Preview</a>
+			</div>
+			</h2>
+		</div>
+		<div class="card-body p-2">
+			<div class="d-flex justify-content-end mb-2">
+				<select id="fake_screen_aspect" class="form-control form-control-sm" style="max-width:12em">
+					<option value=3.555555>16:4.5 (ultrawide)</option>
+					<option value=1.333333>4:3</option>
+					<option selected value=1.77777>16:9 (widescreen)</option>
+					<option value="0.75">3:4 (portrait)</option>
+					<option value="0.5625">9:16 (portrait widescreen)</option>
+				</select>
+			</div>
+			<div id="my_fake_screen" class="fake_screen">
+			<template x-for="(zone, idx) in zones" :key="idx">
+			<div class="fake_zone"
+				 :class="{ selected: zone.selected }"
+				 :style="zoneStyle(zone)"
+				 x-text="zone.name"
+				 x-on:click.stop="selectZone(idx)"
+				 x-on:dblclick="scrollToZoneEditor(idx)"></div>
+			</template>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="col-md-5">
 <form id="screen_form" method="post" class="needs-validation" novalidate>
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">Screen ID:{{ screen.id }}
-      <div class="float-end">
-      <a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname or '') }}" class="btn btn-secondary btn-sm">Preview</a>
-      </div>
-      </h2>
-    </div>
-    <div class="card-body">
-      <div class="row">
-      <div class="col-md-6">
-        <label>Name<input type="text" name="urlname" value="{{ screen.urlname }}" class="form-control" required /></label>
-      </div>
-      <div class="col-md-6">
-        <label style="display:block; width: 40%;">Background:</label>
-        <select name="background" id="background" autocomplete="off" class="chosen">
-         <option {{ 'selected' if not screen.background }} value="">None</option>
-          {% for bg in backgrounds %}
-            <option {{ 'selected' if bg == screen.background }} value="{{bg}}">{{bg}}</option>
-          {% endfor %}
-        </select>
-      </div>
-      </div>
-      <div class="col-md-12">
-        <span style="display:none;">
-        <label>Other Settings:</label><br/>
-        <textarea name="settings" x-model="settings" class="form-control"></textarea>
-        </span>
-        <label>CSS:</label><br/>
-        <textarea name="css" x-model="css" class="form-control"></textarea>
-      </div>
-      <input type="hidden" name="zones" :value="serializedZones" />
-    </div>
-  </div>
+	<div class="card mb-3">
+		<div class="card-header">
+			<h2 class="card-title h5">Screen Settings</h2>
+		</div>
+		<div class="card-body">
+			<div class="mb-3">
+				<label class="form-label">Name</label>
+				<input type="text" name="urlname" value="{{ screen.urlname }}" class="form-control" required />
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Background:</label>
+				<select name="background" id="background" autocomplete="off" class="chosen">
+					<option {{ 'selected' if not screen.background }} value="">None</option>
+					{% for bg in backgrounds %}
+						<option {{ 'selected' if bg == screen.background }} value="{{bg}}">{{bg}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label">Custom CSS:</label>
+				<textarea name="css" x-model="css" class="form-control" rows="3" placeholder="Additional CSS for this screen..."></textarea>
+			</div>
+			<span style="display:none;">
+				<label>Other Settings:</label>
+				<textarea name="settings" x-model="settings" class="form-control"></textarea>
+			</span>
+		</div>
+		<div class="card-footer">
+			<input type="submit" id="save_btn" value="Save Screen" class="btn btn-primary" />
+		</div>
+	</div>
+	<input type="hidden" name="zones" :value="serializedZones" />
 </form>
 
-<div class="mt-3">
-	<input type="submit" id="save_btn" value="Save Screen" class="btn btn-primary" form="screen_form" />
-</div>
+<div class="card">
+	<div class="card-header d-flex justify-content-between align-items-center">
+		<h2 class="card-title h5 mb-0">Zones</h2>
+		<button x-on:click="addZone" class="btn btn-sm btn-primary">
+			<span class="bi bi-plus-lg"></span> Add Zone
+		</button>
+	</div>
+	<div class="card-body p-2">
+	<template x-for="(zone, idx) in zones" :key="idx">
+		<div class="card mb-2 zone-editor-card" :class="{ 'border-primary': zone.selected }"
+		     :id="'zone-editor-' + idx"
+		     x-on:click="selectZone(idx)">
+			<div class="card-header py-2 d-flex justify-content-between align-items-center">
+				<input name="urlname" x-model="zone.name"
+				       placeholder="Zone name" class="form-control form-control-sm"
+				       style="max-width: 60%" />
+				<button x-on:click.stop="removeZone(idx)" class="btn btn-sm btn-danger">
+					<span class="bi bi-trash"></span>
+				</button>
+			</div>
+			<div class="card-body p-2" x-show="zone.selected">
+				<div class="mb-2">
+					<label class="form-label small">Feeds:</label>
+					<select multiple autocomplete="off" class="form-control form-control-sm"
+					        :id="'zonefeeds_' + idx"
+					        x-on:change="zone.feeds = Array.from($event.target.selectedOptions).map(o => o.value)"
+					        x-init="$nextTick(() => { const el = document.getElementById('zonefeeds_' + idx); if (el && !el._choices) new Choices(el, {searchEnabled: true, itemSelectText: '', shouldSort: false}); })">
+						<template x-for="feed in availableFeeds" :key="feed.id">
+							<option :value="String(feed.id)" :selected="zone.feeds.includes(String(feed.id))" x-text="feed.name"></option>
+						</template>
+					</select>
+				</div>
 
-<div id="zones_container" class="card">
-  <div class="card-header">
-    <h2 class="card-title">Zones:
-    <span class="float-end">
-    <button x-on:click="addZone" class="btn btn-sm btn-primary">New Zone</button>
-    </span>
-    </h2>
-  </div>
-  <div class="card-body">
-  <template x-for="(zone, idx) in zones" :key="idx">
-    <div class="card" :data-zoneedit="zone.name">
-      <div class="card-header">
-        <div class="input-group">
-          <input name="urlname" x-model="zone.name"
-                 placeholder="zone name" class="form-control" />
-          <button x-on:click="removeZone(idx)" class="btn btn-sm btn-danger"><span class="bi bi-trash"></span></button>
-        </div>
-      </div>
-      <div class="card-body" x-on:click="selectZone(idx)" x-on:mouseover="selectZone(idx)">
-        <div class="col-md-12">
-            <label>Feeds:</label>
-            <select multiple autocomplete="off" class="form-control"
-                    :id="'zonefeeds_' + idx"
-                    x-on:change="zone.feeds = Array.from($event.target.selectedOptions).map(o => o.value)"
-                    x-init="$nextTick(() => { const el = document.getElementById('zonefeeds_' + idx); if (el) new Choices(el, {searchEnabled: true, itemSelectText: '', shouldSort: false}); })">
-                <template x-for="feed in availableFeeds" :key="feed.id">
-                    <option :value="String(feed.id)" :selected="zone.feeds.includes(String(feed.id))" x-text="feed.name"></option>
-                </template>
-            </select>
-        </div>
-        <div class="col-md-6">
-          <label>Zone type:</label>
-          <select class="form-control" x-model="zone.type">
-              <template x-for="zt in zoneTypes" :key="zt.name">
-                  <option :value="zt.name" x-text="zt.display"></option>
-              </template>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label>Fade time:</label>
-          <div class="input-group">
-            <input type="number" x-model="zone.fadetime"
-                   class="form-control" />
-            <span class="input-group-text">msec</span>
-          </div>
-        </div>
+				<div class="row g-2">
+					<div class="col-6">
+						<label class="form-label small">Zone type:</label>
+						<select class="form-control form-control-sm" x-model="zone.type">
+							<template x-for="zt in zoneTypes" :key="zt.name">
+								<option :value="zt.name" x-text="zt.display"></option>
+							</template>
+						</select>
+					</div>
+					<div class="col-6">
+						<label class="form-label small">Fade time:</label>
+						<div class="input-group input-group-sm">
+							<input type="number" x-model="zone.fadetime" class="form-control" />
+							<span class="input-group-text">ms</span>
+						</div>
+					</div>
+				</div>
 
-        <div class="col-md-6">
-          <label>Default Text Color:</label>
-            <input type="color" x-model="zone.color" class="form-control" />
-          <br/>
-          <label>Font</label>
-          <select name="fontfamily" class="form-control" autocomplete="off"
-              x-model="zone.fontfamily">
-              <template x-for="font in availableFonts" :key="font">
-                  <option :value="font" x-text="font"></option>
-              </template>
-          </select>
-          <label>Other CSS:</label>
-            <textarea name="css" x-model="zone.css" class="form-control"></textarea>
-        </div>
-        <div class="col-md-6">
-          <label>Size:</label>
-          <div class="sizes_box" style="margin:auto;background:#777;border-radius:90px">
-            <input x-model="zone.top" placeholder="top" /><br/>
-            <input x-model="zone.left" placeholder="left" />-<input x-model="zone.right" placeholder="right" /><br/>
-            <input x-model="zone.bottom" placeholder="bottom" /><br/>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-  </div>
-  <div class="card-footer">
-    <button x-on:click="addZone" class="btn btn-sm btn-primary">New Zone</button>
-  </div>
+				<div class="row g-2 mt-2">
+					<div class="col-6">
+						<label class="form-label small">Text Color:</label>
+						<input type="color" x-model="zone.color" class="form-control form-control-sm form-control-color" style="height:2em" />
+					</div>
+					<div class="col-6">
+						<label class="form-label small">Font:</label>
+						<select name="fontfamily" class="form-control form-control-sm"
+						    x-model="zone.fontfamily">
+							<template x-for="font in availableFonts" :key="font">
+								<option :value="font" x-text="font"></option>
+							</template>
+						</select>
+					</div>
+				</div>
 
-</div>
+				<div class="row g-2 mt-2">
+					<div class="col-3">
+						<label class="form-label small">Top %</label>
+						<input x-model="zone.top" placeholder="top" class="form-control form-control-sm" />
+					</div>
+					<div class="col-3">
+						<label class="form-label small">Left %</label>
+						<input x-model="zone.left" placeholder="left" class="form-control form-control-sm" />
+					</div>
+					<div class="col-3">
+						<label class="form-label small">Right %</label>
+						<input x-model="zone.right" placeholder="right" class="form-control form-control-sm" />
+					</div>
+					<div class="col-3">
+						<label class="form-label small">Bottom %</label>
+						<input x-model="zone.bottom" placeholder="bottom" class="form-control form-control-sm" />
+					</div>
+				</div>
 
-</div>
+				<div class="mt-2">
+					<label class="form-label small">Additional CSS:</label>
+					<textarea name="css" x-model="zone.css" class="form-control form-control-sm" rows="2" placeholder="Custom zone CSS..."></textarea>
+				</div>
+			</div>
+		</div>
+	</template>
 
-<div class="col-md-6">
-  <h2>Zones layout
-      <a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname or '') }}" class="btn btn-secondary btn-sm float-end">Preview</a>
-        </h2>
-  <div class="card card-body">
-    <div id="my_fake_screen" class="fake_screen">
-    <template x-for="(zone, idx) in zones" :key="idx">
-    <div class="fake_zone"
-         :class="{ selected: zone.selected }"
-         :style="{ top: zone.top, left: zone.left, right: zone.right, bottom: zone.bottom, color: zone.color, fontFamily: zone.fontfamily }"
-         x-text="zone.name"
-         x-on:click="selectZoneScroll(idx)"></div>
-    </template>
-    </div>
-    Preview Aspect Ratio:<select id="fake_screen_aspect" class="form-control">
-    <option value=3.555555>16:4,5</option>
-    <option value=1.333333>4:3</option>
-    <option selected value=1.77777>16:9 (widescreen)</option>
-    <option value="0.75">3:4 (sideways 4:3)</option>
-    <option value="0.5625">9:16 (sideways widescreen)</option>
-    </select>
+	<div class="text-center mt-2" x-show="zones.length === 0">
+		<p class="text-muted">No zones yet.</p>
+		<button x-on:click="addZone" class="btn btn-outline-primary">
+			<span class="bi bi-plus-lg"></span> Add Your First Zone
+		</button>
+	</div>
+	</div>
+	<div class="card-footer" x-show="zones.length > 0">
+		<button x-on:click="addZone" class="btn btn-sm btn-outline-primary">
+			<span class="bi bi-plus-lg"></span> Add Zone
+		</button>
+	</div>
 </div>
 </div>
 </div>
@@ -180,9 +211,7 @@ screenEditorConfig = {
         {name: 'scroll', display: 'Scrolling text'}]
 };
 
-////////////////////////////////////////////////////////////////
 // Fake screen preview
-
 $('#background').change(function(){
     const newbg = `url(/static/user_files/${$('#background').val()})`;
     $('#my_fake_screen').css('background-image', newbg);
@@ -191,17 +220,20 @@ $('#background').change(function(){
 function update_fake_screen_size() {
     const fake_screen = $('#my_fake_screen');
     fake_screen.width('100%');
-    fake_screen.width(fake_screen.width());
-    fake_screen.height(fake_screen.width() / $('#fake_screen_aspect').val());
+    const desiredHeight = fake_screen.width() / $('#fake_screen_aspect').val();
+    const maxHeight = $(window).height() * 0.5;
 
-    while (fake_screen.height() > $(window).height() - 200) {
-        fake_screen.width(fake_screen.width() - 10);
-        fake_screen.height(fake_screen.width() / $('#fake_screen_aspect').val());
+    if (desiredHeight > maxHeight) {
+        fake_screen.width(maxHeight * $('#fake_screen_aspect').val());
+        fake_screen.height(maxHeight);
+    } else {
+        fake_screen.height(desiredHeight);
     }
 }
 
 update_fake_screen_size();
 $('#fake_screen_aspect').change(update_fake_screen_size);
+$(window).resize(update_fake_screen_size);
 
 </script>
 

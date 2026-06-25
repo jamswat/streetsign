@@ -82,11 +82,10 @@ div.sizes_box {
 .fake_screen {
     position: relative;
     background-color: var(--color-fake-screen-bg);
-    max-width: 400px;
     width: 100%;
-    height: 275px;
     background-size: cover;
     margin: auto;
+    min-height: 200px;
 }
 
 .fake_zone {
@@ -96,11 +95,27 @@ div.sizes_box {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.fake_zone:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .fake_zone.selected {
-    border: 2px solid var(--color-fake-zone-border);
-    background: var(--color-fake-zone-selected-bg);
+    border: 2px solid rgba(100, 200, 255, 0.8);
+    background: rgba(100, 200, 255, 0.2);
+    z-index: 2;
+}
+
+.zone-editor-card {
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.zone-editor-card:hover {
+    border-color: var(--bs-primary);
 }
 
 input.third {

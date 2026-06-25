@@ -88,10 +88,25 @@ window.makeScreenEditor = function(config) {
 
         selectZoneScroll(idx) {
             this.selectZone(idx);
-            const el = document.querySelector('[data-zoneedit="' + this.zones[idx].name + '"]');
+            this.scrollToZoneEditor(idx);
+        },
+
+        scrollToZoneEditor(idx) {
+            const el = document.getElementById('zone-editor-' + idx);
             if (el) {
-                $('html, body').animate({ scrollTop: $(el).offset().top - 60 }, 500);
+                el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
+        },
+
+        zoneStyle(zone) {
+            return {
+                top: zone.top || '30%',
+                left: zone.left || '30%',
+                right: zone.right || '30%',
+                bottom: zone.bottom || '30%',
+                color: zone.color || '#fff',
+                fontFamily: zone.fontfamily || ''
+            };
         },
 
         initChoices(el) {
