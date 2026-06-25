@@ -46,7 +46,6 @@ def login():
     #       would it be better to use an absolute URL?  I dunno if this
     #       is better against XSS?
 
-    #return_to = request.form.get('from', 'index')
     try:
         user_session.login(request.form['username'], request.form['password'])
     except peewee.DoesNotExist:
@@ -61,8 +60,6 @@ def login():
 @app.route('/logout', methods=['POST'])
 def logout():
     ''' log out, remove session cookies, etc. '''
-
-    #return_to = request.form.get('from', 'index')
 
     # delete the session from the database:
     try:

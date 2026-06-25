@@ -31,7 +31,7 @@ from flask import render_template, url_for, request, redirect, \
                   flash, json, jsonify
 from werkzeug.datastructures import ImmutableDict
 
-import sqlite3
+import peewee
 from glob import glob
 from os.path import basename
 import urllib.request, urllib.parse, urllib.error
@@ -99,12 +99,20 @@ def screenedit(screenid):
 
         # first check that name is OK:
         oldname = screen.urlname
-        try:
-            screen.urlname = urllib.parse.quote(request.form.get('urlname'), '')
-            screen.save()
-        except sqlite3.IntegrityError:
-            screen.urlname = oldname
-            flash("Sorry! That name is already being used!")
+        newname = urllib.parse.quote(request.form.get('urlname', ''), '')
+        if not newname:
+            flash("Sorry! The screen needs a name!")
+        else:
+            try:
+                screen.urlname = newname
+                screen.save()
+            except peewee.IntegrityError:
+                screen.urlname = oldname
+                flash("Sorry! That name is already being used!")
+
+        if not screen.urlname:
+            return redirect(request.referrer if request.referrer
+                            else url_for('screens'))
 
         screen.background = request.form.get('background')
         screen.settings = request.form.get('settings', '')

@@ -32,7 +32,6 @@ from datetime import timedelta
 from flask import render_template, url_for, request, redirect, \
                   flash, json, jsonify, make_response
 import peewee
-#from feedformatter import Feed as RSSFeed
 import bleach
 
 import streetsign_server.user_session as user_session
@@ -268,10 +267,6 @@ def posts():
 def post_new(feed_id):
     ''' create a new post! '''
 
-    #if not user_session.logged_in():
-    #    flash("You're not logged in!")
-    #    return redirect(url_for('index'))
-
     user = user_session.get_user()
 
     try:
@@ -426,7 +421,6 @@ def postpage(postid):
     # Should we bother displaying 'Post' button, and editable controls
     # if the user can't write to this post anyway?
 
-    #can_write, can_publish = can_user_write_and_publish(user, post)
 
     return render_template('post_editor.html',
                            post=post,

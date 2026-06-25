@@ -21,7 +21,10 @@
         <td><form method="POST">
             <input type="hidden" name="filename" value="{{f.name}}" />
             <input type="hidden" name="action" value="delete" />
-            <input type="submit" value="X" class="delbutton confirm_delete"></form></td>
+            {% if not f.is_dir %}
+            <input type="submit" value="X" class="delbutton confirm_delete">
+            {% endif %}
+            </form></td>
     </tr>
 {% endfor %}
 </tbody>

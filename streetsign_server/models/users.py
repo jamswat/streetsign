@@ -1,0 +1,166 @@
+# -*- coding: utf-8 -*-
+#  StreetSign Digital Signage Project
+#     (C) Copyright 2013-2015 Daniel Fairhead
+#
+#    StreetSign is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    StreetSign is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with StreetSign.  If not, see <http://www.gnu.org/licenses/>.
+#
+#    -------------------------------
+'''
+===============================================
+streetsign_server.models.users
+===============================================
+
+User, Group, and UserGroup ORM models.
+
+The writeable_feeds / publishable_feeds methods reference Feed from .feeds
+via lazy imports inside the method bodies. This is a deliberate, safe pattern
+that resolves the unavoidable cyclic dependency between permissions (feeds)
+and users at runtime without introducing module-level cycles.
+
+'''
+
+# pylint: disable=cyclic-import
+# pylint: disable=import-outside-toplevel
+
+
+import bcrypt
+from peewee import * # pylint: disable=wildcard-import,unused-wildcard-import
+
+from .base import DBModel, now, SECRET_KEY
+
+
+class User(DBModel):
+    ''' Back-end user. '''
+
+    validation_regexp = {
+        'loginname': r'.{1,100}',
+        'emailaddress': r'.*@.*\..*'
+    }
+
+    #: the unique name user to log in
+    loginname = CharField(unique=True, default='new_user')
+    #: how the user would like to be displayed
+    displayname = CharField(null=True, default="New User")
+    #: how to contact the user:
+    emailaddress = CharField(default='')
+
+    #: bcrypt'd, salted, etc password hash
+    passwordhash = CharField()
+
+    #: is the user an admin?
+    is_admin = BooleanField(default=False)
+
+    #: you can lock out users, so they cannot log in for a while.
+    is_locked_out = BooleanField(default=False)
+
+    #: when was the last attempt to log in?
+    last_login_attempt = DateTimeField(default=now)
+    #: how many times has the user failed to log in?
+    failed_logins = IntegerField(default=0)
+
+    def set_password(self, password):
+        ''' Encrypts password, and sets the password hash.
+            Not stored until you save! '''
+
+        self.passwordhash = bcrypt.hashpw(
+            (password + SECRET_KEY).encode('utf-8'),
+            bcrypt.gensalt(),
+        ).decode('utf-8')
+
+    def confirm_password(self, password):
+        ''' Check that password does verify against the stored hash '''
+
+        return bcrypt.checkpw(
+            (password + SECRET_KEY).encode('utf-8'),
+            self.passwordhash.encode('utf-8'),
+        )
+
+    def __repr__(self):
+        return '<User:' + self.displayname + '>'
+
+    def writeable_feeds(self):
+        ''' Returns a list of all Feeds this user can write to. '''
+        from .feeds import Feed
+
+        if self.is_admin:
+            return Feed.select()
+        return [f for f in Feed.select() if f.user_can_write(self)]
+
+    def publishable_feeds(self):
+        ''' Returns all the Feeds that this user can publish to. '''
+        from .feeds import Feed
+
+        if self.is_admin:
+            return Feed.select()
+        return [f for f in Feed.select() if f.user_can_publish(self)]
+
+    def groups(self):
+        ''' Returns all the Groups that this user is part of. '''
+
+        return list(Group.select()
+                         .join(UserGroup)
+                         .where(UserGroup.user == self))
+
+    def set_groups(self, groupidlist):
+        ''' Set the grouplist for this user (and remove old groups) '''
+
+        # clear old groups:
+        UserGroup.delete().where(UserGroup.user == self).execute()
+
+        #set new ones:
+        for gid in groupidlist:
+            try:
+                UserGroup(user=self,
+                          group=Group.get(id=gid)).save()
+            except Exception:
+                return False, 'Invalid user, or groupid'
+
+        return True, self.groups()
+
+
+class Group(DBModel):
+    ''' User groups (for permissions.) Groups can be given permission to
+        publish/write/etc for certain Feeds, so this simplifies admin. '''
+
+    name = CharField()
+    display = BooleanField(default=True)
+
+    def __repr__(self):
+        return '<Group:' + self.name + \
+            ('(hidden)>' if not self.display else '>')
+
+    def users(self):
+        return list(User.select().join(UserGroup)
+                            .where(UserGroup.group == self))
+
+    def set_users(self, useridlist):
+        # clear old groups:
+        UserGroup.delete().where(UserGroup.group == self).execute()
+
+        #set new ones:
+        for uid in useridlist:
+            try:
+                UserGroup(group=self,
+                          user=User.get(id=uid)).save()
+            except Exception:
+                return False, 'Invalid user'
+
+        return True, self.users()
+
+
+class UserGroup(DBModel):
+    ''' Cross-Reference table '''
+    # XREF
+    user = ForeignKeyField(User)
+    group = ForeignKeyField(Group)

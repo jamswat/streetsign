@@ -7,10 +7,11 @@
 import sys
 import os
 import io
+import shutil
 import struct
 import zlib
 import json
-from os.path import join as pathjoin
+from os.path import join as pathjoin, isfile
 
 sys.path.append(os.path.dirname(__file__) + '/..')
 
@@ -53,8 +54,10 @@ class ImageUploadTestCase(BasicUsersTestCase):
 
         os.makedirs(self.tmp_path, exist_ok=True)
 
-    def tearDown(self, *vargs, **kwargs): # pylint: disable=unused-argument
+    def tearDown(self):
         streetsign_server.config.SITE_VARS['user_dir'] = self._old_path
+        shutil.rmtree(self.tmp_path, ignore_errors=True)
+        super().tearDown()
 
     def create_writable_feed(self, user, post_types='image'):
         f = Feed(name='test_feed', post_types=post_types)
@@ -155,3 +158,70 @@ class ImageUrlUpload(ImageUploadTestCase):
                 follow_redirects=True
             )
         self.assertIn(b'post type is not allowed', c.data)
+
+    def test_upload_corrupt_image_saved_to_disk(self):
+        f = self.create_writable_feed(self.user)
+        self.login(USERNAME, USERPASS)
+
+        png_data = make_minimal_png()
+
+        with self.ctx():
+            self.client.post(
+                url_for('post_new', feed_id=f.id),
+                data={
+                    'post_title': 'corrupt test',
+                    'post_type': 'image',
+                    'upload': 'on',
+                    'image_file': (png_data, 'corrupt.png'),
+                },
+                content_type='multipart/form-data',
+                follow_redirects=True
+            )
+
+        self.assertEqual(Post.select().count(), 1)
+        content = json.loads(Post.select().first().content)
+        full_path = pathjoin(streetsign_server.config.SITE_VARS['user_dir'],
+                             'post_images', content['content'])
+        self.assertTrue(isfile(full_path),
+                        f'Expected file at {full_path}')
+
+    def test_upload_no_file_creates_no_post(self):
+        f = self.create_writable_feed(self.user)
+        self.login(USERNAME, USERPASS)
+
+        with self.ctx():
+            self.client.post(
+                url_for('post_new', feed_id=f.id),
+                data={
+                    'post_title': 'no file test',
+                    'post_type': 'image',
+                    'upload': 'on',
+                },
+                content_type='multipart/form-data'
+            )
+
+        self.assertEqual(Post.select().count(), 0)
+
+    def test_upload_fake_png_succeeds_but_resize_fails(self):
+        f = self.create_writable_feed(self.user)
+        self.login(USERNAME, USERPASS)
+
+        fake_png = io.BytesIO(b'\x89PNG\r\n\x1a\n' + b'garbage data')
+
+        with self.ctx():
+            self.client.post(
+                url_for('post_new', feed_id=f.id),
+                data={
+                    'post_title': 'bad png',
+                    'post_type': 'image',
+                    'upload': 'on',
+                    'image_file': (fake_png, 'bad.png'),
+                },
+                content_type='multipart/form-data',
+                follow_redirects=True
+            )
+
+        self.assertEqual(Post.select().count(), 1)
+        post = Post.select().first()
+        content = json.loads(post.content)
+        self.assertIn('.png', content['content'])

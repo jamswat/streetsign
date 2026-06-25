@@ -72,7 +72,8 @@ def make_dirlist(path):
             return_list.append(
                 {'name': name + '/',
                  'url':  name + '/',
-                 'size': f"{len(glob(pathjoin(f, '*')))} items"})
+                 'size': f"{len(glob(pathjoin(f, '*')))} items",
+                 'is_dir': True})
         else:
             if allow_filetype(name):
                 thumb = f'<img src="{url_for("thumbnail", filename=path + name)}" alt="{name}" />'
@@ -83,7 +84,8 @@ def make_dirlist(path):
                 {'name':  name,
                  'thumb': thumb,
                  'url':   pathjoin(g.site_vars['user_url'], path, name),
-                 'size':  human_size_str(f)})
+                 'size':  human_size_str(f),
+                 'is_dir': False})
     return return_list
 
 @app.route('/user_files/', methods=['GET', 'POST'])
@@ -112,8 +114,11 @@ def user_files_list(dir_name=""):
         elif request.form.get('action') == 'delete':
             filename = secure_filename(request.form.get('filename'))
             full_filename = pathjoin(full_path, filename)
-            remove(full_filename)
-            flash('Deleted ' + filename)
+            if isfile(full_filename):
+                remove(full_filename)
+                flash('Deleted ' + filename)
+            else:
+                flash('Cannot delete directory: ' + filename)
 
 
     files = make_dirlist(dir_name)

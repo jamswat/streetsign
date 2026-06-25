@@ -63,8 +63,7 @@ def set_security_headers(response):
 
 from . import models
 import streetsign_server.views as views
-from .models import DB, ALL_MODELS, \
+from .models import \
      User, Group, Post, Feed, FeedPermission
 
-DB.init(app.config.get('DATABASE_FILE'))
-DB.bind(ALL_MODELS)
+models.init()
