@@ -2,11 +2,24 @@
 {% block title %} Post List {% endblock %}
 
 {% block body %}
-<h1>All Posts</h1>
-<div class="float-end">
-		<button type="button" class="btn btn-secondary" id="run_housekeeping"
-		        aria-label="Archive old posts and delete expired ones">
-			<span class="bi bi-archive" aria-hidden="true"></span>Do Housekeeping</button>
+<h1>All Posts
+{% if user.id and user.writeable_feeds() %}
+	<div class="btn-group float-end">
+		<button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+			<span class="bi bi-plus-lg"></span> New Post
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			{% for feed in user.writeable_feeds() %}
+				<li><a class="dropdown-item" href="{{ url_for('post_new', feed_id=feed.id) }}">{{ feed.name }}</a></li>
+			{% endfor %}
+		</ul>
+	</div>
+{% endif %}
+</h1>
+<div class="float-end me-2">
+	<button type="button" class="btn btn-outline-secondary btn-sm" id="run_housekeeping"
+	        aria-label="Archive old posts and delete expired ones">
+		<span class="bi bi-archive" aria-hidden="true"></span> Housekeeping</button>
 </div>
 
 <div class="table-responsive">
@@ -18,23 +31,9 @@
 			<th scope="col">Author</th>
 			<th scope="col">Feed</th>
 			<th scope="col">
-			<th scope="col">
 				{% if user.id %}
-					<div class="btn-group">
-						<button type="button" class="btn btn-secondary" id="show_past_posts">
-							Show Past Posts</button>
-
-						{% if user.writeable_feeds() %}
-							<button type="button" class="btn btn-secondary dropdown-toggle"
-											 data-bs-toggle="dropdown">New Post
-							</button>
-							<ul class="dropdown-menu" role="menu">
-								{% for feed in user.writeable_feeds() %}
-									<li><a href="{{ url_for('post_new', feed_id=feed.id) }}">{{ feed.name }}</a></li>
-								{% endfor %}
-							</ul>
-						{% endif %}
-					</div>
+					<button type="button" class="btn btn-outline-secondary btn-sm" id="show_past_posts">
+						Show Past Posts</button>
 				{% endif %}
 			</th>
 		</tr>
