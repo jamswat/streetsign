@@ -98,8 +98,8 @@ def screenedit(screenid):
             return redirect(request.referrer)
 
         # first check that name is OK:
+        oldname = screen.urlname
         try:
-            oldname = screen.urlname
             screen.urlname = urllib.parse.quote(request.form.get('urlname'), '')
             screen.save()
         except sqlite3.IntegrityError:
@@ -180,7 +180,7 @@ def screen_json(screenid, old_md5):
 
     try:
         screen = Screen.get(id=int(screenid))
-    except:
+    except Exception:
         screen = Screen() # pylint: disable=no-value-for-parameter
 
     screen_md5 = screen.md5()
@@ -188,10 +188,9 @@ def screen_json(screenid, old_md5):
     if screen_md5 == old_md5:
         return jsonify(screenid=screenid,
                        md5=screen_md5)
-    else:
-        return jsonify(screenid=screenid,
-                       md5=screen_md5,
-                       screen=screen.to_dict())
+    return jsonify(screenid=screenid,
+                   md5=screen_md5,
+                   screen=screen.to_dict())
 
 
 @app.route('/screens/post_types.js')
@@ -245,9 +244,9 @@ def client_alias(alias_name):
         details = []
         if alias.get('forceaspect', None):
             details.append(('forceaspect', alias['forceaspect']))
-        if alias.get('forcetop', None) != None:
+        if alias.get('forcetop', None) is not None:
             details.append(('forcetop', alias['forcetop']))
-        if alias.get('fadetime', None) != None:
+        if alias.get('fadetime', None) is not None:
             details.append(('fadetime', alias['fadetime']))
         if alias.get('scrollspeed', None):
             details.append(('scrollspeed', alias['scrollspeed']))
@@ -256,8 +255,7 @@ def client_alias(alias_name):
 
         return screendisplay(alias['screen_type'], alias['screen_name'])
 
-    else:
-        return ('<!doctype html><html><body><h1>Screen Alias not found.</h1>'
+    return ('<!doctype html><html><body><h1>Screen Alias not found.</h1>'
                 '<p>Sorry...</p><script>'
                 'setTimeout(function(){'
                 '    document.location.reload(true);}, 10000);'

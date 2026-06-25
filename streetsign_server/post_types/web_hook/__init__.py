@@ -13,7 +13,7 @@ from streetsign_server.post_types import my
 
 def form(data):
     ''' the form for editing this type of post '''
-    return render_template_string(my('form.html'), **data) #pylint: disable=star-args
+    return render_template_string(my('form.html'), **data)
 
 def receive(data):
     ''' When the data comes in from the form, what parts do we actually want

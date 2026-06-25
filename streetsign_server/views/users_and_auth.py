@@ -68,7 +68,7 @@ def logout():
     try:
         user_session.logout()
     except Exception as e:
-        print('Error Logging Out: %s' % e)
+        print(f'Error Logging Out: {e}')
         flash('error logging out. That is odd')
 
     # return to dashboard
@@ -182,8 +182,7 @@ def user_edit(userid=-1):
             if userid == -1:
                 flash('New user created.')
                 return redirect(url_for('user_edit', userid=user.id))
-            else:
-                flash('Saved')
+            flash('Saved')
 
         except peewee.IntegrityError as err:
             flash('Cannot Save:' + str(err))
@@ -197,7 +196,7 @@ def user_edit(userid=-1):
 
         user.delete_instance(recursive=True)
 
-        return 'User: %s deleted. (And all their posts)' % user.displayname
+        return f'User: {user.displayname} deleted. (And all their posts)'
 
     users_posts = Post.select().where(Post.author == user) \
                                .order_by(Post.write_date.desc()) \
@@ -236,4 +235,3 @@ def group(groupid):
             flash('saved')
 
     return render_template('group.html', group=thisgroup, allusers=User.select())
-

@@ -31,7 +31,7 @@ USER_DIR = streetsign_server.config.SITE_VARS['user_dir']
 
 class ImageUploadTestCase(BasicUsersTestCase):
     def setUp(self):
-        super(ImageUploadTestCase, self).setUp()
+        super().setUp()
 
         self.uuid = str(uuid4())
         self.tmp_path = pathjoin('/tmp', self.uuid)

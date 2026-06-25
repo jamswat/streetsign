@@ -45,7 +45,7 @@ def my(filename, level=1):  # pylint: disable=invalid-name
         /x/y/z/potato.html. '''
     # pylint: disable=protected-access
     pathname = dirname(abspath(inspect.getfile(sys._getframe(level))))
-    with open(pathjoin(pathname, filename), 'r') as f:
+    with open(pathjoin(pathname, filename), 'r', encoding='utf-8') as f:
         return f.read()
 
 def modules():
@@ -68,9 +68,8 @@ def types():
 
     if _TYPES:
         return _TYPES
-    else:
-        _TYPES = [module_dict(m) for m in modules()]
-        return _TYPES
+    _TYPES = [module_dict(m) for m in modules()]
+    return _TYPES
 
 def load(type_name):
     ''' load a module, and return it. (caches in this module) '''

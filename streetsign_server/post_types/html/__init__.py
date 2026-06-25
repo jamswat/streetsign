@@ -36,7 +36,6 @@ from streetsign_server.post_types import my
 
 def form(data):
     ''' the form for editing this type of post '''
-    # pylint: disable=star-args
     return render_template_string(my('form.html'), **data)
 
 def safehtml(text):

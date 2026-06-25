@@ -72,12 +72,10 @@ def make_dirlist(path):
             return_list.append(
                 {'name': name + '/',
                  'url':  name + '/',
-                 'size': "{0} items".format(len(glob(pathjoin(f, '*'))))})
+                 'size': f"{len(glob(pathjoin(f, '*')))} items"})
         else:
             if allow_filetype(name):
-                thumb = '<img src="{0}" alt="{1}" />'.format(
-                    url_for('thumbnail', filename=path + name),
-                    name)
+                thumb = f'<img src="{url_for("thumbnail", filename=path + name)}" alt="{name}" />'
             else:
                 thumb = ''
 
@@ -150,12 +148,11 @@ def thumbnail(filename):
                                      'scripts',
                                      'makethumbnail.sh'),
                            full_path, thumb_path])
-            except:
+            except Exception:
                 return 'Sorry!'
         # either there is a thumbnail, or we just made one.
         return redirect(g.site_vars['user_url'] + '/.thumbnails/' + filename)
-    else:
-        return 'Sorry! not a valid original file!'
+    return 'Sorry! not a valid original file!'
 
 def user_fonts():
     ''' return a list of (name, url) tuples for all user-available fonts. 

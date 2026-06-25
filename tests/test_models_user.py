@@ -57,4 +57,3 @@ class TestUserModel_writable_feeds(StreetSignTestCase):
         f.grant('Write', group=g)
 
         self.assertEqual(u.writeable_feeds(), [f])
-

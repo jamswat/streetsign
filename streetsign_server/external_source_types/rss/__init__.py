@@ -47,7 +47,6 @@ def receive(request):
 
 def form(data):
     ''' the form for editing this type of post '''
-    # pylint: disable=star-args
     return render_template_string(my('form.html'),
                                   default_tags=DEFAULT_TAGS, **data)
 
@@ -58,7 +57,7 @@ def make_templater(data):
             data.get("allowed_tags", DEFAULT_TAGS).split(',')]
     try:
         template = Template(data.get('display_template', '{{title}}'))
-    except:
+    except Exception:
         template = Template(" Bad Template ")
 
     def templater(item):
@@ -68,7 +67,7 @@ def make_templater(data):
                                 tags=tags,
                                 attributes=["class", "href", "alt", "src"],
                                 strip=True)
-        except:
+        except Exception:
             return "bad template."
 
     return templater
@@ -83,7 +82,7 @@ def test(data):
     try:
         feed = feedparser.parse(data['url'])
     except Exception as e:
-        return 'invalid url({})'.format(str(e))
+        return f'invalid url({e!s})'
 
     try:
         first_post = feed.entries[0]

@@ -17,7 +17,7 @@ from streetsign_server.views.utils import getstr, getint, getbool, \
 # pylint: disable=too-many-public-methods, too-few-public-methods
 # pylint: disable=missing-docstring, invalid-name
 
-class FakeResp(object):
+class FakeResp:
     ' Mock the Response global object, for testing form stuff. '
     def __init__(self):
         self.form = {}
@@ -226,5 +226,3 @@ class TestGetBool(FakeRespCase):
     def test_getbool_CHECKEDStr(self):
         self.resp.form['GETME'] = 'CHECKED'
         self.assertTrue(getbool('GETME', True))
-
-

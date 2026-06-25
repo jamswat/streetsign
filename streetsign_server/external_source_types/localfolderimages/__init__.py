@@ -46,7 +46,6 @@ def receive(request):
 
 def form(data):
     ''' the form for editing this type of post '''
-    # pylint: disable=star-args
     return render_template_string(my('form.html'),
                                   default_tags=DEFAULT_TAGS, **data)
 
@@ -58,10 +57,9 @@ def test(data):
         files = glob(pathjoin(data['path'], '*'))
 
         return ('<br/>'.join([f for f in files if allow_filetype(f)])
-               + '<hr/><i>Not uploading:<br/>' 
+               + '<hr/><i>Not uploading:<br/>'
                + '<br/>'.join([f for f in files if not allow_filetype(f)]))
-    else:
-        return '...'
+    return '...'
 
 
 def get_new(data):

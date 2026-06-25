@@ -16,7 +16,7 @@ setup(
                                      'streetsign_server.external_source_types'],
     version = "0.6",
     description = 'A simple python/flask/web based digital signage system',
-    long_description=open('README.md','r').read(),
+    long_description=open('README.md','r', encoding='utf-8').read(),
     author = 'Daniel Fairhead',
     author_email = 'danthedeckie@gmail.com',
     url = 'https://github.com/jamswat/streetsign',

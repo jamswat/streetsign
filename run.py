@@ -50,4 +50,3 @@ if __name__ == '__main__':
         print("Starting Development Server...")
         print("Press <Ctrl-C> to stop")
         app.run(host=__HOST__, port=__PORT__, debug = True)
-

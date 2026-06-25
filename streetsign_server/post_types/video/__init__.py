@@ -90,8 +90,8 @@ def receive(data):
 def display(data):
     ''' Return HTML for backend preview of the video. '''
     return (
-        '<video controls style="width:100%;max-height:200px"'
-        ' src="{0}"></video>'.format(data['file_url'])
+        f'<video controls style="width:100%;max-height:200px"'
+        f' src="{data["file_url"]}"></video>'
     )
 
 

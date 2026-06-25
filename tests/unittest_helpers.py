@@ -21,11 +21,11 @@ import streetsign_server.models as models
 class WrongHTTPCode(AssertionError):
     ''' validate() got the wrong HTTP status code! '''
     def __init__(self, url, should_be, actually_was):
-        super(WrongHTTPCode, self).__init__(
-            'For Url {0}: Expected HTTP Code: {1}, actually got: {2}'
-            .format(url, should_be, actually_was))
+        super().__init__(
+            f'For Url {url}: Expected HTTP Code: {should_be}, actually got: {actually_was}'
+        )
 
-class MockBcrypt(object):
+class MockBcrypt:
     ''' Mock BCrypt out.  It's very slow.  Which is actually good... '''
 
     @staticmethod
@@ -106,7 +106,7 @@ class StreetSignTestCase(unittest.TestCase):
                 body = request.data.decode('utf-8', errors='replace')
                 lineno = err[0][0] - 1
 
-                print('HTML Parse Error, %s, %s:' % err[0])
+                print(f'HTML Parse Error, {err[0][0]}, {err[0][1]}:')
                 print('----------------:', err[1] if len(err) > 1 else None)
                 print('----------------:', err[2] if len(err) > 2 else None)
 
@@ -116,7 +116,7 @@ class StreetSignTestCase(unittest.TestCase):
                     body.split('\n')[lineno+1: lineno+3])))
 
                 raise AssertionError(
-                    'HTML parse error at line %s: %s' % (err[0], err[1]))
+                    f'HTML parse error at line {err[0]}: {err[1]}')
 
         elif lang == 'json':
             json.loads(request.data)

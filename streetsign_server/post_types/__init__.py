@@ -47,7 +47,7 @@ def my(filename, level=1): #pylint: disable=invalid-name
         *directory* as the file which has the 'my' call in it. '''
     # pylint: disable=protected-access
     with open(pathjoin(dirname(abspath(inspect.getfile(sys._getframe(level)))) \
-              , filename), 'r') as f:
+              , filename), 'r', encoding='utf-8') as f:
         return f.read()
 
 def modules():

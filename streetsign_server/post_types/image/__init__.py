@@ -53,7 +53,7 @@ def resize_image(filename):
     try:
         run_local_script('makesmall.sh', filename)
         flash('image imported and resized')
-    except:
+    except Exception:
         flash('tried to resize, but failed... oh well.')
 
 def image_path():
@@ -80,7 +80,6 @@ def allow_filetype(filename):
 
 def form(data):
     ''' return the html form for editing an image post '''
-    # pylint: disable=star-args
     return render_template_string(my('form.html'), **data)
 
 def receive(data):
@@ -115,11 +114,11 @@ def receive(data):
                 flash('image Downloaded')
             except:
                 flash('tried to download image. Failed')
-                raise IOError('Unable to download image! (%s)' % full_path)
+                raise IOError(f'Unable to download image! ({full_path})')
 
             resize_image(full_path)
         else:
-            raise IOError('Invalid file (%s). Sorry.' % data['url'])
+            raise IOError(f'Invalid file ({data["url"]}). Sorry.')
 
     else:
         filename = data.get('filename')
@@ -135,8 +134,8 @@ def receive(data):
 
 def display(data):
     ''' display the html to display the posted image. '''
-    return ('<img class="post_image" src="{0}"'
-           ' style="width:100%;height:auto" />'.format(data['file_url']))
+    return (f'<img class="post_image" src="{data["file_url"]}"'
+            ' style="width:100%;height:auto" />')
 
 def screen_js():
     ''' return the javascript for displaying these images correctly '''

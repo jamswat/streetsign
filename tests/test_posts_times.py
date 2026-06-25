@@ -25,7 +25,7 @@ class TestLifetimes(StreetSignTestCase):
     ''' check posts actually show up during the right lifetime(s) '''
 
     def setUp(self):
-        super(TestLifetimes, self).setUp()
+        super().setUp()
 
         # Make some useful bits:
 
@@ -246,5 +246,3 @@ class TestLifetimesPostedWithOffsets(TestLifetimes):
         models.app.config['TIME_OFFSET'] = 60
 
         self.assertEqual(self.get_posts_ids([self.feed.id]), [])
-
-

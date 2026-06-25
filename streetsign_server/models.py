@@ -34,7 +34,7 @@ peewee ORM database models.
 #
 # Thus, the following awful looking pylint tweaking string:
 #
-# pylint: disable=invalid-name, too-many-public-methods, missing-docstring, pointless-string-statement, no-value-for-parameter, no-member, bad-continuation, unexpected-keyword-arg
+# pylint: disable=invalid-name, too-many-public-methods, missing-docstring, pointless-string-statement, no-value-for-parameter, no-member, unexpected-keyword-arg, singleton-comparison
 
 from flask import json, url_for
 from markupsafe import Markup
@@ -78,9 +78,8 @@ Useful functions
 def now(timestamp=False):
     if timestamp:
         return mktime(now(False).timetuple())
-    else:
-        return datetime.now() + \
-               timedelta(minutes=app.config.get('TIME_OFFSET', 0))
+    return datetime.now() + \
+           timedelta(minutes=app.config.get('TIME_OFFSET', 0))
 
 def safe_json_load(text, default):
     ''' either parse a string from JSON into python or else return default. '''
@@ -159,8 +158,8 @@ def migrations(dbfile=False):
     # Migration 3: merge 'complex' post type into 'html'
     complex_count = Post.select().where(Post.type == 'complex').count()
     if complex_count > 0:
-        print('running migration 3 - merge complex post type into html'
-              ' ({} posts)'.format(complex_count))
+        print(f'running migration 3 - merge complex post type into html'
+              f' ({complex_count} posts)')
         Post.update(type='html').where(Post.type == 'complex').execute()
 
 
@@ -182,7 +181,7 @@ class InvalidPassword(Exception):
     ''' Oh no! Invalid password! '''
 
     def __init__(self, value):
-        super(InvalidPassword, self).__init__(value)
+        super().__init__(value)
         self.value = value
     def __str__(self):
         return repr(self.value)
@@ -221,7 +220,7 @@ class DBModel(Model):
             pass
         except AttributeError:
             # fails regexp!
-            err = '"%s" is not a valid %s' % (value, field)
+            err = f'"{value}" is not a valid {field}'
             if cb:
                 cb(err)
             else:
@@ -395,8 +394,7 @@ def user_login(name, password):
         session.save(force_insert=True)
 
         return user, session.id
-    else:
-        raise InvalidPassword('Invalid Password!')
+    raise InvalidPassword('Invalid Password!')
 
 def get_logged_in_user(name, uuid):
     ''' either returns a logged in user, or raises an error '''
@@ -542,7 +540,7 @@ class Feed(DBModel):
 
         # one of them *must* be selected...
         assert (user, group) != (None, None)
-        assert (user and group) == None
+        assert (user and group) is None
         assert permission in ('Read', 'Write', 'Publish')
         # first get previous permission, if there is one.
 
@@ -694,7 +692,7 @@ class Post(DBModel):
     display_time = IntegerField(default=8)
 
     def __repr__(self):
-        return '<Post:{0}:{1}>'.format(self.type, self.content[0:22])
+        return f'<Post:{self.type}:{self.content[0:22]}>'
 
     def repr(self):
         ''' This is actually used by the back-end to display different
@@ -708,12 +706,9 @@ class Post(DBModel):
             content = "N/A"
 
         if self.type == 'image':
-            return Markup('<img src="{0}" alt="{1}" />'.format(
-                          url_for('thumbnail', filename='post_images/'+content),
-                          content))
-        else:
-            return bleach.clean(content, tags=[], strip=True)[0:15] + '...(' + \
-                    self.type + ')'
+            return Markup(f'<img src="{url_for("thumbnail", filename="post_images/"+content)}" alt="{content}" />')
+        return bleach.clean(content, tags=[], strip=True)[0:15] + '...(' + \
+                self.type + ')'
 
     def dict_repr(self):
         ''' must give all info, for use on screens, etc. '''
@@ -739,10 +734,9 @@ class Post(DBModel):
                 return 'future'
             if self.active_start > time_now:
                 return 'future'
-            elif self.active_end < time_now:
+            if self.active_end < time_now:
                 return 'past'
-            else:
-                return 'now'
+            return 'now'
         except TypeError:
             # SQLite doesn't really do types, so this can happen.
             return 'now'
@@ -756,16 +750,15 @@ class Post(DBModel):
             self.publish_date = now() if state else None
             self.save()
             return True
-        else:
-            raise PermissionDenied("You don't have permission to publish"
-                                   " posts on this feed.")
+        raise PermissionDenied("You don't have permission to publish"
+                               " posts on this feed.")
 
     def save(self, *vargs, **kwargs):
         ''' Save the state of the object to the database, updating
             the 'write_date' time along the way. '''
 
         self.write_date = now()
-        return super(Post, self).save(*vargs, **kwargs)
+        return super().save(*vargs, **kwargs)
 
 
 

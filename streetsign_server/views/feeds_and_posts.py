@@ -55,6 +55,35 @@ from streetsign_server.models import User, Group, Feed, Post, ExternalSource, \
 
 import streetsign_server.external_source_types as external_source_types
 
+class RSSFeed:
+    ''' Minimal RSS 2.0 feed generator. '''
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self):
+        self.feed = {}
+        self.items = []
+
+    @staticmethod
+    def _escape(text):
+        return str(text).replace('&', '&amp;').replace('<', '&lt;') \
+                        .replace('>', '&gt;').replace('"', '&quot;')
+
+    def format_rss2_string(self):
+        ''' Generate the RSS 2.0 XML string. '''
+        title = self._escape(self.feed.get('title', ''))
+        link = self._escape(self.feed.get('link', ''))
+        desc = self._escape(self.feed.get('description', ''))
+        items_xml = []
+        for item in self.items:
+            items_xml.append(
+                f'<item><title>{self._escape(item.get("title", ""))}</title>'
+                f'<description>{self._escape(item.get("description", ""))}</description>'
+                f'<guid>{self._escape(item.get("guid", ""))}</guid></item>')
+        return (f'<?xml version="1.0" encoding="UTF-8"?>'
+                f'<rss version="2.0"><channel>'
+                f'<title>{title}</title><link>{link}</link><description>{desc}</description>'
+                f'{"".join(items_xml)}</channel></rss>')
+
 ####################################################################
 # Feeds & Posts:
 
@@ -93,7 +122,7 @@ def feedpage(feedid):
         user = user_session.get_user()
     except user_session.NotLoggedIn:
         user = User()
-    except:
+    except Exception:
         flash('invalid feed id! (' + str(feedid) + ')')
         return redirect(url_for('feeds'))
 
@@ -216,10 +245,9 @@ def posts():
     try:
         if user.is_admin:
             return render_template('posts.html', posts=Post.select(), user=user)
-        else:
-            return render_template('posts.html',
-                                   posts=Post.select() \
-                                             .where(Post.status == 0), user=user)
+        return render_template('posts.html',
+                               posts=Post.select() \
+                                         .where(Post.status == 0), user=user)
     except Feed.DoesNotExist:
         # Ah. Database inconsistancy! Not good, lah.
         ps = Post.raw('select post.id from post'
@@ -231,10 +259,9 @@ def posts():
 
     if user.is_admin:
         return render_template('posts.html', posts=Post.select(), user=user)
-    else:
-        return render_template('posts.html',
-                               posts=Post.select()\
-                                         .where(Post.status == 0), user=user)
+    return render_template('posts.html',
+                           posts=Post.select()\
+                                    .where(Post.status == 0), user=user)
 
 @registered_users_only('GET', 'POST')
 @app.route('/posts/new/<int:feed_id>', methods=['GET', 'POST'])
@@ -285,40 +312,40 @@ def post_new(feed_id):
                                user=user,
                                post_types=allowed_post_types)
 
-    else: # POST. new post!
-        if not request.form.get('post_title', '').strip():
-            flash("I'm not making you an un-named post!")
-            return redirect(url_for('posts'))
+    # POST. new post!
+    if not request.form.get('post_title', '').strip():
+        flash("I'm not making you an un-named post!")
+        return redirect(url_for('posts'))
 
-        post_title = request.form.get('post_title').strip()
-        post_type = request.form.get('post_type')
-        try:
-            post_type_module = post_types.load(post_type)
-        except:
-            flash('Sorry! invalid post type.')
-            return redirect(request.referrer if request.referrer else '/')
+    post_title = request.form.get('post_title').strip()
+    post_type = request.form.get('post_type')
+    try:
+        post_type_module = post_types.load(post_type)
+    except Exception:
+        flash('Sorry! invalid post type.')
+        return redirect(request.referrer if request.referrer else '/')
 
-        if feed.post_types and post_type not in feed.post_types_as_list():
-            flash('sorry! this post type is not allowed in this feed!')
-            return redirect(request.referrer if request.referrer else '/')
+    if feed.post_types and post_type not in feed.post_types_as_list():
+        flash('sorry! this post type is not allowed in this feed!')
+        return redirect(request.referrer if request.referrer else '/')
 
-        post = Post(title=post_title, type=post_type, author=user)
+    post = Post(title=post_title, type=post_type, author=user)
 
-        try:
-            post.feed = feed
+    try:
+        post.feed = feed
 
-            if_i_cant_write_then_i_quit(post, user)
+        if_i_cant_write_then_i_quit(post, user)
 
-            post_form_intake(post, request.form, post_type_module)
+        post_form_intake(post, request.form, post_type_module)
 
-        except PleaseRedirect as e:
-            flash(str(e.msg))
-            return redirect(e.url if e.url else request.url)
+    except PleaseRedirect as e:
+        flash(str(e.msg))
+        return redirect(e.url if e.url else request.url)
 
-        post.save()
-        flash('Saved!')
+    post.save()
+    flash('Saved!')
 
-        return redirect(url_for('feedpage', feedid=post.feed.id))
+    return redirect(url_for('feedpage', feedid=post.feed.id))
 
 @app.route('/posts/<int:postid>', methods=['GET', 'POST'])
 def postpage(postid):
@@ -334,7 +361,7 @@ def postpage(postid):
         user = user_session.get_user()
 
     except Post.DoesNotExist:
-        flash('Sorry! Post id:{0} not found!'.format(postid))
+        flash(f'Sorry! Post id:{postid} not found!')
         return redirect(url_for('posts'))
 
     if request.method == 'POST':
@@ -462,7 +489,7 @@ def posts_housekeeping():
 def json_post(postid):
     try:
         return jsonify(Post.get(Post.id == postid).dict_repr())
-    except:
+    except Exception:
         return jsonify({"error": "Invalid Post ID"})
 
 ###############################################################
@@ -487,7 +514,7 @@ def external_data_source_edit(source_id):
                       .execute()
         return 'deleted'
 
-    if source_id == None:
+    if source_id is None:
         try:
             source = ExternalSource()
             source.type = request.args['type']
@@ -530,15 +557,13 @@ def external_data_source_edit(source_id):
         try:
             source.feed = Feed.get(Feed.id == getint('feed', 100))
             source.save()
-            if source_id == None:
+            if source_id is None:
                 # new source!
                 return redirect(url_for('external_data_source_edit',
                                         source_id=source.id))
-            else:
-                flash('Updated.')
+            flash('Updated.')
         except Feed.DoesNotExist:
-            flash("Can't save! Invalid Feed!{}".format(
-                getint('feed', '-11')))
+            flash(f"Can't save! Invalid Feed!{getint('feed', '-11')}")
 
 
     return render_template("external_source.html",
@@ -557,12 +582,6 @@ def external_source_test():
         flash('Only Admins can do this!')
         return redirect(url_for('feeds'))
 
-    '''
-    try:
-        source = ExternalSource.get(id=source_id)
-    except ExternalSource.DoesNotExist:
-        return 'Invalid Source.', 404
-    '''
     # load the type module:
     module = external_source_types.load(request.args.get('type', None))
     # and request the test html
@@ -586,8 +605,7 @@ def external_source_run(source_id):
             next_check = source.last_checked + timedelta(minutes=source.frequency)
 
             if next_check > time_now:
-                return "Nothing to do. Last: {0}, Next: {1}, Now: {2} ".format(
-                    source.last_checked, next_check, time_now)
+                return f"Nothing to do. Last: {source.last_checked}, Next: {next_check}, Now: {time_now} "
 
     module = external_source_types.load(source.type)
 
@@ -627,4 +645,3 @@ def external_data_sources_update_all():
     ''' update all external data sources. '''
     sources = [x[0] for x in ExternalSource.select(ExternalSource.id).tuples()]
     return json.dumps([(external_source_run(s), s) for s in sources])
-

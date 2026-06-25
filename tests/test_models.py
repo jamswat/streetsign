@@ -15,7 +15,7 @@ import streetsign_server.models as models
 from unittest_helpers import StreetSignTestCase
 from datetime import datetime, timedelta
 
-#pylint: disable=too-few-public-methods, invalid-name, no-member, missing-docstring, too-many-public-methods, no-init
+#pylint: disable=too-few-public-methods, invalid-name, no-member, missing-docstring, too-many-public-methods
 
 class Test_safe_json_load(unittest.TestCase):
     ''' test the safe_json_load helper function '''

@@ -27,7 +27,7 @@ ADMINPASS = '42'
 
 class BasicUsersTestCase(StreetSignTestCase):
     def setUp(self):
-        super(BasicUsersTestCase, self).setUp()
+        super().setUp()
         self.user = User(loginname=USERNAME,
                          emailaddress='test@streetsign.org.uk',
                          is_admin=False)
@@ -318,7 +318,7 @@ class DeletingUsers(BasicUsersTestCase):
     ''' Only admin can delete users, and not themselves. '''
 
     def setUp(self):
-        super(DeletingUsers, self).setUp()
+        super().setUp()
 
         self.user2 = User(loginname='user2',
                           emailaddress='test@streetsign.org.uk',
@@ -330,7 +330,7 @@ class DeletingUsers(BasicUsersTestCase):
         data = {}
         data.update(kwargs)
 
-        if userid == False:
+        if userid is False:
             userid = self.user2.id
 
         with self.ctx():
@@ -391,11 +391,10 @@ class DeletingUsers(BasicUsersTestCase):
     def when_user_deleted_posts_also_deleted(self):
         self.login(ADMINNAME, ADMINPASS)
         # TODO
-        pass
 
 class UserUpdatesTestCase(BasicUsersTestCase):
     def post_update_request(self, userid=None, **kwargs):
-        if userid == None:
+        if userid is None:
             userid = self.user.id
 
         data = {}
@@ -550,26 +549,6 @@ class UserUpdatesTestCase(BasicUsersTestCase):
         usernow = User.get(id=self.user.id)
         self.assertEqual(usernow.groups(), [g1])
 
-
-'''
-    TODO:
-
-
-
-    def test_loginname_bad_chars(self):
-
-    def test_displayname_bad_chars(self):
-
-    def test_emailaddress_bad_chars(self):
-
-    def test_cannot_set_own_groups(self):
-
-    def test_cannot_set_others_groups(self):
-
-    def test_admin_can_set_own_groups(self):
-
-    def test_admin_cannot_set_invalid_groups(self):
-'''
 
 class UserGroupsTestCase(BasicUsersTestCase):
 

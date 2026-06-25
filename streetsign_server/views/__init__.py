@@ -93,7 +93,7 @@ def index():
 
 
     posts_to_publish = Post.select()\
-                           .where((Post.published == False) &
+                           .where((Post.published is False) &
                                   (Post.feed << publishable_feeds))
 
     screens = Screen.select()
@@ -130,8 +130,8 @@ def robots_txt():
 def not_logged_in(err):
     ''' Not Logged In handler '''
     # TODO: nicer looking.
-    return '''<!doctype html>
+    return f'''<!doctype html>
     <body><h1>StreetSign</h1>
     <h2>Permission Denied</h2>
     You\'re not logged in!
-    <a href="{}">Return to StreetSign</a>'''.format(url_for('index')), 403
+    <a href="{url_for("index")}">Return to StreetSign</a>''', 403

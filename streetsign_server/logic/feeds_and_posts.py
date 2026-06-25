@@ -43,7 +43,7 @@ def try_to_set_feed(post, new_feed_id, user):
             oldfeedid = post.feed.id
         else:
             oldfeedid = False
-    except:
+    except Exception:
         oldfeedid = False
 
     if new_feed_id and new_feed_id != oldfeedid:
@@ -59,14 +59,12 @@ def try_to_set_feed(post, new_feed_id, user):
             flash('Posted to ' + feed.name)
             return feed
 
-        else:
-            # This shouldn't happen very often - so don't worry about
-            # losing post data.  If it's an issue, refactor so it's stored
-            # but not written to the feed...
-            raise PleaseRedirect(
-                url_for('index'),
-                "Sorry, you don't have permission to write to " + feed.name)
-        return feed
+        # This shouldn't happen very often - so don't worry about
+        # losing post data.  If it's an issue, refactor so it's stored
+        # but not written to the feed...
+        raise PleaseRedirect(
+            url_for('index'),
+            "Sorry, you don't have permission to write to " + feed.name)
 
     return post.feed
 
@@ -83,18 +81,18 @@ def if_i_cant_write_then_i_quit(post, user):
 
         raise PleaseRedirect(
             None,
-            "Sorry, this post is in feed '{0}', which"
+            f"Sorry, this post is in feed '{post.feed.name}', which"
             " you don't have permission to post to."
-            " Edit cancelled.".format(post.feed.name))
+            " Edit cancelled.")
 
     # if this post is already published, be careful about editing it!
     if post.published and not post.feed.user_can_publish(user):
 
         raise PleaseRedirect(
             None,
-            'Sorry, this post is published,'
+            f'Sorry, this post is published,'
             ' and you do not have permission to'
-            ' edit published posts in "{0}".'.format(post.feed.name))
+            f' edit published posts in "{post.feed.name}".')
 
     return True
 
@@ -106,12 +104,11 @@ def can_user_write_and_publish(user, post):
         if user.writeable_feeds():
             return True, False
 
-    else: # there is a feed selected
-        if post.feed.user_can_write(user):
-            if post.feed.user_can_publish(user):
-                return True, True
-            else:
-                return True, False
+    # there is a feed selected
+    if post.feed and post.feed.user_can_write(user):
+        if post.feed.user_can_publish(user):
+            return True, True
+        return True, False
 
     # default is secure:
     return False, False

@@ -56,7 +56,7 @@ def getint(name, default, minimum=0, maximum=999999999, form=None):
     form = form or request.form
     try:
         return min(max(int(form.get(name, default)), minimum), maximum)
-    except:
+    except Exception:
         return default
 
 def getbool(name, default, form=None):
@@ -69,7 +69,7 @@ def getbool(name, default, form=None):
                        'true', 'True', 'TRUE',
                        'yes', 'Yes', 'YES',
                        'checked', 'Checked', 'CHECKED')
-    except:
+    except Exception:
         return default
 
 # some getstr helper regexps:

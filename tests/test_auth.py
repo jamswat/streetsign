@@ -17,7 +17,7 @@ class TestLogin(StreetSignTestCase):
     ''' test for valid HTML & JSON of the main views. '''
 
     def setUp(self):
-        super(TestLogin, self).setUp()
+        super().setUp()
 
         self.user = models.User(loginname='test',
                                 emailaddress='test@test.com',
