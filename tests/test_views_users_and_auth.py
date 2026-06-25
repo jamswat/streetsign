@@ -13,7 +13,7 @@ from flask import url_for
 
 import streetsign_server
 import streetsign_server.models as models
-from streetsign_server.models import User, Group
+from streetsign_server.models import User, Group, Feed, Post
 
 from streetsign_server.views.users_and_auth import *
 
@@ -388,9 +388,24 @@ class DeletingUsers(BasicUsersTestCase):
         resp = self.post_delete_request(userid=200)
         self.assertEqual(resp.status_code, 404)
 
-    def when_user_deleted_posts_also_deleted(self):
+    def test_when_user_deleted_posts_also_deleted(self):
         self.login(ADMINNAME, ADMINPASS)
-        # TODO
+
+        f = Feed()
+        f.save()
+        f.grant('Write', user=self.user2)
+
+        p = Post(title='test post', type='text', content='{}',
+                 feed=f, author=self.user2)
+        p.save()
+
+        self.assertEqual(Post.select().where(Post.author == self.user2).count(), 1)
+
+        resp = self.post_delete_request()
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'And all their posts', resp.data)
+
+        self.assertEqual(Post.select().where(Post.author == self.user2).count(), 0)
 
 class UserUpdatesTestCase(BasicUsersTestCase):
     def post_update_request(self, userid=None, **kwargs):
@@ -560,9 +575,61 @@ class UserGroupsTestCase(BasicUsersTestCase):
             return self.client.post(url_for('users_and_groups'),
                                     data=data, follow_redirects=True)
 
-    def post_update_group(self, gid, name):
-        # TODO
-        pass
+    def post_update_group(self, gid, name=None, users=None):
+        data = {"action": "update"}
+        if name is not None:
+            data['groupname'] = name
+        if users is not None:
+            data['groupusers'] = users
+
+        with self.ctx():
+            return self.client.post(f'/group/{gid}',
+                                    data=data, follow_redirects=True)
+
+    def test_logged_out_cannot_update_group(self):
+        g = Group(name='original')
+        g.save()
+        resp = self.post_update_group(g.id, name='new name')
+        self.assertEqual(resp.status_code, 403)
+        groupnow = Group.get(id=g.id)
+        self.assertEqual(groupnow.name, 'original')
+
+    def test_normal_user_cannot_update_group(self):
+        g = Group(name='original')
+        g.save()
+        self.login(USERNAME, USERPASS)
+        resp = self.post_update_group(g.id, name='new name')
+        self.assertEqual(resp.status_code, 403)
+        groupnow = Group.get(id=g.id)
+        self.assertEqual(groupnow.name, 'original')
+
+    def test_admin_can_update_group_name(self):
+        g = Group(name='original')
+        g.save()
+        self.login(ADMINNAME, ADMINPASS)
+        self.post_update_group(g.id, name='new name')
+        groupnow = Group.get(id=g.id)
+        self.assertEqual(groupnow.name, 'new name')
+
+    def test_admin_can_update_group_users(self):
+        g = Group(name='testgroup')
+        g.save()
+        self.assertEqual(g.users(), [])
+        self.login(ADMINNAME, ADMINPASS)
+        self.post_update_group(g.id, users=[self.user.id])
+        groupnow = Group.get(id=g.id)
+        self.assertEqual(len(groupnow.users()), 1)
+        self.assertEqual(groupnow.users()[0].id, self.user.id)
+
+    def test_admin_can_clear_group_users(self):
+        g = Group(name='testgroup')
+        g.save()
+        g.set_users([self.user.id])
+        self.assertEqual(len(g.users()), 1)
+        self.login(ADMINNAME, ADMINPASS)
+        self.post_update_group(g.id, users=[])
+        groupnow = Group.get(id=g.id)
+        self.assertEqual(groupnow.users(), [])
 
     def group_exists(self, name='new group'):
         try:

@@ -226,3 +226,32 @@ class TestGetBool(FakeRespCase):
     def test_getbool_CHECKEDStr(self):
         self.resp.form['GETME'] = 'CHECKED'
         self.assertTrue(getbool('GETME', True))
+
+    def test_getbool_False(self):
+        self.resp.form['GETME'] = False
+        self.assertFalse(getbool('GETME', True))
+
+    def test_getbool_falseStr(self):
+        self.resp.form['GETME'] = 'false'
+        self.assertFalse(getbool('GETME', True))
+
+    def test_getbool_FalseStr(self):
+        self.resp.form['GETME'] = 'False'
+        self.assertFalse(getbool('GETME', True))
+
+    def test_getbool_FALSEStr(self):
+        self.resp.form['GETME'] = 'FALSE'
+        self.assertFalse(getbool('GETME', True))
+
+    def test_getbool_0int(self):
+        self.resp.form['GETME'] = 0
+        self.assertFalse(getbool('GETME', True))
+
+    def test_getbool_0str(self):
+        self.resp.form['GETME'] = '0'
+        self.assertFalse(getbool('GETME', True))
+
+    def test_getbool_random_string(self):
+        self.resp.form['GETME'] = 'not_a_bool'
+        self.assertFalse(getbool('GETME', True))
+        self.assertFalse(getbool('GETME', False))
