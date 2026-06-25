@@ -3,6 +3,11 @@
 
 {% block body %}
 <h1>Uploaded Files</h1>
+<div class="alert alert-info" role="alert">
+  <strong>Upload images and fonts for use in your screens.</strong><br>
+  <strong>Images</strong> (PNG, JPG, GIF, BMP, SVG) can be selected when creating Image posts.<br>
+  <strong>Fonts</strong> (TTF, OTF, WOFF, WOFF2) are automatically detected and appear in the font-family dropdown when editing screen zones.
+</div>
 <pre>{{ dirname }}</pre>
 <div class="table-responsive">
 <table class="table table-striped">
@@ -37,7 +42,7 @@
   <div class="card-body">
   <form method="POST" enctype="multipart/form-data" class="d-flex" role="form">
     <input type="hidden" name="action" value="upload" />
-    <input type="file" name="image_file" id="image_file" accept="image/*,application/x-font-ttf,application/x-font-otf" class="btn btn-secondary" />
+    <input type="file" name="image_file" id="image_file" accept="image/*,.ttf,.otf,.woff,.woff2" class="btn btn-secondary" />
     <input type="submit" value="Upload" class="btn btn-primary" />
   </form>
   </div>

@@ -54,7 +54,8 @@ def human_size_str(filename):
 
 
 IMAGE_FORMATS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg']
-ALLOWED_FORMATS = IMAGE_FORMATS + ['.ttf', '.otf']
+FONT_EXTENSIONS = ['.ttf', '.otf', '.woff', '.woff2']
+ALLOWED_FORMATS = IMAGE_FORMATS + FONT_EXTENSIONS
 
 def allow_filetype(filename):
     ''' is this file-type allowed to be uploaded? '''
@@ -75,8 +76,11 @@ def make_dirlist(path):
                  'size': f"{len(glob(pathjoin(f, '*')))} items",
                  'is_dir': True})
         else:
-            if allow_filetype(name):
+            ext = splitext(name)[1].lower()
+            if ext in IMAGE_FORMATS:
                 thumb = f'<img src="{url_for("thumbnail", filename=path + name)}" alt="{name}" />'
+            elif ext in FONT_EXTENSIONS:
+                thumb = '<i class="bi bi-file-earmark-font" style="font-size: 1.5rem;" title="Font file"></i> '
             else:
                 thumb = ''
 
@@ -107,8 +111,15 @@ def user_files_list(dir_name=""):
             f = request.files['image_file']
             if f and allow_filetype(f.filename):
                 filename = secure_filename(f.filename)
-                f.save(pathjoin(full_path, filename))
-                flash('Uploaded file:' + filename)
+                ext = splitext(filename)[-1].lower()
+                save_dir = full_path
+                if ext in FONT_EXTENSIONS:
+                    fonts_dir = pathjoin(g.site_vars['user_dir'], 'fonts')
+                    if not isdir(fonts_dir):
+                        makedirs(fonts_dir)
+                    save_dir = fonts_dir
+                f.save(pathjoin(save_dir, filename))
+                flash('Uploaded file: ' + filename)
             else:
                 flash('Sorry. Invalid Filetype')
         elif request.form.get('action') == 'delete':
@@ -171,11 +182,11 @@ def user_fonts():
     ''' return a list of (name, url) tuples for all user-available fonts. 
     '''
     fonts = []
-
-    for f in glob(app.config['SITE_VARS']['user_dir']+ 'fonts/*tf'):
-        name = splitext(basename(f))[0]
-        url = url_for('static', filename='user_files/fonts/' + basename(f))
-        fonts.append((name, url))
+    for f in glob(app.config['SITE_VARS']['user_dir'] + 'fonts/*'):
+        if splitext(f)[1].lower() in FONT_EXTENSIONS:
+            name = splitext(basename(f))[0]
+            url = url_for('static', filename='user_files/fonts/' + basename(f))
+            fonts.append((name, url))
     return fonts
 
 
@@ -185,9 +196,16 @@ def user_fonts_css():
         uploaded fonts directory '''
     fonts = user_fonts()
     css_fonts = []
+    fmt_map = {'.ttf': 'truetype', '.otf': 'opentype',
+               '.woff': 'woff', '.woff2': 'woff2'}
     for name, url in fonts:
-        css_fonts.append(
-            '@font-face {font-family: %s; src:url(%s)}' % (name, url)
-            )
+        ext = splitext(url)[1].lower()
+        fmt = fmt_map.get(ext, '')
+        if fmt:
+            css_fonts.append(
+                '@font-face {font-family: %s; src:url(%s) format("%s")}' % (name, url, fmt))
+        else:
+            css_fonts.append(
+                '@font-face {font-family: %s; src:url(%s)}' % (name, url))
 
     return Response('\n'.join(css_fonts), status=200, mimetype='text/css')
