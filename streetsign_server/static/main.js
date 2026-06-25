@@ -204,7 +204,14 @@ while (jLater.length) {
 
 ////////////////////////////////
 
-$(document).on('click', '.item_ajax_toggle', function(evt) {
+$(document).on('click', '.clickable-row', function(evt) {
+    const tag = evt.target.tagName.toLowerCase();
+    const isInteractive = tag === 'a' || tag === 'button' || tag === 'input' ||
+                          tag === 'select' || tag === 'textarea' || tag === 'label';
+    if (!isInteractive && !$(evt.target).closest('a, button, input, select, textarea, label').length) {
+        window.location.href = $(this).data('uri');
+    }
+});
     const btn = $(this);
     if (btn.attr('data-confirm') !== undefined) {
         evt.preventDefault();

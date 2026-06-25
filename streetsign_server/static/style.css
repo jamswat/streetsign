@@ -185,7 +185,17 @@ tr.time_now:nth-child(odd) {
     font-style: italic;
 }
 
-.delbutton {
+.clickable-row {
+    cursor: pointer;
+}
+
+.clickable-row:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-bs-theme="dark"] .clickable-row:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
     background: var(--color-del-button-bg);
     background: linear-gradient(var(--color-del-button-grad-start), var(--color-del-button-grad-end));
     color: var(--color-del-button-text);

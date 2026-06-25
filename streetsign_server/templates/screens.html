@@ -20,7 +20,8 @@
 		</thead>
 		<tbody>
 			{% for s in screens %}
-				<tr>
+				<tr class="clickable-row"
+				    data-uri="{% if session.display_admin_stuff %}{{ url_for('screenedit', screenid=s.id) }}{% else %}{{ url_for('screendisplay', template='basic', screenname=s.urlname) }}{% endif %}">
 					<td>
 						<a href="{{url_for('screendisplay',template='basic',screenname=s.urlname)}}">{{url_for('screendisplay', template='basic', screenname=s.urlname)}}</a>
 					</td>

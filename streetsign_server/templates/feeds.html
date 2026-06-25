@@ -23,7 +23,7 @@
 	</thead>
 	<tbody>
 		{% for feed in feeds %}
-			<tr>
+			<tr data-uri="{{ url_for('feedpage', feedid=feed.id) }}" class="clickable-row">
 					<td>
 							<a href="{{url_for('feedpage', feedid=feed.id)}}">{{ feed.name }}</a>
 							 <span class="badge bg-secondary">{{ feed.post_count(expired=True, published=False) }} posts</span>

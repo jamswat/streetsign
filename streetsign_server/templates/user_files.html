@@ -15,7 +15,7 @@
 </thead>
 <tbody>
 {% for f in file_list %}
-    <tr>
+    <tr class="clickable-row" data-uri="{{ f.url }}">
         <td><a href="{{ f.url }}" rel=new>{{f.thumb|safe if f.thumb else f.name}}</a></td>
         <td>{{ f.size }}</td>
         <td><form method="POST">
