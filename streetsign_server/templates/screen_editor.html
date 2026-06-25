@@ -64,7 +64,7 @@
         <div class="input-group">
           <input name="urlname" x-model="zone.name"
                  placeholder="zone name" class="form-control" />
-          <button x-on:click="removeZone(idx)" class="btn delbutton">&times;</button>
+          <button x-on:click="removeZone(idx)" class="btn btn-sm btn-danger"><span class="bi bi-trash"></span></button>
         </div>
       </div>
       <div class="card-body" x-on:click="selectZone(idx)" x-on:mouseover="selectZone(idx)">

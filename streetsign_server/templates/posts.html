@@ -94,7 +94,7 @@
 					   or ((not post.published) and post.feed.user_can_write(user)) %}
 						<button data-ajaxtype="POST" data-ajaxtoggle="hidden"
 						        data-name="action" data-value="delete"
-						        class="item_ajax_toggle btn delbutton" data-confirm="true">&times;</button>
+						        class="item_ajax_toggle btn btn-sm btn-danger" data-confirm="true"><span class="bi bi-trash"></span></button>
 					{% endif %}
 				</td>
 		</tr>

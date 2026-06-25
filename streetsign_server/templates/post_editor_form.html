@@ -151,8 +151,8 @@
         </div> </div>
     </td>
     <td><input x-model="time.note" class="form-control" /></td>
-    <td>{% if post.feed.user_can_write(user) %}<a href="#" class="btn delbutton"
-                             x-on:click.prevent="removeTime(idx)">&times;</a>
+    <td>{% if post.feed.user_can_write(user) %}<a href="#" class="btn btn-sm btn-danger"
+                             x-on:click.prevent="removeTime(idx)"><span class="bi bi-trash"></span></a>
         {% endif %}</td>
   </tr>
 </template>

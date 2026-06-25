@@ -1,8 +1,4 @@
 :root {
-    --color-flash-bg: rgba(2,2,2,0.6);
-    --color-flash-error-bg: rgba(8,2,2,0.7);
-    --color-flash-text: white;
-    --color-flash-hover: #aaa;
     --color-admin-option: #224;
     --color-option-checked: #222;
     --color-footer-bg: #eee;
@@ -13,23 +9,11 @@
     --color-fake-screen-border: #eee;
     --color-fake-zone-border: white;
     --color-fake-zone-selected-bg: rgba(100,100,100,0.5);
-    --color-del-button-bg: red;
-    --color-del-button-grad-start: #e22;
-    --color-del-button-grad-end: #c00;
-    --color-del-button-text: #faa;
-    --color-del-button-border: #b50d0d;
-    --color-del-button-hover-grad-start: #d22;
-    --color-del-button-hover-grad-end: #522;
     --color-time-future: #349;
     --color-time-now-bg: #bcd;
     --color-time-now-alt-bg: #abc;
     --color-time-past: #914;
-
     --navbar-height: 56px;
-    --radius-flash: 15px;
-    --radius-footer: 100px;
-    --radius-freespace: 10px;
-    --radius-del-button: 5px;
 }
 
 body {
@@ -48,7 +32,7 @@ option:checked {
 footer {
     text-align: center;
     color: var(--color-footer-text);
-    border-radius: var(--radius-footer);
+    border-radius: 10px;
     background: var(--color-footer-bg);
     padding: 1em;
     width: 80%;
@@ -168,6 +152,8 @@ tr.time_now:nth-child(odd) {
 .breadcrumb-item {
     white-space: nowrap;
 }
+
+.clickable-row {
     cursor: pointer;
 }
 
@@ -177,16 +163,4 @@ tr.time_now:nth-child(odd) {
 
 [data-bs-theme="dark"] .clickable-row:hover {
     background-color: rgba(255, 255, 255, 0.05) !important;
-}
-    background: var(--color-del-button-bg);
-    background: linear-gradient(var(--color-del-button-grad-start), var(--color-del-button-grad-end));
-    color: var(--color-del-button-text);
-    font-weight: 800;
-    border-radius: var(--radius-del-button);
-    border: 1px solid var(--color-del-button-border);
-    text-shadow: -1px -1px 0px var(--color-del-button-border), 1px 1px 0px var(--color-del-button-grad-start);
-}
-
-.delbutton:hover {
-    background: linear-gradient(var(--color-del-button-hover-grad-start), var(--color-del-button-hover-grad-end));
 }
