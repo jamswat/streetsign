@@ -62,7 +62,7 @@ rst_epilog = """
 
 # ---------------------------------------------
 
-html_theme = 'default'
+html_theme = 'furo'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.

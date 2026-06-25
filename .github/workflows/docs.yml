@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install sphinx
+          pip install sphinx furo
           pip install -r requirements.txt
 
       - name: Build docs
