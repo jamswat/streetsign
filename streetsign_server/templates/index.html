@@ -38,6 +38,9 @@
 				document.documentElement.setAttribute('data-bs-theme', theme);
 			})();
 		</script>
+		<script type="text/javascript">
+			let jLater = [];
+		</script>
 </head>
 <body>
 	<div id="ajax-progress" class="progress" role="progressbar" aria-label="AJAX request progress" aria-hidden="true" style="position:fixed;top:0;left:0;right:0;height:3px;z-index:9999;display:none;">
@@ -274,7 +277,6 @@
 		<script type="text/javascript">
 		{# Keeping hardcoded URLs out of javascript files,
 		   injected here rather than in main.js. #}
-		let jLater = [];
 		window.HOUSEKEEPING_URL="{{ url_for('posts_housekeeping') }}";
 		$.post("{{ url_for('external_data_sources_update_all') }}");
 		</script>

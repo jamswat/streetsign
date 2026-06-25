@@ -218,14 +218,20 @@ $(document).on('click', '.item_ajax_toggle', function(evt) {
 
     function doToggle() {
         const toggle_class = btn.data('ajaxtoggle');
-        const item = btn.parents('.item').first().toggleClass(toggle_class);
+        const item = btn.parents('.item').first();
         const data = {};
 
         data[btn.data('name')] = btn.data('value');
 
+        item.toggleClass(toggle_class);
+
         $.ajax(btn.parents('[data-uri]').data('uri'), {
             type: btn.data('ajaxtype'),
             data: data
+        }).done(function() {
+            if (btn.data('value') === 'delete') {
+                item.slideUp(300, function() { item.remove(); });
+            }
         }).fail(function() {
             item.toggleClass(toggle_class);
             showToast('Request failed — check your permissions.', 'error');
