@@ -1,6 +1,9 @@
 # StreetSign
 
-A lightweight digital signage server written in Python by **Daniel Fairhead**.
+A lightweight digital signage server originally written in Python by
+**Daniel Fairhead** (2013–2019), further developed by **Daniel Lang**
+(2020–2024), and since maintained as a fork here. Both upstream projects
+appear to have been mostly abandoned.
 Originally created for [Teenstreet 2013](http://www.teenstreet.de) in Germany,
 it has been used at large conferences and in corporate environments since.
 
@@ -26,11 +29,11 @@ permissions (read/write/publish per feed, per user or group), and housekeeping
 | Type | Description |
 |------|-------------|
 | **Plain Text** | Unformatted text, auto-scaled to fill the zone |
-| **Rich HTML** | Formatted content via the Quill WYSIWYG editor, sanitised with Bleach |
+| **Rich Text** | Formatted content via the Quill WYSIWYG editor, sanitised with Bleach |
 | **Image** | Uploaded or remote images, displayed with `background-size: contain` |
 | **Video** | HTML5 video with loop — muted autoplay by default, tap to enable audio |
 | **External Web Page** | Embeds any URL in a full-zone iframe |
-| **Web Hook** | POSTs to external URLs on render, display, and hide — designed for controlling stream players (e.g. VLC) or automation systems |
+| **Web hook** | POSTs to external URLs on render, display, and hide — designed for controlling stream players (e.g. VLC) or automation systems |
 | **Raw HTML** | Arbitrary, unsanitised HTML rendered in a sandboxed iframe |
 
 New post types can be added via a plugin system (`streetsign_server/post_types/`).
@@ -225,9 +228,6 @@ To use the virtualenv directly: `.virtualenv/bin/python`.
 .virtualenv/bin/python -m pylint streetsign_server/
 ```
 
-There is a pre-commit hook in `.setup/hooks/` that runs pylint before commits.
-Skip it with `git commit --no-verify`.
-
 ## Documentation
 
 Full documentation at [streetsign.readthedocs.org](http://streetsign.readthedocs.org/en/latest/)
@@ -246,9 +246,8 @@ See the [CHANGELOG](CHANGELOG.md) for a summary of improvements.
 
 ## Credits
 
-StreetSign was created by **Daniel Fairhead** for Teenstreet 2013. It is made
-available under the GPLv3 with his permission. The original source was hosted on
-Bitbucket.
+StreetSign was created by **Daniel Fairhead** for Teenstreet 2013 (released under GPLv3). It was
+subsequently extended by **Daniel Lang** (2020–2024).
 
 ## AI Usage
 
