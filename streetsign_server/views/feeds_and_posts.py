@@ -510,6 +510,32 @@ def posts_housekeeping():
 
 ###############################################################
 
+###############################################################
+
+@app.route('/posts/bulk_delete', methods=['POST'])
+@registered_users_only
+def posts_bulk_delete():
+    ''' delete multiple posts at once via AJAX '''
+    user = user_session.get_user()
+    post_ids = request.json.get('post_ids', [])
+
+    deleted = 0
+    errors = 0
+    for post_id in post_ids:
+        try:
+            post = Post.get(Post.id == int(post_id))
+            post_type_module = post_types.load(post.type)
+            if post.feed.user_can_publish(user) or \
+               (not post.published and post.feed.user_can_write(user)):
+                delete_post_and_run_callback(post, post_type_module)
+                deleted += 1
+            else:
+                errors += 1
+        except Post.DoesNotExist:
+            errors += 1
+
+    return jsonify({'deleted': deleted, 'errors': errors})
+
 @app.route('/posts/<int:postid>/json')
 def json_post(postid):
     try:
