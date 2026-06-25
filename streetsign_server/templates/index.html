@@ -120,14 +120,19 @@
 		<div class="clearfix"></div>
 	</article>
 
-		<ul id="flashed_notices" role="alert">
-		{% for msg in get_flashed_messages() %}
-			<li class="alert alert-dismissible">{{ msg }}</li>
-		{% endfor %}
-	</ul>
-
-	<div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+		<div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
 	</div>
+
+	{% set flash_messages = get_flashed_messages() %}
+	{% if flash_messages %}
+	<script type="text/javascript">
+		jLater.push(function($) {
+			{% for msg in flash_messages %}
+				showToast({{ msg|tojson|safe }}, 'info');
+			{% endfor %}
+		});
+	</script>
+	{% endif %}
 
 	{############################################
 	 # Log-in Dialog

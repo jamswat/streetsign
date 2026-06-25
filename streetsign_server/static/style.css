@@ -36,26 +36,6 @@ body {
     padding-top: var(--navbar-height);
 }
 
-#flashed_notices {
-    position: absolute;
-    top: 50px;
-    right: 0;
-    padding: 1em;
-}
-
-#flashed_notices > li {
-    background: var(--color-flash-bg);
-    color: var(--color-flash-text);
-    font-weight: bold;
-    border-radius: var(--radius-flash);
-    padding: 0.2em 1em;
-    list-style-type: none;
-}
-
-#flashed_notices > li:hover {
-    color: var(--color-flash-hover);
-}
-
 option.admin {
     font-weight: bold;
     color: var(--color-admin-option);
@@ -88,11 +68,6 @@ footer a {
 
 [data-bs-theme="dark"] footer a {
     color: #8ab4f8;
-}
-
-[data-bs-theme="dark"] #flashed_notices > li {
-    background: rgba(255,255,255,0.2);
-    color: #ddd;
 }
 
 [data-bs-theme="dark"] {

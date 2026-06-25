@@ -107,19 +107,10 @@ function confirmAction(message, onConfirm) {
 }
 
 ////////////////////////////////////////////////
-// Flashed notices:
+// Flashed notices (now rendered as toasts, see index.html):
 
-$('#flashed_notices').children('li').click(function() {
-    $(this).fadeOut();
-});
-setTimeout(() => { $('#flashed_notices > li').fadeOut('slow'); }, 15000);
+// Loading indicators for AJAX:
 
-function flash(text) {
-    $('#flashed_notices').append($(`<li>${text} </li>`).click(function() { $(this).fadeOut(); }));
-}
-
-////////////////////////////////////////////////
-// Nice select boxes:
 
 $('select.chosen').each(function() {
     new Choices(this, { searchEnabled: true, itemSelectText: '', shouldSort: false });
@@ -147,7 +138,7 @@ $('a.confirm_ajax_delete').click(function(evt) {
             type: 'DELETE'
         }).done(function(resp) {
             dom_item.slideUp('fast', dom_item.remove);
-            flash('deleted');
+            showToast('Deleted successfully.', 'success');
         }).fail(function() {
             dom_item.slideDown();
             showToast('Could not delete!', 'error');
@@ -241,9 +232,9 @@ $(() => {
     $('.autopost').change(function() {
         $.post(this.form.getAttribute('action'), $(this.form).serialize(), function(data) {
             if (data.message) {
-                flash(data.message);
+                showToast(data.message, 'success');
             } else {
-                flash(data);
+                showToast(data, 'info');
             }
         });
     });
