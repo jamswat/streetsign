@@ -354,7 +354,14 @@ def post_new(feed_id):
         return redirect(e.url if e.url else request.url)
 
     post.save()
-    flash('Saved!')
+    if request.form.get('publish_after') and feed.user_can_publish(user):
+        try:
+            post.publish(user)
+            flash('Saved & Published!')
+        except Exception:
+            flash('Saved but could not publish.')
+    else:
+        flash('Saved!')
 
     return redirect(url_for('feedpage', feedid=post.feed.id))
 
@@ -402,8 +409,11 @@ def postpage(postid):
             flash('Deleted')
         elif action == 'publish':
             try:
+                # Save any edits before publishing
+                post_form_intake(post, request.form, post_type_module)
+                post.save()
                 post.publish(user)
-                flash("Published")
+                flash("Saved & Published!")
             except PermissionDenied:
                 flash("Sorry, you don't have permission to publish"
                       " posts in this feed.")

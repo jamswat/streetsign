@@ -2,186 +2,239 @@
   {{- ' disabled ' if not condition -}}
 {% endmacro %}
 
+<ul class="nav nav-tabs mb-3" id="editor-tabs" role="tablist">
+	<li class="nav-item" role="presentation">
+		<button class="nav-link active" id="content-tab" data-bs-toggle="tab" data-bs-target="#tab-content" type="button" role="tab" aria-selected="true">Content</button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" id="scheduling-tab" data-bs-toggle="tab" data-bs-target="#tab-scheduling" type="button" role="tab" aria-selected="false">Scheduling</button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button class="nav-link" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#tab-appearance" type="button" role="tab" aria-selected="false">Appearance</button>
+	</li>
+</ul>
+
+<div class="tab-content" id="editor-tab-content">
+	<div class="tab-pane fade show active" id="tab-content" role="tabpanel">
+		<div id="postcontentblock" class="card card-body">
+			<label id="title-input">Title: <input type="text" name="post_title" value="{{post.title if post.title else ''}}" class="form-control" required></label><br>
+			<div id="postcontentblock-type">
+				<input type="hidden" name="post_type" value="{{ post.type }}" />
+				{{ form_content|safe }}
+			</div>
+		</div>
+
+		{% if post.id %}
+		<div class="mt-3 text-end">
+			{% if post.published %}
+				<span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">Published</span>
+			{% else %}
+				<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Draft</span>
+			{% endif %}
+		</div>
+		{% endif %}
+	</div>
+
+	<div class="tab-pane fade" id="tab-scheduling" role="tabpanel">
+		<div class="card">
+			<div class="card-header">
+				<h2 class="card-title h5">Post Lifetime</h2>
+			</div>
+			<div class="card-body">
+				<div class="form-check mb-3">
+					<input class="form-check-input" type="checkbox" name="permanent" value="1"
+					       id="permanent-check"
+					       {{ 'checked' if post.display_time == 0 }}>
+					<label class="form-check-label" for="permanent-check">
+						<strong>Show permanently</strong> — never expires, never cycles to next post
+					</label>
+				</div>
+
+				<div class="row">
+					<div class="col-md-6" id="lifetime-start-group">
+						<label>Start:</label>
+						<div class="mb-3">
+							<div class="input-group date" id="datetimestart" data-date-format="YYYY-MM-DD HH:mm:ss">
+								<input type="text" name="active_start" id="active_start"
+								       class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
+								       value="{{ post.active_start }}" />
+								<span class="input-group-text"><span class="bi bi-calendar"></span></span>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-md-6" id="lifetime-end-group">
+						<label>End:</label>
+						<div class="mb-3">
+							<div class="input-group date" id="datetimeend" data-date-format="YYYY-MM-DD HH:mm:ss">
+								<input type="text" name="active_end" id="active_end"
+								       class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
+								       value="{{ post.active_end }}" />
+								<span class="input-group-text"><span class="bi bi-calendar"></span></span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div id="displaytime-group">
+					<label>How many seconds to show for at one time?
+						<input type="number" name="displaytime" data-min="1" data-max="500"
+						       class="form-control" value="{{ post.display_time }}" />
+					</label>
+				</div>
+			</div>
+		</div>
+
+		<div class="card mt-3" x-data="makeTimesEditor(TIME_RESTRICTIONS)">
+			<div class="card-header">
+				<h2 class="card-title h5">Time Restrictions</h2>
+			</div>
+			<div class="card-body">
+				<div class="mb-3">
+					<label class="me-3">
+						<input type="radio" name="times_mode" value="do_not_show"
+						       {{ 'checked' if not post.time_restrictions_show }} />
+						Do NOT show during these times
+					</label>
+					<label>
+						<input type="radio" name="times_mode" value="only_show"
+						       {{ 'checked' if post.time_restrictions_show }} />
+						Only show during these times
+					</label>
+				</div>
+
+				<div class="table-responsive">
+				<table class="table table-striped">
+				<thead>
+					<tr>
+						<th scope="col" style="width:30%">Start</th>
+						<th scope="col" style="width:30%">End</th>
+						<th scope="col">Why? (optional)</th>
+						<th scope="col" style="width:4em">
+							{% if post.feed.user_can_write(user) %}
+							<button type="button" class="btn btn-sm btn-outline-primary" x-on:click.prevent="addTime">
+								<span class="bi bi-plus-lg"></span>
+							</button>
+							{% endif %}
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+				<template x-for="(time, idx) in times" :key="idx">
+					<tr>
+						<td>
+							<div class="input-group">
+								<input type="time" x-model="time.start" class="form-control" data-date-format="HH:mm" />
+								<span class="input-group-text"><span class="bi bi-clock"></span></span>
+							</div>
+						</td>
+						<td>
+							<div class="input-group">
+								<input type="time" x-model="time.end" class="form-control" data-date-format="HH:mm" />
+								<span class="input-group-text"><span class="bi bi-clock"></span></span>
+							</div>
+						</td>
+						<td><input x-model="time.note" class="form-control" placeholder="e.g. Lunch break" /></td>
+						<td>
+							{% if post.feed.user_can_write(user) %}
+							<a href="#" class="btn btn-sm btn-danger" x-on:click.prevent="removeTime(idx)">
+								<span class="bi bi-trash"></span>
+							</a>
+							{% endif %}
+						</td>
+					</tr>
+				</template>
+				</tbody>
+				</table>
+				</div>
+				<input type="hidden" name="time_restrictions_json" :value="serializedTimes" />
+			</div>
+		</div>
+	</div>
+
+	<div class="tab-pane fade" id="tab-appearance" role="tabpanel">
+		<div class="card">
+			<div class="card-header">
+				<h2 class="card-title h5">Font Size</h2>
+			</div>
+			<div class="card-body">
+				<div class="mb-3">
+					<div class="form-check">
+						<input id="font-auto" type="radio" name="post_fontsize_mode" value="auto"
+						       class="form-check-input" {{ 'checked' if not post.fontsize }}>
+						<label class="form-check-label" for="font-auto">
+							Automatic — client calculates size based on screen and content
+						</label>
+					</div>
+					<div class="form-check">
+						<input id="font-custom" type="radio" name="post_fontsize_mode" value="custom"
+						       class="form-check-input" {{ 'checked' if post.fontsize }}>
+						<label class="form-check-label" for="font-custom">
+							Custom — fixed size regardless of screen
+						</label>
+					</div>
+				</div>
+				<div class="input-group" style="max-width:12rem">
+					<input class="form-control" type="number" name="post_fontsize"
+					       value="{{post.fontsize if post.fontsize else ''}}"
+					       placeholder="Auto" />
+					<span class="input-group-text">pt</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
 {% if post.feed.user_can_write(user) %}
-        <input type="submit" value="{{ 'Post!' if not post.id else 'Save' }}" class="btn btn-primary float-end"/>
-{% endif %}
-
-<div id="postcontentblock" class="card card-body">
-<label id="title-input">Title: <input type="text" name="post_title" value="{{post.title if post.title else ''}}" class="form-control" required></label><br>
-<div id="postcontentblock-type">
-<input type="hidden" name="post_type" value="{{ post.type }}" />
-{{ form_content|safe }}
-</div>
-</div>
-
-{% if post.id %}<p>
-	{% if post.published %}
-		<span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">Published</span>
-	{% else %}
-		<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Draft</span>
+<div class="d-flex justify-content-between mt-3">
+	<div>
+		<button type="submit" class="btn btn-primary">
+			{{ 'Post!' if not post.id else 'Save' }}
+		</button>
+		{% if not post.id %}
+		<input type="hidden" name="publish_after" value="1" id="publish-after-flag" disabled />
+		<button type="submit" class="btn btn-success ms-2" id="save-publish-btn"
+		        onclick="document.getElementById('publish-after-flag').disabled=false; this.form.submit();">
+			<span class="bi bi-send"></span> Save &amp; Publish
+		</button>
+		{% endif %}
+	</div>
+	{% if post.id %}
+		{% if not post.published and post.feed.user_can_publish(user) %}
+		<button type="button" class="btn btn-success" id="publish-save-btn">
+			<span class="bi bi-send"></span> Save &amp; Publish
+		</button>
+		{% endif %}
 	{% endif %}
-</p>{% endif %}
-
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title">Font Size:</h2>
-    </div>
-    <div class="card-body">
-        <div class="row">
-        <div class="col-md-12">
-            <input id="font-auto" type="radio" name="post_fontsize_mode" value="auto" {{'checked' if not post.fontsize}}>
-            <label for="font-auto">Automatic (the client will calculate the size based on screen and content size)</label>
-        </div>
-        <div class="col-md-12">
-            <input id="font-custom" type="radio" name="post_fontsize_mode" value="custom" {{'checked' if post.fontsize}}>
-            <label for="font-custom">Custom (the size will be fixed no matter the screen and content size)</label>
-        </div>
-        <div class="col-md-3">
-            <div class="input-group">
-                <input class="form-control" type="number" name="post_fontsize" value="{{post.fontsize if post.fontsize else ''}}">
-                <span class="input-group-text">pt</span>
-            </div>
-        </div>
-        </div>
-    </div>
 </div>
-
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title">Post Lifetime:</h2>
-    </div>
-    <div class="card-body">
-
-    <div class="row">
-
-    <div class="col-12 mb-3">
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="permanent" value="1"
-                   id="permanent-check"
-                   {{ 'checked' if post.display_time == 0 }}>
-            <label class="form-check-label" for="permanent-check">
-                <strong>Show permanently</strong> — never expires, never cycles to next post
-            </label>
-        </div>
-    </div>
-
-    <div class="col-md-6" id="lifetime-start-group">
-    <label>Start:</label>
-        <div class="mb-3">
-            <div class="input-group date" id="datetimestart" data-date-format="YYYY-MM-DD HH:mm:ss">
-                <input type="text" name="active_start" id="active_start"
-                       class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
-                       value="{{ post.active_start }}"
-                       />
-                <span class="input-group-text">
-                <span class="bi bi-calendar"></span></span>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6" id="lifetime-end-group">
-    <label>End:</label>
-        <div class="mb-3">
-            <div class="input-group date" id="datetimeend" data-date-format="YYYY-MM-DD HH:mm:ss" >
-                <input type="text" name="active_end" id="active_end"
-                       class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
-                       value="{{ post.active_end }}"
-                       />
-                <span class="input-group-text">
-                <span class="bi bi-calendar"></span></span>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <br/>
-    <div id="displaytime-group">
-    <label>How many seconds to show for at one time?
-                <input type="number" name="displaytime" data-min="1" data-max="500"
-                       class="form-control" value="{{ post.display_time }}" /></label>
-    </div>
-    </div>
-</div>
-<div class="card" x-data="makeTimesEditor(TIME_RESTRICTIONS)">
-    <div class="card-header">
-        <h3 class="card-title">Time restrictions:</h3>
-    </div>
-    <div class="card-body">
-
-<div class="table-responsive">
-<table style="min-width:80%" class="table table-striped">
-<thead>
-  <tr>
-    <th scope="col" colspan=4 style="text-align: right">
-        <label>Do NOT show during the following times:
-            <input type="radio" name="times_mode" value="do_not_show"
-                   {{ 'checked' if not post.time_restrictions_show }} /></label><br/>
-        <label>Only show during the following times:
-            <input type="radio" name="times_mode" value="only_show"
-                   {{ 'checked' if post.time_restrictions_show }}/></label><br/>
-
-    </th>
-  </tr>
-<tr>
- <th scope="col" class="col-sm-2">Start</th>
- <th scope="col" class="col-sm-2">End</th>
- <th scope="col">Why? (optional)</th>
- <th scope="col">{% if post.feed.user_can_write(user) %}<a class="btn btn-primary" href="#"
-                          x-on:click.prevent="addTime">New</a>
-     {% endif %}</th>
-</tr>
-</thead>
-<tbody>
-<template x-for="(time, idx) in times" :key="idx">
-  <tr>
-    <td>
-        <div class="mb-3"> <div class="input-group date">
-            <input type="time" x-model="time.start" class="form-control"
-                data-date-format="HH:mm" />
-            <span class="input-group-text">
-            <span class="bi bi-clock" aria-hidden="true"></span></span>
-        </div> </div>
-    </td>
-    <td>
-        <div class="mb-3"> <div class="input-group date">
-            <input type="time" x-model="time.end" class="form-control"
-                data-date-format="HH:mm" />
-            <span class="input-group-text">
-            <span class="bi bi-clock" aria-hidden="true"></span></span>
-        </div> </div>
-    </td>
-    <td><input x-model="time.note" class="form-control" /></td>
-    <td>{% if post.feed.user_can_write(user) %}<a href="#" class="btn btn-sm btn-danger"
-                             x-on:click.prevent="removeTime(idx)"><span class="bi bi-trash"></span></a>
-        {% endif %}</td>
-  </tr>
-</template>
-</tbody>
-</table>
-</div>
-<input type="hidden" name="time_restrictions_json" :value="serializedTimes" />
-</div>
-</div>
-
-{% if post.feed.user_can_write(user) %}
-        <input class="btn btn-primary" type="submit" value="{{ 'Post!' if not post.id else 'Save' }}" />
 {% endif %}
 
 <script type="text/javascript">
 (function() {
-    const checkbox = document.getElementById('permanent-check'),
-        endGroup = document.getElementById('lifetime-end-group'),
-        displayGroup = document.getElementById('displaytime-group');
+	const checkbox = document.getElementById('permanent-check'),
+		endGroup = document.getElementById('lifetime-end-group'),
+		displayGroup = document.getElementById('displaytime-group');
 
-    function update() {
-        const permanent = checkbox.checked;
-        endGroup.style.display = permanent ? 'none' : '';
-        displayGroup.style.display = permanent ? 'none' : '';
-    }
+	function update() {
+		const permanent = checkbox.checked;
+		endGroup.style.display = permanent ? 'none' : '';
+		displayGroup.style.display = permanent ? 'none' : '';
+	}
 
-    if (checkbox) {
-        checkbox.addEventListener('change', update);
-        update();
-    }
+	if (checkbox) {
+		checkbox.addEventListener('change', update);
+		update();
+	}
+
+	// Save & Publish button for existing posts
+	const publishBtn = document.getElementById('publish-save-btn');
+	if (publishBtn) {
+		publishBtn.addEventListener('click', function() {
+			const form = this.closest('form');
+			const hiddenAction = form.querySelector('input[name="action"]');
+			hiddenAction.value = 'publish';
+			form.submit();
+		});
+	}
 })();
 </script>
