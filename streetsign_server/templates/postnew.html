@@ -11,7 +11,7 @@
 {%- endfor -%}
 </ul>
 </div>
-<form action="{{ form_action }}" method="POST" enctype="multipart/form-data" id="post-editor-form">
+<form action="{{ form_action }}" method="POST" enctype="multipart/form-data" id="post-editor-form" class="needs-validation" novalidate>
   <input type="hidden" name="action" value="new" />
   {% include "post_editor_form.html" %}
 </form>

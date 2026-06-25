@@ -240,4 +240,12 @@ $(() => {
             }
         });
     });
+
+    $('form.needs-validation').on('submit', function(evt) {
+        if (!this.checkValidity()) {
+            evt.preventDefault();
+            evt.stopPropagation();
+        }
+        $(this).addClass('was-validated');
+    });
 });

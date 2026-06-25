@@ -25,9 +25,11 @@
 </tbody>
 </table>
 {% else %}
-<form action="" method="POST">
+<form action="" method="POST" class="needs-validation" novalidate>
 <input type="hidden" name="action" value="update" />
-<label>Name:<input name="groupname" value="{{group.name}}" /></label>
+<label class="form-label">Name:
+  <input name="groupname" value="{{group.name}}" class="form-control" required />
+</label>
 <label>Users:
 {{ widgets.userselect('groupusers', allusers, group.users()) }}
 </label>

@@ -10,7 +10,7 @@
 {% block body %}
 <h1> Edit Post (in <a href="{{ url_for('feedpage', feedid=post.feed.id) }}">{{ post.feed.name }}</a>)</h1>
 
- <form action="{{ form_action }}" method="POST" enctype="multipart/form-data" id="post-editor-form">
+ <form action="{{ form_action }}" method="POST" enctype="multipart/form-data" id="post-editor-form" class="needs-validation" novalidate>
   <input type="hidden" name="action" value="update" />
   {% include "post_editor_form.html" %}
 </form>

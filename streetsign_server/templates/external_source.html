@@ -2,7 +2,7 @@
 
 {% block body %}
 <h1>External Data Source ({{ source.type }})</h1>
-<form method="POST" role="form" id="source_form">
+<form method="POST" role="form" id="source_form" class="needs-validation" novalidate>
 <input type="hidden" name="type" value="{{ source.type}}" />
 
 <div class="row">
@@ -15,7 +15,7 @@
       <div class="row">
       <div class="mb-3 col-md-6">
         <label class="col-form-label">Name:</label>
-        <input class="form-control" name="name" type="text" value="{{ source.name }}" />
+        <input class="form-control" name="name" type="text" value="{{ source.name }}" required />
       </div>
       <div class="col-md-3">
         <div class="mb-3">

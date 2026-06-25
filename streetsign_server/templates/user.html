@@ -2,7 +2,7 @@
 
 {% block body %}
 <h1>User: {{ user.displayname }}</h1>
-<form method="POST" role="form">
+<form method="POST" role="form" class="needs-validation" novalidate>
 <input class="form-control" type="hidden" name="action" value="update" />
 
 <div class="row">
@@ -15,7 +15,7 @@
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">login name:</label>
       <div class="col-sm-10">
-        <input class="form-control" name="loginname" value="{{user.loginname}}" />
+        <input class="form-control" name="loginname" value="{{user.loginname}}" required />
       </div>
     </div>
 
@@ -29,7 +29,7 @@
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Email address:</label>
       <div class="col-sm-10">
-        <input class="form-control" name="emailaddress" value="{{user.emailaddress}}" />
+        <input class="form-control" type="email" name="emailaddress" value="{{user.emailaddress}}" />
       </div>
     </div>
     <div class="row mb-3">

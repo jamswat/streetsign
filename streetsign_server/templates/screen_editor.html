@@ -10,7 +10,7 @@
 
 <div x-data="makeScreenEditor(screenEditorConfig)" class="row">
 <div class="col-md-6">
-<form id="screen_form" method="post">
+<form id="screen_form" method="post" class="needs-validation" novalidate>
   <div class="card">
     <div class="card-header">
       <h2 class="card-title">Screen ID:{{ screen.id }}
@@ -24,7 +24,7 @@
     <div class="card-body">
       <div class="row">
       <div class="col-md-6">
-        <label>Name<input type="text" name="urlname" value="{{ screen.urlname }}" class="form-control" /></label>
+        <label>Name<input type="text" name="urlname" value="{{ screen.urlname }}" class="form-control" required /></label>
       </div>
       <div class="col-md-6">
         <label style="display:block; width: 40%;">Background:</label>
