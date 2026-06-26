@@ -169,26 +169,37 @@ ready-to-use two-zone `Default` screen at `/screens/basic/Default`.
 
 ## Docker
 
-A multi-stage Docker image is provided — the build compiles C extensions in a
-builder stage and ships a slim final image (~45 MB) that runs as a non-root
-`streetsign` user. Static assets are served in-process by WhiteNoise (no nginx
-sidecar required), so the container can be exposed directly or placed behind
-any reverse proxy.
+A multi-stage Docker image is built and published to
+[GitHub Container Registry](https://github.com/jamswat/streetsign/pkgs/container/streetsign)
+on every tagged release. The build compiles C extensions in a builder stage
+and ships a slim final image (~45 MB) that runs as a non-root `streetsign`
+user. Static assets are served in-process by WhiteNoise (no nginx sidecar
+required), so the container can be exposed directly or placed behind any
+reverse proxy.
 
-### Quick start
+### Quick start (pre-built image)
 
 ```bash
-docker build -t streetsign .
-docker run -d --name streetsign -p 5000:5000 streetsign
+docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.0.0
 ```
 
 Open <http://localhost:5000> — default login is `admin` / `admin`.
+
+To pull the latest stable release:
+
+```bash
+docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:latest
+```
 
 ### docker-compose
 
 ```bash
 docker compose up -d
 ```
+
+The compose file pulls `ghcr.io/jamswat/streetsign:1.0.0` — no local build
+required. To build locally instead, uncomment the `build: .` line (and
+comment out or remove the `image:` line).
 
 This brings up a single `app` service on `${WEB_PORT:-5000}`. Two named volumes
 are created automatically and persist across rebuilds:
@@ -203,6 +214,15 @@ into the image and are **not** mounted on a volume, so changes to them appear
 on the next rebuild without stale-file masking. Only `user_files/` (runtime
 uploads) is persisted.
 
+### Building locally (alternative)
+
+If you prefer to build the image yourself:
+
+```bash
+docker build -t streetsign .
+docker run -d --name streetsign -p 5000:5000 streetsign
+```
+
 ### Persistent data (plain `docker run`)
 
 Mount volumes for the SQLite database and uploaded files, otherwise data is
@@ -212,7 +232,7 @@ lost when the container is removed:
 docker run -d -p 5000:5000 \
   -v streetsign-db:/data \
   -v streetsign-uploads:/app/streetsign_server/static/user_files \
-  streetsign
+  ghcr.io/jamswat/streetsign:1.0.0
 ```
 
 On first start (empty `/data`), the container seeds a fresh database with the
@@ -232,7 +252,7 @@ runs pending migrations.
 Override at runtime, e.g. to serve on port 8080:
 
 ```bash
-docker run -d -p 8080:8080 -e PORT=8080 streetsign
+docker run -d -p 8080:8080 -e PORT=8080 ghcr.io/jamswat/streetsign:1.0.0
 ```
 
 Or with compose, publish on a different host port:
@@ -245,7 +265,7 @@ For production you should mount your own `config.py` (see `config_default.py`
 for the full list of options):
 
 ```bash
-docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" streetsign
+docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" ghcr.io/jamswat/streetsign:1.0.0
 ```
 
 ## Production

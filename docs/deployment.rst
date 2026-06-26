@@ -164,7 +164,20 @@ And of course, restart nginx::
 Docker
 ~~~~~~
 
-A Dockerfile is provided that produces a slim (~45 MB) production image.
+Pre-built images are published to `GitHub Container Registry
+<https://github.com/jamswat/streetsign/pkgs/container/streetsign>`_ on every
+tagged release — no local build required:
+
+.. code-block:: bash
+
+    docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.0.0
+
+Or with docker-compose (pulls the image automatically):
+
+.. code-block:: bash
+
+    docker compose up -d
+
 See the `README <https://github.com/jamswat/streetsign#docker>`_ for
 Docker-specific configuration, volume mounts, and docker-compose usage.
 
