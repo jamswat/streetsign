@@ -170,6 +170,12 @@ footer a {
 [data-bs-theme="dark"] .logo-light { display: none !important; }
 [data-bs-theme="dark"] .logo-dark { display: inline !important; }
 
+.was-validated .form-control:valid,
+.was-validated .form-select:valid {
+    border-color: var(--bs-border-color);
+    background-image: none;
+}
+
 [data-bs-theme="dark"] footer a {
     color: #8ab4f8;
 }

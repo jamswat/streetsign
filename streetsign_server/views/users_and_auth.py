@@ -242,7 +242,8 @@ def group(groupid):
             thisgroup.set_users(groupusers)
             flash('saved')
 
-    return render_template('group.html', group=thisgroup, allusers=User.select(),
+    return render_template('group.html', group=thisgroup,
+                           allusers=User.select().where(User.is_admin == False),
                            breadcrumbs=[('Dashboard', url_for('index')),
                                         ('Users & Groups',
                                          url_for('users_and_groups')),
