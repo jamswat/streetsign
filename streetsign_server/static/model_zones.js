@@ -52,7 +52,6 @@ window.makeScreenEditor = function(config) {
         zones: zones,
         availableFeeds: config.availableFeeds,
         availableFonts: config.availableFonts,
-        zoneTypes: config.zoneTypes,
 
         get serializedZones() {
             return JSON.stringify(this.zones.map(function(z) {

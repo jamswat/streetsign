@@ -54,7 +54,8 @@ def safehtml(text):
               "tr", "td", "th", "thead", "tbody",
               "tfoot", "h1", "h2", "h3", "h4", "h5", "h6", "p"],
         attributes=['class', 'href', 'alt', 'src', 'style', 'width',
-                     'height', 'cellspacing', 'cellpadding', 'border'],
+                     'height', 'cellspacing', 'cellpadding', 'border',
+                     'data-list', 'contenteditable'],
         css_sanitizer=css_sanitizer)
 
 def safecolor(text, default="#fff"):

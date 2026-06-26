@@ -93,17 +93,26 @@ function magic_vars(text) {
                .replace(/%%DATE(.*?)%%/, '<span class="magic_date" data-format="$1">&nbsp;</span>');
 }
 
-function magic_time() {
+function fill_magic_vars(root) {
+    // Fill any magic_time / magic_date spans with their current values.
+    // `root` is an optional DOM element / jQuery selector to scope the fill
+    // (e.g. a single post). Defaults to the whole document.
     const d = dayjs();
+    const $time = root ? $(root).find('.magic_time') : $('.magic_time');
+    const $date = root ? $(root).find('.magic_date') : $('.magic_date');
 
-    $('.magic_time').each(function() {
+    $time.each(function() {
         const format = $(this).data('format') || 'HH:mm';
         this.innerHTML = d.format(format);
     });
-    $('.magic_date').each(function() {
+    $date.each(function() {
         const format = $(this).data('format') || 'YYYY-MM-DD';
         this.innerHTML = d.format(format);
     });
+}
+
+function magic_time() {
+    fill_magic_vars();
     setTimeout(magic_time, 60000);
 }
 
@@ -203,4 +212,4 @@ function get_servertime(url) {
 }
 
 setTimeout(reload_page, REFRESH_PAGE_TIMER);
-setTimeout(magic_time, 2000);
+magic_time();

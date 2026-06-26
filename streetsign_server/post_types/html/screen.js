@@ -6,11 +6,11 @@
         console.log('making new html');
 
         if (data.zone && data.zone.type === 'scroll') {
-            newhtml = $(`<div class="post post_html post_scrolling"><div class="post_inner">`
+            newhtml = $(`<div class="post post_html post_scrolling"><div class="post_inner ql-editor">`
                            + magic_vars(data.content.content).replace('<br/>', ' ')
                            + `</div></div>`).prependTo(zone);
         } else {
-            newhtml = $(`<div class="post post_html"><div class="post_inner">`
+            newhtml = $(`<div class="post post_html"><div class="post_inner ql-editor">`
                     + magic_vars(data.content.content)
                     + `</div></div>`)
                     .prependTo(zone);

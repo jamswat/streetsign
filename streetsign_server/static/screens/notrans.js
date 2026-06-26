@@ -48,6 +48,9 @@ const zone_types = {
     },
     scroll: {
         start(post, cb) {
+            // Fill any magic_time/magic_date placeholders before measuring the
+            // scroll width, so the animation distance reflects the real text.
+            fill_magic_vars(post.el);
             post.width = post.el.scrollWidth;
 
             const total_distance = post.zone.width + post.width;

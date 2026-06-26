@@ -53,6 +53,12 @@ const zone_types = {
             let css;
 
             if (!post.scroll_stylesheet) {
+                // Ensure any magic_time/magic_date placeholders are filled in
+                // with their (wider) real values *before* measuring the scroll
+                // width, otherwise the keyframe distance / display_time are
+                // computed from the narrow placeholder and the text fades out
+                // before it has fully scrolled off.
+                fill_magic_vars(post.el);
                 post.width = post.el.scrollWidth;
 
                 stylesheet = document.createElement('style');

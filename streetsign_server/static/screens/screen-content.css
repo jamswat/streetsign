@@ -34,3 +34,36 @@
 .wysiwyg-float-right { float: right; margin: 0 0 8px 8px; }
 .wysiwyg-clear-right { clear: right; }
 .wysiwyg-clear-left { clear: left; }
+
+/* The post content is rendered inside a .ql-editor wrapper so that Quill's
+   alignment, indent and list-marker rules (which are scoped to .ql-editor in
+   quill.snow.css) apply on the screens too. Quill's editor-only chrome
+   (fixed padding, forced left-align, scrolling, full height) must be undone
+   so it lays out / auto-fits like the rest of the screen content. */
+.post .ql-editor {
+    height: auto;
+    padding: 0;
+    overflow: visible;
+    text-align: inherit;
+    line-height: normal;
+}
+
+/* In a scrolling (ticker) zone the content must stay on one line. */
+.zone_scroll .ql-editor { white-space: nowrap; }
+
+/* Quill 2.x renders list markers only for its own <li data-list=...> markup
+   (via a .ql-ui :before). Plain <ul>/<ol> content (e.g. hand-written or
+   seeded posts) has its markers stripped by quill.snow.css's
+   `.ql-editor li { list-style-type: none }`. Restore native markers for any
+   list item that is NOT Quill-managed. */
+.post .ql-editor li:not([data-list]) {
+    list-style-type: disc;
+    padding-left: 0;
+}
+.post .ql-editor ol li:not([data-list]) {
+    list-style-type: decimal;
+}
+.post .ql-editor ul,
+.post .ql-editor ol {
+    padding-left: 1.5em;
+}

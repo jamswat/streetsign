@@ -116,9 +116,8 @@
 					<div class="col-6">
 						<label class="form-label small">Zone type:</label>
 						<select class="form-control form-control-sm" x-model="zone.type">
-							<template x-for="zt in zoneTypes" :key="zt.name">
-								<option :value="zt.name" x-text="zt.display"></option>
-							</template>
+							<option value="fade">Fade In, Fade Out</option>
+							<option value="scroll">Scrolling text</option>
 						</select>
 					</div>
 					<div class="col-6">
@@ -206,10 +205,7 @@ screenEditorConfig = {
         {%- for feed in feeds -%}
             {id: "{{ feed.id }}", name: "{{ feed.name}}"} {{- ',' if not loop.last -}}
         {%- endfor -%} ],
-    availableFonts: {{ fonts|tojson|safe }},
-    zoneTypes: [
-        {name: 'fade', display: 'Fade In, Fade Out'},
-        {name: 'scroll', display: 'Scrolling text'}]
+    availableFonts: {{ fonts|tojson|safe }}
 };
 
 // Fake screen preview
