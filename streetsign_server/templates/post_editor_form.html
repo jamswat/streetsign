@@ -186,25 +186,20 @@
 </div>
 
 {% if post.feed.user_can_write(user) %}
-<div class="d-flex justify-content-between mt-3">
-	<div>
-		<button type="submit" class="btn btn-primary">
-			{{ 'Post!' if not post.id else 'Save' }}
-		</button>
-		{% if not post.id %}
+<div class="d-flex gap-2 mt-3">
+	<button type="submit" class="btn btn-primary">
+		{{ 'Save as Draft' if not post.id else 'Save' }}
+	</button>
+	{% if not post.id %}
 		<input type="hidden" name="publish_after" value="1" id="publish-after-flag" disabled />
-		<button type="submit" class="btn btn-success ms-2" id="save-publish-btn"
-		        onclick="document.getElementById('publish-after-flag').disabled=false; this.form.submit();">
+		<button type="button" class="btn btn-success" id="save-publish-btn"
+		        onclick="document.getElementById('publish-after-flag').disabled=false; this.form.requestSubmit();">
 			<span class="bi bi-send"></span> Save &amp; Publish
 		</button>
-		{% endif %}
-	</div>
-	{% if post.id %}
-		{% if not post.published and post.feed.user_can_publish(user) %}
+	{% elif not post.published and post.feed.user_can_publish(user) %}
 		<button type="button" class="btn btn-success" id="publish-save-btn">
 			<span class="bi bi-send"></span> Save &amp; Publish
 		</button>
-		{% endif %}
 	{% endif %}
 </div>
 {% endif %}
@@ -233,7 +228,7 @@
 			const form = this.closest('form');
 			const hiddenAction = form.querySelector('input[name="action"]');
 			hiddenAction.value = 'publish';
-			form.submit();
+			form.requestSubmit();
 		});
 	}
 })();

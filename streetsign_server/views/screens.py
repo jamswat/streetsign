@@ -40,7 +40,7 @@ from streetsign_server import app
 from streetsign_server.models import Feed, Post, Screen, ConfigVar, \
                                      config_var, now
 from streetsign_server.post_types.image import allow_filetype
-from streetsign_server.views.utils import admin_only, registered_users_only
+from streetsign_server.views.utils import admin_only, registered_users_only, not_found
 from streetsign_server.views.user_files import user_fonts
 
 
@@ -152,7 +152,11 @@ def screendisplay(template, screenname):
         # They may show the wrong screen - but it's better than not showing
         # a screen at all.
         # TODO: add an config_var to decide what to do in this circumstance.
-        screen = Screen.get()
+        try:
+            screen = Screen.get()
+        except Screen.DoesNotExist:
+            return not_found(title="No Screens Found",
+                             message="No screen layouts have been created yet.")
 
     return render_template('screens/' + template + '.html',
                            screen=screen,

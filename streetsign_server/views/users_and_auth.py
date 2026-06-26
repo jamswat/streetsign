@@ -193,6 +193,11 @@ def user_edit(userid=-1):
         if user.id == current_user.id:
             return 'Sorry! You cannot delete yourself!', 403
 
+        if user.is_admin:
+            admin_count = User.select().where(User.is_admin == True).count()
+            if admin_count <= 1:
+                return 'Cannot delete the last admin user.', 403
+
         user.delete_instance(recursive=True)
 
         return f'User: {user.displayname} deleted. (And all their posts)'

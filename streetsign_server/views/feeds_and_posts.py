@@ -167,7 +167,7 @@ def feedpage(feedid):
                            feed=feed,
                            user=user,
                            all_posttypes=post_types.types(),
-                           allusers=User.select(),
+                            allusers=User.select().where(User.is_admin == False),
                            allgroups=Group.select(),
                            breadcrumbs=[('Dashboard', url_for('index')),
                                         ('Feeds', url_for('feeds')),

@@ -128,7 +128,12 @@ def post_form_intake(post, form, editor):
         NOTE: this actually modifies the post it is sent!
     '''
 
-    post.title = form.get('post_title', post.title) or 'Untitled'
+    user_provided_title = form.get('post_title', '').strip()
+    if user_provided_title:
+        post.title = user_provided_title
+    elif not post.title:
+        post.title = None
+
     existing = post.content
     try:
         post.content = json.dumps(editor.receive(form))
@@ -136,15 +141,22 @@ def post_form_intake(post, form, editor):
         if not existing:
             raise
 
-    # If no title was provided, derive one from the uploaded filename
-    if not form.get('post_title', '').strip():
+    # If no title was provided, auto-generate one
+    if not user_provided_title and not post.title:
+        auto_title = None
         try:
             content_data = json.loads(post.content)
             filename = content_data.get('filename', '')
             if filename:
-                post.title = re.sub(r'^[0-9a-f\-]{36}', '', filename)
+                auto_title = re.sub(r'^[0-9a-f\-]{36}', '', filename)
         except Exception:
             pass
+
+        if not auto_title:
+            date_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+            auto_title = f"{getattr(editor, '__NAME__', 'Post')} - {date_str}"
+
+        post.title = auto_title
 
     post.status = 0 # any time a post is edited, remove it from archive.
 

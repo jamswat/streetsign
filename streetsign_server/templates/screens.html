@@ -37,8 +37,8 @@
 						{% if session.display_admin_stuff %}
 							<form method="POST" action="{{ url_for('screenedit', screenid=s.id) }}">
 								<input type="hidden" name="action" value="delete" />
-								<input type="submit" value="&times;"
-								       class="btn btn-sm btn-close confirm_delete float-end" />
+								<button type="submit" aria-label="Delete"
+								        class="btn btn-close btn-sm confirm_delete float-end"></button>
 							</form>
 						{% endif %}
 					</td>
