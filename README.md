@@ -162,8 +162,13 @@ cd streetsign
 ./run.py
 ```
 
-Open <http://localhost:5000> — default login is `admin` / `password`.
+Open <http://localhost:5000> — default login is `admin` / `admin`.
 **Change the password immediately** before deploying anywhere.
+
+A fresh database is seeded with three demo accounts (password = login name):
+`admin` (full admin), `editor` (write/publish on all feeds via the `editors`
+group), and `viewer` (read-only). It also includes example feeds, posts, and a
+ready-to-use two-zone `Default` screen at `/screens/basic/Default`.
 
 ## Docker
 
@@ -180,7 +185,7 @@ docker build -t streetsign .
 docker run -d --name streetsign -p 5000:5000 streetsign
 ```
 
-Open <http://localhost:5000> — default login is `admin` / `password`.
+Open <http://localhost:5000> — default login is `admin` / `admin`.
 
 ### docker-compose
 
