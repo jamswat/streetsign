@@ -184,7 +184,7 @@ reverse proxy.
 ### Quick start (pre-built image)
 
 ```bash
-docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.0.1
+docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.0.2
 ```
 
 Open <http://localhost:5000> — default login is `admin` / `admin`.
@@ -201,7 +201,7 @@ docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:latest
 docker compose up -d
 ```
 
-The compose file pulls `ghcr.io/jamswat/streetsign:1.0.1` — no local build
+The compose file pulls `ghcr.io/jamswat/streetsign:1.0.2` — no local build
 required. To build locally instead, uncomment the `build: .` line (and
 comment out or remove the `image:` line).
 
@@ -236,7 +236,7 @@ lost when the container is removed:
 docker run -d -p 5000:5000 \
   -v streetsign-db:/data \
   -v streetsign-uploads:/app/streetsign_server/static/user_files \
-  ghcr.io/jamswat/streetsign:1.0.1
+  ghcr.io/jamswat/streetsign:1.0.2
 ```
 
 On first start (empty `/data`), the container seeds a fresh database with the
@@ -256,7 +256,7 @@ runs pending migrations.
 Override at runtime, e.g. to serve on port 8080:
 
 ```bash
-docker run -d -p 8080:8080 -e PORT=8080 ghcr.io/jamswat/streetsign:1.0.1
+docker run -d -p 8080:8080 -e PORT=8080 ghcr.io/jamswat/streetsign:1.0.2
 ```
 
 Or with compose, publish on a different host port:
@@ -269,7 +269,7 @@ For production you should mount your own `config.py` (see `config_default.py`
 for the full list of options):
 
 ```bash
-docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" ghcr.io/jamswat/streetsign:1.0.1
+docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" ghcr.io/jamswat/streetsign:1.0.2
 ```
 
 ## Production
