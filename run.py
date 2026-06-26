@@ -57,7 +57,7 @@ if __name__ == '__main__':
         if __DEBUG__:
             # With the interactive debugger enabled, refuse to listen on a
             # public interface - it is a remote-code-execution console.
-            host = '127.0.0.1'
+            host = '127.0.0.1'  # pylint: disable=invalid-name
             print("Debugger ON - binding to 127.0.0.1 only.")
         else:
             host = __HOST__

@@ -39,6 +39,7 @@ ALL_MODELS = (User, UserSession, Group, UserGroup, Post, Feed,
               FeedPermission, ConfigVar, ExternalSource, Screen)
 
 def init(dbfile=False):
+    """Initialise the database connection."""
     if dbfile:
         DB.init(dbfile)
     else:
@@ -46,11 +47,13 @@ def init(dbfile=False):
     DB.bind(ALL_MODELS)
 
 def create_all(dbfile=False):
+    """Create all database tables."""
     init(dbfile)
     for t in ALL_MODELS:
         t.create_table(True)
 
 def migrations(dbfile=False):
+    """Run database migrations."""
     # pylint: disable=import-outside-toplevel
     from peewee import TextField, IntegerField
     from playhouse.migrate import SqliteMigrator, migrate

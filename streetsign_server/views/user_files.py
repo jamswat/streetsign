@@ -26,19 +26,20 @@
 """
 
 
-from flask import render_template, request, redirect, \
-                  flash, g, url_for, Response
-from markupsafe import Markup, escape
-import streetsign_server.user_session as user_session
-from streetsign_server.views.utils import admin_only, registered_users_only
-
 from glob import glob
 import re
 from os.path import basename, dirname, join as pathjoin, splitext, isdir, isfile, realpath
-from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
 from os import makedirs, remove, stat, sep as ossep
+from subprocess import check_call
+
+from flask import render_template, request, redirect, \
+                  flash, g, url_for, Response
+from markupsafe import Markup, escape
+from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
+
+from streetsign_server import user_session
+from streetsign_server.views.utils import admin_only, registered_users_only
 from streetsign_server import app
-from subprocess import check_call # for making thumbnails
 
 ##################################################################
 # user uploaded files:
@@ -85,7 +86,9 @@ def make_dirlist(path):
                     f'<img src="{url_for("thumbnail", filename=path + name)}"'
                     f' alt="{safe_name}" />')
             elif ext in FONT_EXTENSIONS:
-                thumb = '<i class="bi bi-file-earmark-font" style="font-size: 1.5rem;" title="Font file"></i> '
+                thumb = ('<i class="bi bi-file-earmark-font"'
+                            ' style="font-size: 1.5rem;"'
+                            ' title="Font file"></i> ')
             else:
                 thumb = ''
 
@@ -144,7 +147,8 @@ def user_files_list(dir_name=""):
             if isfile(full_filename):
                 remove(full_filename)
                 try:
-                    thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails', dir_name, filename)
+                    thumb_path = pathjoin(g.site_vars['user_dir'],
+                                       '.thumbnails', dir_name, filename)
                     # only remove if it really resolves under .thumbnails.
                     thumb_base = realpath(pathjoin(g.site_vars['user_dir'],
                                                    '.thumbnails'))

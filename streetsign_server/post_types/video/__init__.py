@@ -27,12 +27,13 @@ HTML5 video post type.  Upload a video file to be displayed on screen.
 __NAME__ = 'Video'
 __DESC__ = 'HTML5 video - upload a video file for screen display'
 
-from flask import render_template_string, request, g, flash
-from werkzeug.utils import secure_filename
+from os import makedirs, remove
 from os.path import splitext, isdir, abspath, dirname, basename
 from os.path import join as pathjoin
-from os import makedirs, remove
 from uuid import uuid4
+
+from flask import render_template_string, request, g, flash
+from werkzeug.utils import secure_filename
 
 from streetsign_server.post_types import my
 
@@ -53,6 +54,7 @@ def allow_filetype(filename):
 
 
 def form(data):
+    """Form for editing a video post."""
     return render_template_string(my('form.html'), **data)
 
 

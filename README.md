@@ -1,5 +1,9 @@
 # StreetSign
 
+<div align="center">
+  <img src="streetsign_server/static/resources/streetsign_text.svg" alt="StreetSign" width="520" />
+</div>
+
 **A lightweight, self-hosted, plugin-extensible digital signage server.**
 Point any browser at a URL and it becomes a screen — no agents to install,
 no cloud account, no per-display licensing.

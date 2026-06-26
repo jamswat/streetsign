@@ -27,8 +27,9 @@ Display an External Web Page embedded in a screen.
 __NAME__ = 'External Web Page'
 __DESC__ = 'Display an External web page as a post'
 
-from flask import render_template_string
 from urllib.parse import urlparse
+
+from flask import render_template_string
 
 from streetsign_server.post_types import my
 

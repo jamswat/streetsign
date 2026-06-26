@@ -24,9 +24,10 @@
 
 '''
 
-from flask import render_template, g, Response, url_for, request, session
 from uuid import uuid4
 from hmac import compare_digest
+
+from flask import render_template, g, Response, url_for, request, session
 from markupsafe import Markup
 
 ##########################
@@ -35,7 +36,9 @@ import streetsign_server.views.users_and_auth
 import streetsign_server.views.feeds_and_posts
 import streetsign_server.views.user_files
 import streetsign_server.views.screens
-import streetsign_server.user_session as user_session
+from streetsign_server import user_session
+
+# pylint: disable=singleton-comparison,no-value-for-parameter
 
 # set up the app
 from streetsign_server import app
@@ -71,7 +74,8 @@ def before_the_action():
 
 @app.context_processor
 def inject_csrf():
-    return dict(csrf_token=session.get('_csrf_token', ''))
+    """Inject CSRF token into all templates."""
+    return {"csrf_token": session.get('_csrf_token', '')}
 
 
 @app.route('/')
@@ -146,7 +150,7 @@ def robots_txt():
 # Expected Error Handlers:
 
 @app.errorhandler(user_session.NotLoggedIn)
-def not_logged_in(err):
+def not_logged_in(_err):
     ''' Not Logged In handler '''
     # TODO: nicer looking.
     return f'''<!doctype html>

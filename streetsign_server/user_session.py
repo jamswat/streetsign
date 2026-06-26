@@ -44,7 +44,6 @@ def login(username, password):
 
 class NotLoggedIn(Exception):
     ''' Basic exception for when you MUST be logged in, but aren't. '''
-    pass
 
 def get_user():
     ''' if the user's session cookie thinks they're not logged in,
@@ -56,11 +55,11 @@ def get_user():
         The encrypted sessions should not allow this anyway, but this is an
         extra precaution, for double paranoia. '''
 
-    if not 'logged_in' in session:
+    if 'logged_in' not in session:
         raise NotLoggedIn('Not logged in!')
     try:
         return get_logged_in_user(session['username'], session['sessionid'])
-    except:
+    except Exception:  # pylint: disable=broad-exception-caught
         session.pop('username', None)
         session.pop('sessionid', None)
         session.pop('display_admin_stuff', None)
@@ -78,7 +77,7 @@ def logout():
 
     try:
         user_logout(session['username'], session['sessionid'])
-    except:
+    except Exception:  # pylint: disable=broad-exception-caught
         pass # somehow the session expired. but we're logging out anyway.
     session.pop('username', None)
     session.pop('sessionid', None)
@@ -92,6 +91,5 @@ def is_admin():
     # convenience method.  Makes certain views a lot shorter.
     try:
         return get_user().is_admin
-    except:
+    except Exception:  # pylint: disable=broad-exception-caught
         return False
-

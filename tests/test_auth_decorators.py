@@ -22,16 +22,19 @@ from unittest_helpers import StreetSignTestCase
 @streetsign_server.app.route('/tests/admin_only_get')
 @admin_only('GET')
 def admin_only_get():
+    """Test route: admin-only GET."""
     return jsonify({'test': 'success'})
 
 @streetsign_server.app.route('/tests/admin_only_post_all_get', methods=['GET', 'POST'])
 @admin_only('POST')
 @registered_users_only('GET')
 def admin_only_post_all_get():
+    """Test route: admin-only POST, registered-users GET."""
     return jsonify({'test': 'success'})
 
 @streetsign_server.app.route('/tests/blah')
 def blah():
+    """Unrestricted test route."""
     return jsonify({'test': 'success'})
 
 
@@ -39,6 +42,7 @@ class TestDecorators(StreetSignTestCase):
     ''' test for valid HTML & JSON of the main views. '''
 
     def test_new_only_admins_get_only(self):
+        """Test that GET is only for admins."""
 
         # without logging in:
 
@@ -52,7 +56,7 @@ class TestDecorators(StreetSignTestCase):
 
         # log in:
 
-        a = self.login('test', '123')
+        self.login('test', '123')
 
         # should still fail:
 
@@ -67,6 +71,7 @@ class TestDecorators(StreetSignTestCase):
 
 
     def test_admin_post_only_must_be_logged_in_to_get(self):
+        """Test that POST is only for admins, GET requires login."""
         route = '/tests/admin_only_post_all_get'
 
         # without logging in:
@@ -82,7 +87,7 @@ class TestDecorators(StreetSignTestCase):
 
         # log in:
 
-        a = self.login('test', '123')
+        self.login('test', '123')
 
         self.validate(route, lang='json')
         self.validate(route, req='POST', code=403)
@@ -96,4 +101,5 @@ class TestDecorators(StreetSignTestCase):
         self.validate(route, req='POST', lang='json')
 
     def test_new_route(self):
+        """Test an unrestricted route returns a valid response."""
         self.validate('/tests/blah', lang='json')

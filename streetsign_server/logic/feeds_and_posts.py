@@ -34,7 +34,7 @@ from flask import flash, url_for, json, g
 
 from streetsign_server.views.utils import PleaseRedirect, \
                                           getstr, getint, getbool, \
-                                          STRIPSTR, DATESTR
+                                          DATESTR
 from streetsign_server.models import Feed, Post, now
 
 def try_to_set_feed(post, new_feed_id, user):
@@ -53,10 +53,10 @@ def try_to_set_feed(post, new_feed_id, user):
         # new or changed feed.
         try:
             feed = Feed.get(Feed.id == new_feed_id)
-        except Feed.DoesNotExist:
+        except Feed.DoesNotExist as exc:
             raise PleaseRedirect(None,
                                  "Odd. You somehow tried to post "
-                                 "to a non-existant feed. It didn't work.")
+                                 "to a non-existant feed. It didn't work.") from exc
 
         if feed.user_can_write(user):
             flash('Posted to ' + feed.name)
@@ -161,7 +161,7 @@ def post_form_intake(post, form, editor):
     post.status = 0 # any time a post is edited, remove it from archive.
 
     post.time_restrictions_show = \
-        (form.get('times_mode', 'do_not_show') == 'only_show')
+        form.get('times_mode', 'do_not_show') == 'only_show'
     post.time_restrictions = form.get('time_restrictions_json', '[]')
 
     if getbool('permanent', False, form=form):
@@ -192,7 +192,7 @@ def delete_post_and_run_callback(post, typemodule):
 
     try:
         typemodule.delete(json.loads(post.content))
-    except AttributeError as excp:
+    except AttributeError:
         pass
         # There's no callback for this posttype, which is fine.
         # most post types will store no external data, and so don't need

@@ -8,26 +8,29 @@
 
 from setuptools import setup
 
+with open('README.md', 'r', encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(
-    name = 'streetsign_server',
-    packages = ['streetsign_server', 'streetsign_server.views',
-                                     'streetsign_server.logic',
-                                     'streetsign_server.post_types',
-                                     'streetsign_server.external_source_types'],
-    version = "0.6",
-    description = 'A simple python/flask/web based digital signage system',
-    long_description=open('README.md','r', encoding='utf-8').read(),
-    author = 'Daniel Fairhead',
-    author_email = 'danthedeckie@gmail.com',
-    url = 'https://github.com/jamswat/streetsign',
-    keywords = ['flask', 'signage', 'web'],
-    classifiers = ['Development Status :: 4 - Beta',
-                   'Intended Audience :: Developers',
-                   'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-                   'Programming Language :: Python :: 3',
-                   'Programming Language :: Python :: 3.9',
-                   'Programming Language :: Python :: 3.10',
-                   'Programming Language :: Python :: 3.11',
-                   'Programming Language :: Python :: 3.12',
-                  ],
-    )
+    name='streetsign_server',
+    packages=['streetsign_server', 'streetsign_server.views',
+              'streetsign_server.logic',
+              'streetsign_server.post_types',
+              'streetsign_server.external_source_types'],
+    version="0.6",
+    description='A simple python/flask/web based digital signage system',
+    long_description=long_description,
+    author='Daniel Fairhead',
+    author_email='danthedeckie@gmail.com',
+    url='https://github.com/jamswat/streetsign',
+    keywords=['flask', 'signage', 'web'],
+    classifiers=['Development Status :: 4 - Beta',
+                 'Intended Audience :: Developers',
+                 'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+                 'Programming Language :: Python :: 3',
+                 'Programming Language :: Python :: 3.9',
+                 'Programming Language :: Python :: 3.10',
+                 'Programming Language :: Python :: 3.11',
+                 'Programming Language :: Python :: 3.12',
+                 ],
+)

@@ -23,10 +23,11 @@
     No actual views in here, only bits and pieces to make views more
     fun.
 """
-from flask import request, flash, render_template, make_response
-import streetsign_server.user_session as user_session
 from functools import wraps
 import re
+
+from flask import request, flash, render_template, make_response
+import streetsign_server.user_session as user_session
 
 # lots of wrappers, don't need these:
 # pylint: disable=missing-docstring

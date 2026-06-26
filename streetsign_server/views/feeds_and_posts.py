@@ -25,7 +25,7 @@
 """
 
 # alas, due to peewee:
-#pylint: disable=no-value-for-parameter,unexpected-keyword-arg
+#pylint: disable=no-value-for-parameter,unexpected-keyword-arg,not-an-iterable,singleton-comparison
 
 from datetime import timedelta
 
@@ -34,8 +34,8 @@ from flask import render_template, url_for, request, redirect, \
 import peewee
 import bleach
 
-import streetsign_server.user_session as user_session
-import streetsign_server.post_types as post_types
+from streetsign_server import user_session
+from streetsign_server import post_types
 from streetsign_server.views.utils import PleaseRedirect, getint, getbool, \
                                           getstr, DATESTR, \
                                           admin_only, \
@@ -43,7 +43,6 @@ from streetsign_server.views.utils import PleaseRedirect, getint, getbool, \
 
 from streetsign_server.logic.feeds_and_posts import try_to_set_feed, \
                                       if_i_cant_write_then_i_quit, \
-                                      can_user_write_and_publish, \
                                       post_form_intake, \
                                       delete_post_and_run_callback, \
                                       cleanup_orphaned_media_files
@@ -53,7 +52,7 @@ from streetsign_server.models import User, Group, Feed, Post, ExternalSource, \
                                      by_id, config_var, PermissionDenied, \
                                      now
 
-import streetsign_server.external_source_types as external_source_types
+from streetsign_server import external_source_types
 
 class RSSFeed:
     ''' Minimal RSS 2.0 feed generator. '''
@@ -81,7 +80,9 @@ class RSSFeed:
                 f'<guid>{self._escape(item.get("guid", ""))}</guid></item>')
         return (f'<?xml version="1.0" encoding="UTF-8"?>'
                 f'<rss version="2.0"><channel>'
-                f'<title>{title}</title><link>{link}</link><description>{desc}</description>'
+                f'<title>{title}</title>'
+                f'<link>{link}</link>'
+                f'<description>{desc}</description>'
                 f'{"".join(items_xml)}</channel></rss>')
 
 ####################################################################
@@ -197,14 +198,14 @@ def feedsrss(ids_raw):
             continue
 
     time_now = now()
-    feed_posts = [p for p in \
+    feed_posts = list(
                   Post.select().join(Feed).where(
                       (Feed.id << ids)
-                      &(Post.status == 0)
+        &(Post.status == 0)
                       &(Post.active_start < time_now)
                       &(Post.active_end > time_now)
                       &(Post.published)
-                      )]
+                      ))
 
     feed = RSSFeed()
 
@@ -306,7 +307,7 @@ def post_new(feed_id):
 
         # give list of available post types:
 
-        all_posttypes = dict([(x['id'], x) for x in post_types.types()])
+        all_posttypes = {x['id']: x for x in post_types.types()}
 
         if post.feed.post_types:
 
@@ -327,7 +328,8 @@ def post_new(feed_id):
                                post_types=allowed_post_types,
                                breadcrumbs=[('Dashboard', url_for('index')),
                                             ('Feeds', url_for('feeds')),
-                                            (feed.name, url_for('feedpage', feedid=feed.id)),
+                                            (feed.name,
+                                              url_for('feedpage', feedid=feed.id)),
                                             ('New Post', None)])
 
     # POST. new post!
@@ -547,6 +549,7 @@ def posts_bulk_delete():
 
 @app.route('/posts/<int:postid>/json')
 def json_post(postid):
+    """Return a post's dict representation as JSON."""
     try:
         post = Post.get(Post.id == postid)
     except Post.DoesNotExist:
@@ -554,7 +557,7 @@ def json_post(postid):
 
     time_now = now()
     if (post.published and post.status == 0 and
-            post.active_start < time_now and post.active_end > time_now):
+            post.active_start < time_now < post.active_end):
         return jsonify(post.dict_repr())
 
     try:
@@ -681,7 +684,8 @@ def external_source_run(source_id):
             next_check = source.last_checked + timedelta(minutes=source.frequency)
 
             if next_check > time_now:
-                return f"Nothing to do. Last: {source.last_checked}, Next: {next_check}, Now: {time_now} "
+                return (f"Nothing to do. Last: {source.last_checked}, "
+                        f"Next: {next_check}, Now: {time_now}")
 
     module = external_source_types.load(source.type)
 

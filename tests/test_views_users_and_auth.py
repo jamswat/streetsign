@@ -467,7 +467,7 @@ class UserUpdatesTestCase(BasicUsersTestCase):
 
     def test_normal_user_cannot_set_self_admin(self):
         self.login(USERNAME, USERPASS)
-        resp = self.post_update_request(is_admin=True)
+        self.post_update_request(is_admin=True)
 
         usernow = User.get(id=self.user.id)
         self.assertEqual(usernow.is_admin, False)
@@ -499,7 +499,7 @@ class UserUpdatesTestCase(BasicUsersTestCase):
     def test_admin_can_make_admin(self):
         self.assertFalse(self.user.is_admin)
         self.login(ADMINNAME, ADMINPASS)
-        resp = self.post_update_request(userid=self.user.id, is_admin=True)
+        self.post_update_request(userid=self.user.id, is_admin=True)
 
         usernow = User.get(id=self.user.id)
         self.assertTrue(usernow.is_admin)
@@ -507,7 +507,7 @@ class UserUpdatesTestCase(BasicUsersTestCase):
     def test_admin_can_make_admin_with_on(self):
         self.assertFalse(self.user.is_admin)
         self.login(ADMINNAME, ADMINPASS)
-        resp = self.post_update_request(userid=self.user.id, is_admin="on")
+        self.post_update_request(userid=self.user.id, is_admin="on")
 
         usernow = User.get(id=self.user.id)
         self.assertTrue(usernow.is_admin)
@@ -523,14 +523,14 @@ class UserUpdatesTestCase(BasicUsersTestCase):
         self.assertTrue(usernow.is_admin)
 
         self.login(ADMINNAME, ADMINPASS)
-        resp = self.post_update_request(userid=self.user.id, is_admin=False)
+        self.post_update_request(userid=self.user.id, is_admin=False)
 
         usernow = User.get(id=self.user.id)
         self.assertFalse(usernow.is_admin)
 
     def test_admin_cannot_unadmin_self(self):
         self.login(ADMINNAME, ADMINPASS)
-        resp = self.post_update_request(userid=self.admin.id, is_admin=False)
+        self.post_update_request(userid=self.admin.id, is_admin=False)
 
         adminnow = User.get(id=self.admin.id)
         self.assertEqual(adminnow.is_admin, True)
@@ -647,19 +647,19 @@ class UserGroupsTestCase(BasicUsersTestCase):
     def test_normal_user_cannot_create_group(self):
         self.assertFalse(self.group_exists())
         self.login(USERNAME, USERPASS)
-        resp = self.post_create_group()
+        self.post_create_group()
         self.assertFalse(self.group_exists())
 
     def test_admin_can_create_group(self):
         self.assertFalse(self.group_exists())
         self.login(ADMINNAME, ADMINPASS)
-        resp = self.post_create_group()
+        self.post_create_group()
         self.assertTrue(self.group_exists())
 
     def test_admin_cannot_create_unnamed_group(self):
         self.assertFalse(self.group_exists())
         self.login(ADMINNAME, ADMINPASS)
-        resp = self.post_create_group(name='')
+        self.post_create_group(name='')
         self.assertFalse(self.group_exists())
 
         with self.assertRaises(Group.DoesNotExist):

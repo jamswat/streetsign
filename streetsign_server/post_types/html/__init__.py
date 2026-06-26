@@ -27,8 +27,9 @@ HTML / rich text post type.
 __NAME__ = 'Rich Text'
 __DESC__ = 'Rich text and HTML editor'
 
-from flask import render_template_string
 import re
+
+from flask import render_template_string
 import bleach
 from bleach.css_sanitizer import CSSSanitizer
 

@@ -25,9 +25,10 @@
 __NAME__ = 'Local Folder (images)'
 __MODULE__ = 'localfolderimages'
 
-from flask import render_template_string, json
-from os.path import join as pathjoin, isdir, isfile, exists, basename, dirname
 from glob import glob
+from os.path import join as pathjoin, isdir, isfile, exists, basename, dirname
+
+from flask import render_template_string, json
 
 from streetsign_server.external_source_types import my
 from streetsign_server.post_types.image import allow_filetype

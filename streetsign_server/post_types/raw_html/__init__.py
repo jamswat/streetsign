@@ -32,14 +32,18 @@ from flask import render_template_string
 from streetsign_server.post_types import my
 
 def form(data):
+    """Form for editing a raw HTML post."""
     return render_template_string(my('form.html'), **data)
 
 def receive(data):
+    """Parse and return raw HTML post data from the form."""
     return {'type': 'raw_html',
             'content': data.get('content', '')}
 
 def display(data):
+    """Return the raw HTML content for screen display."""
     return data['content']
 
 def screen_js():
+    """Return JavaScript for screen rendering."""
     return my('screen.js')

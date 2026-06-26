@@ -160,10 +160,12 @@ class Group(DBModel):
             ('(hidden)>' if not self.display else '>')
 
     def users(self):
+        """Return all users in this group."""
         return list(User.select().join(UserGroup)
                             .where(UserGroup.group == self))
 
     def set_users(self, useridlist):
+        """Replace the users in this group with the given list."""
         # clear old groups:
         UserGroup.delete().where(UserGroup.group == self).execute()
 

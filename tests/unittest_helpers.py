@@ -29,15 +29,18 @@ class MockBcrypt:
     ''' Mock BCrypt out.  It's very slow.  Which is actually good... '''
 
     @staticmethod
-    def hashpw(password, salt):
+    def hashpw(password, _salt):
+        """Mock bcrypt.hashpw."""
         return password
 
     @staticmethod
     def checkpw(password, hashed):
+        """Mock bcrypt.checkpw."""
         return password == hashed
 
     @staticmethod
     def gensalt():
+        """Mock bcrypt.gensalt."""
         return b''
 
 class StreetSignTestCase(unittest.TestCase):
@@ -94,7 +97,6 @@ class StreetSignTestCase(unittest.TestCase):
 
             real_errors = []
             for err in parser.errors:
-                errcode = err[1] if len(err) > 1 else None
                 errdata = err[2] if len(err) > 2 else None
                 if (isinstance(errdata, dict)
                         and errdata.get('name') == 'template'):
@@ -127,10 +129,12 @@ class StreetSignTestCase(unittest.TestCase):
             raise WrongHTTPCode(url, code, request.status_code)
 
     def login(self, username, password):
+        """Log in as the given user."""
         return self.client.post('/login',
-                                data=dict(username=username,
-                                          password=password),
+                                data={"username": username,
+                                      "password": password},
                                 follow_redirects=True)
 
     def logout(self):
+        """Log out the current user."""
         return self.client.post('/logout', follow_redirects=True)

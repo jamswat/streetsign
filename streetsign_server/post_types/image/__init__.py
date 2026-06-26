@@ -28,13 +28,14 @@ __NAME__ = 'Image'
 __DESC__ = 'An image file, stored locally on the streetsign server'
 
 
+from os import makedirs, remove
+from os.path import splitext, join as pathjoin, isdir, isfile, abspath, dirname, basename
+from shutil import copyfile
+from subprocess import check_call
+from uuid import uuid4
+
 from flask import render_template_string, request, g, flash
 from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
-from os.path import splitext, join as pathjoin, isdir, isfile, abspath, dirname, basename
-from subprocess import check_call
-from os import makedirs, remove
-from shutil import copyfile
-from uuid import uuid4
 
 from streetsign_server.post_types import my
 from streetsign_server.logic.urlsafety import check_fetch_url, UnsafeURL
@@ -168,7 +169,8 @@ def delete(data):
     ''' when a post is deleted, this is called first, so we can clean up. '''
     remove(pathjoin(image_path(), secure_filename(data['filename'])))
     try:
-        thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails', 'post_images', secure_filename(data['filename']))
+        thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails',
+                              'post_images', secure_filename(data['filename']))
         if isfile(thumb_path):
             remove(thumb_path)
     except OSError:

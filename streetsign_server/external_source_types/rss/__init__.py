@@ -25,11 +25,12 @@ __NAME__ = 'RSS/XML/ATOM Feed'
 
 __MODULE__ = 'rss'
 
+from collections import defaultdict
+
 from flask import render_template_string, json
 from jinja2 import Template
 import feedparser
 import bleach
-from collections import defaultdict
 
 from streetsign_server.external_source_types import my
 from streetsign_server.logic.urlsafety import check_fetch_url, UnsafeURL

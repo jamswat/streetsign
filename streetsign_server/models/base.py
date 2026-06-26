@@ -25,7 +25,6 @@ Base ORM infrastructure, utility functions, and DB management.
 
 '''
 
-import sqlite3
 from datetime import datetime, timedelta
 from time import time, mktime
 
@@ -50,14 +49,12 @@ DB = SqliteDatabase(None, pragmas={
 })
 
 
-'''
---------------------------------------------------------------------------------
-Useful functions
---------------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# Custom Exceptions
+# -------------------------------------------------------------------------
 
-'''
-
-def now(timestamp=False):
+def now(timestamp=False):  # pylint: disable=no-member,not-callable
+    '''Return the current datetime adjusted by TIME_OFFSET, or as a timestamp.'''
     if timestamp:
         return mktime(now(False).timetuple())
     return datetime.now() + \
@@ -91,11 +88,9 @@ def by_id(model, ids):
     return list(model.select().where(model.id << [int(i) for i in ids]))
 
 
-'''
---------------------------------------------------------------------------------
-Custom Exceptions
---------------------------------------------------------------------------------
-'''
+# -------------------------------------------------------------------------
+# Useful functions
+# -------------------------------------------------------------------------
 
 class InvalidValue(Exception):
     ''' for invalid values trying to be set by update_from '''
@@ -112,11 +107,9 @@ class InvalidPassword(Exception):
     def __str__(self):
         return repr(self.value)
 
-'''
---------------------------------------------------------------------------------
-Other
---------------------------------------------------------------------------------
-'''
+# -------------------------------------------------------------------------
+# Other
+# -------------------------------------------------------------------------
 
 class DBModel(Model):
     ''' base class for other database models '''

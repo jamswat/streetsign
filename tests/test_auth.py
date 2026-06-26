@@ -130,12 +130,12 @@ class TestLogin(StreetSignTestCase):
 
     def test_usersession_is_created(self):
         self.assertEqual(models.UserSession.select().count(), 0)
-        resp = self.login('test', '123')
+        self.login('test', '123')
         self.assertEqual(models.UserSession.select().count(), 1)
 
     def test_logout_deletes_session(self):
         self.assertEqual(models.UserSession.select().count(), 0)
-        resp = self.login('test', '123')
+        self.login('test', '123')
 
         self.assertEqual(models.UserSession.select().count(), 1)
 
@@ -143,7 +143,7 @@ class TestLogin(StreetSignTestCase):
         self.assertEqual(models.UserSession.select().count(), 0)
 
     def test_db_usersession_gone_auth_breaks(self):
-        resp = self.login('test', '123')
+        self.login('test', '123')
         self.validate('/users/' + str(self.user.id))
 
         models.UserSession.delete().execute()
@@ -152,7 +152,7 @@ class TestLogin(StreetSignTestCase):
         self.validate('/users/' + str(self.user.id), code=403)
 
     def test_db_usersession_gone_can_login_again(self):
-        resp = self.login('test', '123')
+        self.login('test', '123')
         self.validate('/users/' + str(self.user.id))
 
         models.UserSession.delete().execute()
@@ -160,5 +160,5 @@ class TestLogin(StreetSignTestCase):
         self.assertEqual(models.UserSession.select().count(), 0)
         self.validate('/users/' + str(self.user.id), code=403)
 
-        resp = self.login('test', '123')
+        self.login('test', '123')
         self.validate('/users/' + str(self.user.id))

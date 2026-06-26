@@ -27,15 +27,19 @@
 
 
 
+from glob import glob
+from os.path import basename
+import urllib.request
+import urllib.parse
+import urllib.error
+
 from flask import render_template, url_for, request, redirect, \
                   flash, json, jsonify
 from werkzeug.datastructures import ImmutableDict
 
 import peewee
-from glob import glob
-from os.path import basename
-import urllib.request, urllib.parse, urllib.error
-import streetsign_server.post_types as post_types
+
+from streetsign_server import post_types
 from streetsign_server import app
 from streetsign_server.models import Feed, Post, Screen, ConfigVar, \
                                      config_var, now

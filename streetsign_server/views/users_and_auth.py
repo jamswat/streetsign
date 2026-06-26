@@ -35,7 +35,7 @@ import peewee
 from streetsign_server import app
 from streetsign_server.models import User, Group, Post, UserGroup, InvalidPassword
 
-# pylint: disable=no-member
+# pylint: disable=no-member,singleton-comparison
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -99,8 +99,9 @@ def users_and_groups():
 
 
 def update_user(user=None, form=None, current_user=None):
-    assert type(user) == User
-    assert type(current_user) == User
+    """Update user fields from form data."""
+    assert isinstance(user, User)
+    assert isinstance(current_user, User)
 
     user.update_from(form, 'loginname', cb=flash)
     user.update_from(form, 'displayname', cb=flash)
@@ -140,7 +141,7 @@ def user_edit(userid=-1):
 
     try:
         current_user = user_session.get_user()
-    except user_session.NotLoggedIn as e:
+    except user_session.NotLoggedIn:
         flash("Sorry, you're not logged in!")
         return permission_denied("You're not logged in!")
 
