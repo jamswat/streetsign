@@ -59,14 +59,12 @@ def before_the_action():
         if request.endpoint in (
             'login', 'logout',
             'screendisplay', 'screens_posts_from_feeds', 'screen_json',
-            'post_types_js', 'posts_housekeeping', 'json_post',
-            'external_data_source_run', 'external_data_sources_update_all',
-            'external_source_test',
-            'save_aliases', 'client_alias', 'robots_txt',
+            'post_types_js', 'json_post', 'client_alias', 'robots_txt',
         ):
             return
 
-        form_token = request.form.get('_csrf_token', '')
+        form_token = request.form.get('_csrf_token', '') or \
+                     request.headers.get('X-CSRF-Token', '')
         if form_token != session['_csrf_token']:
             return Response('CSRF validation failed', status=403)
 

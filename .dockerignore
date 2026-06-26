@@ -18,7 +18,6 @@ streetsign_server/static/user_files/
 tests/
 docs/
 deployment/
-scripts/
 TODO.md
 CHANGELOG.md
 Dockerfile

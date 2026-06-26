@@ -108,5 +108,45 @@ class TestDB(StreetSignTestCase):
         from_server = json.loads(self.client.get(posts_list[0]['uri']).data)
         self.assertEqual(from_server, json.loads(json.dumps(p.dict_repr())))
 
+    def test_unpublished_post_json_not_public(self):
+        f = models.Feed.create(name='private feed')
+        u = models.User.create(loginname='test',
+                               emailaddress='test@example.com',
+                               passwordhash='')
+        u.set_password('test pass')
+        u.save()
+        p = models.Post.create(feed=f,
+                               title='draft',
+                               type='html',
+                               content='{"content":"secret draft"}',
+                               author=u,
+                               published=False)
+
+        resp = self.client.get('/posts/' + str(p.id) + '/json')
+
+        self.assertEqual(resp.status_code, 404)
+        self.assertNotIn(b'secret draft', resp.data)
+
+    def test_writer_can_access_unpublished_post_json(self):
+        f = models.Feed.create(name='private feed')
+        u = models.User.create(loginname='test',
+                               emailaddress='test@example.com',
+                               passwordhash='')
+        u.set_password('test pass')
+        u.save()
+        f.grant('Write', user=u)
+        p = models.Post.create(feed=f,
+                               title='draft',
+                               type='html',
+                               content='{"content":"secret draft"}',
+                               author=u,
+                               published=False)
+
+        self.login('test', 'test pass')
+        resp = self.client.get('/posts/' + str(p.id) + '/json')
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'secret draft', resp.data)
+
 if __name__ == '__main__':
     unittest.main()

@@ -50,6 +50,9 @@ def user_login(name, password):
     user = User.select().where(User.loginname == name).get()
     # on error, raises: User.DoesNotExist
 
+    if user.is_locked_out:
+        raise InvalidPassword('Invalid Password!')
+
     if bcrypt.checkpw(
             (password + SECRET_KEY).encode('utf-8'),
             user.passwordhash.encode('utf-8'),
@@ -64,6 +67,9 @@ def user_login(name, password):
 def get_logged_in_user(name, session_uuid):
     ''' either returns a logged in user, or raises an error '''
     session = UserSession.get(id=session_uuid, username=name)
+    if session.user.is_locked_out:
+        session.delete_instance()
+        raise InvalidPassword('Invalid Password!')
     return session.user
 
 def user_logout(name, session_uuid):

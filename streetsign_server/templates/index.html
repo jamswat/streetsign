@@ -278,7 +278,6 @@
 		{# Keeping hardcoded URLs out of javascript files,
 		   injected here rather than in main.js. #}
 		window.HOUSEKEEPING_URL="{{ url_for('posts_housekeeping') }}";
-		$.post("{{ url_for('external_data_sources_update_all') }}");
 		</script>
 		{{ linkmacros.static_js('main.js') }}
 	{% endblock %}

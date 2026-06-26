@@ -28,6 +28,7 @@ __NAME__ = 'External Web Page'
 __DESC__ = 'Display an External web page as a post'
 
 from flask import render_template_string
+from urllib.parse import urlparse
 
 from streetsign_server.post_types import my
 
@@ -40,9 +41,14 @@ def receive(data):
         a dict which can be JSON'd by the system, and dumped as
         text into the database. '''
 
+    url = data.get('url', '').strip()
+    parsed = urlparse(url)
+    if parsed.scheme not in ('http', 'https'):
+        url = ''
+
     return {'type': 'external_webpage',
-            'content': data.get('url', ''),
-            'url': data.get('url', '')}
+            'content': url,
+            'url': url}
 
 def display(data):
     ''' return the data ready for the display js to do stuff with. '''

@@ -546,9 +546,25 @@ def posts_bulk_delete():
 @app.route('/posts/<int:postid>/json')
 def json_post(postid):
     try:
-        return jsonify(Post.get(Post.id == postid).dict_repr())
-    except Exception:
-        return jsonify({"error": "Invalid Post ID"})
+        post = Post.get(Post.id == postid)
+    except Post.DoesNotExist:
+        return jsonify({"error": "Invalid Post ID"}), 404
+
+    time_now = now()
+    if (post.published and post.status == 0 and
+            post.active_start < time_now and post.active_end > time_now):
+        return jsonify(post.dict_repr())
+
+    try:
+        user = user_session.get_user()
+    except user_session.NotLoggedIn:
+        user = None
+
+    if user and (user.is_admin or post.feed.user_can_write(user) or
+                 post.feed.user_can_publish(user)):
+        return jsonify(post.dict_repr())
+
+    return jsonify({"error": "Invalid Post ID"}), 404
 
 ###############################################################
 
@@ -632,20 +648,17 @@ def external_data_source_edit(source_id):
                                         ('External Source', None)])
 
 
-@app.route('/external_data_sources/test')
+@app.route('/external_data_sources/test', methods=['POST'])
+@admin_only('POST')
 def external_source_test():
     '''
         test an external source, and return some comforting HTML
         (for the editor)
     '''
-    if not user_session.is_admin():
-        flash('Only Admins can do this!')
-        return redirect(url_for('feeds'))
-
     # load the type module:
-    module = external_source_types.load(request.args.get('type', None))
+    module = external_source_types.load(request.form.get('type', None))
     # and request the test html
-    return module.test(request.args)
+    return module.test(request.form)
 
 @app.route('/external_data_sources/<int:source_id>/run', methods=['POST'])
 @admin_only('POST')

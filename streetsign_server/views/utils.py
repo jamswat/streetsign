@@ -101,7 +101,7 @@ def admin_only(*methods):
                     flash('Sorry! You need to be logged in!')
                     return permission_denied('You must be logged in!')
 
-                if not user.is_admin:
+                if not user or not user.is_admin:
                     flash('Sorry! You need to be an admin!')
                     return permission_denied('You must be an admin!')
 
@@ -118,8 +118,11 @@ def registered_users_only(*methods):
         def wrapped(*args, **kwargs):
             if request.method in methods:
                 try:
-                    user_session.get_user()
+                    user = user_session.get_user()
                 except user_session.NotLoggedIn:
+                    flash('Sorry! You need to be logged in!')
+                    return permission_denied('You must be logged in!')
+                if not user:
                     flash('Sorry! You need to be logged in!')
                     return permission_denied('You must be logged in!')
 

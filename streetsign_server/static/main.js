@@ -9,8 +9,11 @@ $(() => {
     const token = $('meta[name="csrf-token"]').attr('content');
     $(document).ajaxSend((event, xhr, settings) => {
         if (settings.type && settings.type.toUpperCase() !== 'GET') {
+            xhr.setRequestHeader('X-CSRF-Token', token);
             if (settings.data instanceof FormData) {
                 settings.data.append('_csrf_token', token);
+            } else if (settings.contentType && settings.contentType.indexOf('application/json') === 0) {
+                return;
             } else {
                 settings.data = settings.data || '';
                 settings.data += (settings.data ? '&' : '') + '_csrf_token=' + encodeURIComponent(token);

@@ -51,6 +51,26 @@ class TestLogin(StreetSignTestCase):
 
         self.validate('/users/' + str(self.user.id), code=403)
 
+    def test_locked_out_user_cannot_login(self):
+        self.user.is_locked_out = True
+        self.user.save()
+
+        resp = self.login('test', '123')
+
+        assert b'Invalid' in resp.data
+        self.assertEqual(models.UserSession.select().count(), 0)
+        self.validate('/users/' + str(self.user.id), code=403)
+
+    def test_locked_out_existing_session_is_revoked(self):
+        self.login('test', '123')
+        self.validate('/users/' + str(self.user.id))
+
+        self.user.is_locked_out = True
+        self.user.save()
+
+        self.validate('/users/' + str(self.user.id), code=403)
+        self.assertEqual(models.UserSession.select().count(), 0)
+
     def test_login_good_pw_admin(self):
         self.user.is_admin = True
         self.user.save()

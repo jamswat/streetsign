@@ -7,6 +7,7 @@
         const $iframe = $('<iframe scrolling="no" frameborder="no">...</iframe>')
             .attr('width', $(zone).width())
             .attr('height', $(zone).height())
+            .attr('sandbox', 'allow-scripts')
             .attr('srcdoc', data.content.content);
 
         let $wrapper;

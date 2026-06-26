@@ -102,9 +102,9 @@
 <script type="text/javascript">
 $('#test_btn').click(function(e){
     e.preventDefault();
-    $('#test_area').load(
-        "{{ url_for('external_source_test') }}",
-        $('#source_form').serialize());
+    $.post("{{ url_for('external_source_test') }}", $('#source_form').serialize(), function(data) {
+        $('#test_area').html(data);
+    });
 });
 
 $('#run_now').click(function(e){
