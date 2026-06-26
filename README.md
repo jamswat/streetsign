@@ -15,12 +15,12 @@ no cloud account, no per-display licensing.
 ## What is StreetSign?
 
 StreetSign is a self-contained web server for running digital signage. You
-create and schedule **posts** (text, images, video, web pages, and more),
-organise them into **feeds**, and arrange those feeds into **zones** on
-configurable **screen layouts**.
+create and schedule posts (text, images, video, web pages, and more),
+organise them into feeds, and arrange those feeds into zones on
+configurable *screen layouts.
 
-Each physical display is just a browser — a PC, a Raspberry Pi, a smart TV, a
-phone — pointed at a URL. The display client loads its layout and continuously
+Each physical display is just a browser — a PC, a Raspberry Pi, a smart TV, tablet, etc. pointed at a URL.
+The display client loads its layout and continuously
 polls the server for new content. Admins author and publish everything from a
 web control panel; the server handles scheduling, permissions, and
 housekeeping.
@@ -31,21 +31,19 @@ There are plenty of digital signage projects. StreetSign is built around a few
 deliberate choices that set it apart:
 
 - **Genuinely lightweight.** SQLite is the only datastore, and static assets
-  are served in-process by [WhiteNoise](https://whitenoise.evans.io/) — there's
-  no nginx sidecar, no Redis, no message broker. The production Docker image is
-  ~45 MB and runs as a non-root user. The whole thing is happy on a Raspberry Pi.
+  are served in-process by [WhiteNoise](https://whitenoise.evans.io/)
 
+  
 - **Nothing to install on the screens.** Display clients are ordinary web
   browsers. A dedicated `notrans` rendering engine (using
   `requestAnimationFrame`) targets low-powered devices, and a separate `mobile`
-  engine handles phones and tablets. Re-point a bookmark and a screen changes
-  its whole layout.
-
-- **An editorial workflow, not just a playlist.** Permissions are granted
+  engine handles phones and tablets.
+  
+- **An editorial workflow.** Permissions are granted
   per-feed at three levels — **read**, **write**, and **publish** — to
   individual users *or* groups. Authoring and publishing are deliberately
   separate, so contributors can draft content while only trusted users push it
-  live. That separation is rare in open-source signage.
+  live.
 
 - **Extensible by dropping in a folder.** Both post types and external content
   importers are plugin systems: StreetSign auto-discovers any module under
@@ -70,7 +68,7 @@ control:
 - **Conferences & events** — different layouts per hall or stage, switched per
   display via client aliases; scheduled session info and announcements.
 - **Churches & community spaces** — rotating notices, event listings, and
-  RSS-imported news, with volunteers drafting and staff publishing.
+  RSS-imported news.
 - **Offices & lobbies** — dashboards, welcome messages, embedded web pages.
 - **Schools & campuses** — timetables, alerts, and per-department feeds.
 - **Retail & hospitality** — menu boards, promotions, looping video.
@@ -110,7 +108,6 @@ Display clients load one of three rendering engines, selected per client alias:
   (e.g. "only show between 09:00 and 17:00")
 - **Display duration** — how many seconds each post stays visible (2–100s)
 - **Per-post font size** — override the automatic zone font scaling
-- **Magic variables** — `%%TIME%%` and `%%DATE%%` update live on screen
 
 ### Permissions
 
