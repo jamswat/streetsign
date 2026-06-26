@@ -1,12 +1,24 @@
+# Put secrets and overrides in .env (next to this file):
+#   SECRET_KEY=<output of: python3 -c "import uuid; print(uuid.uuid4())">
+# To build locally instead of pulling the pre-built image:
+#   comment "image:" below and uncomment "build: ."
+
 services:
   app:
     image: ghcr.io/jamswat/streetsign:1.0.0
-    # build: .   # uncomment and remove "image:" above to build locally
+    # build: .
     ports:
-      - "${WEB_PORT:-5000}:5000"
+      # WEB_PORT = host-side port            (default 5000)
+      # PORT     = container port + app port  (default 5000)
+      #   WEB_PORT=8080           → host:8080 → container:5000
+      #   PORT=3000               → host:3000 → container:3000
+      #   WEB_PORT=8080 PORT=3000 → host:8080 → container:3000
+      - "${WEB_PORT:-5000}:${PORT:-5000}"
     environment:
-      # Generate a long random key:  python3 -c "import uuid; print(uuid.uuid4())"
+      # Required — container will refuse to start with the insecure default below.
       - SECRET_KEY=${SECRET_KEY:-dev-default-key-change-in-production}
+      - PORT=${PORT:-5000}
+      - HOST=${HOST:-0.0.0.0}
     volumes:
       - db_data:/data
       - uploads:/app/streetsign_server/static/user_files
