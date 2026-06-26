@@ -1,7 +1,7 @@
 # StreetSign
 
 <div align="center">
-  <img src="streetsign_server/static/resources/streetsign_text.svg" alt="StreetSign" width="520" />
+  <img src="streetsign_server/static/resources/streetsign_text_whitebg.svg" alt="StreetSign" width="520" />
 </div>
 
 **A lightweight, self-hosted, plugin-extensible digital signage server.**
