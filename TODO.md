@@ -4,7 +4,6 @@
 - `__init__.py` does too much — DB init in two places (`__init__.py` and `models.py.init()`); needs single path
 - Remove dead/commented code:
   - Commented RSS feed generation code in `feeds_and_posts.py`
-  - Commented login attempt counting code in `users_and_auth.py`
 - Complete `test_post_image.py` — currently a WIP stub
 - Peewee 4.x `playhouse.migrate` needs SQLiteMigrator imported at module level; currently `MIGRATOR` is a global but `create_all`/`init` don't always set it up correctly if DB is re-created for tests
 

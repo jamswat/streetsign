@@ -47,6 +47,27 @@ We'll use git to get the latest version, and set it up as normal::
     git clone https://github.com/jamswat/streetsign.git .
     ./setup.sh
 
+Set a secret key
+----------------
+
+Before running in production you **must** set a unique, random ``SECRET_KEY``
+— the server refuses to start in production mode while it is left at the
+insecure default. Generate one::
+
+    python3 -c "import uuid; print(uuid.uuid4())"
+
+and set it either in ``config.py``::
+
+    SECRET_KEY = 'the-value-you-just-generated'
+
+or via the environment (e.g. in the systemd unit or a ``.env`` file)::
+
+    export SECRET_KEY='the-value-you-just-generated'
+
+``SECRET_KEY`` signs session cookies, so keep it secret and never commit it to
+a repository. It is *not* used for password hashing, so you can rotate it
+without affecting stored passwords.
+
 Test it's all ready to go
 -------------------------
 
@@ -141,7 +162,7 @@ And of course, restart nginx::
     sudo service nginx restart
 
 Docker
-~~~~~
+~~~~~~
 
 A Dockerfile is provided that produces a slim (~45 MB) production image.
 See the `README <https://github.com/jamswat/streetsign#docker>`_ for

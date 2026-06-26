@@ -56,7 +56,7 @@ rst_epilog = """
 .. _Waitress: http://docs.pylonsproject.org/projects/waitress/en/latest/
 .. _WhiteNoise: https://whitenoise.evans.io/
 .. _Bleach: https://bleach.readthedocs.io/
-.. _Passlib: https://passlib.readthedocs.io/
+.. _bcrypt: https://github.com/pyca/bcrypt/
 .. _simpleeval: https://github.com/danthedeckie/simpleeval
 """
 

@@ -128,7 +128,9 @@ Other files in the root directory
 Starting with the file layout:
 
 ``run.py`` - run the basic development web server, Waitress stand alone
-             WSGI server, or with Werkzeug profiler.
+             WSGI server, or with Werkzeug profiler. The development server's
+             interactive debugger is off by default (opt in with
+             ``FLASK_DEBUG=1``, which also restricts the bind to 127.0.0.1).
 
 ``setup.sh`` - downloads all needed python packages, including virtualenv,
                and installs them into a local virtualenv called, very

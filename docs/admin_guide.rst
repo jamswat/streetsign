@@ -28,6 +28,9 @@ To run the server in 'production mode' you can use the built in ``waitress`` web
 
     ./run.py waitress
 
+In production mode the server **refuses to start if ``SECRET_KEY`` is still the
+insecure default** — set a unique random value (see below) before deploying.
+
 Which will spin up a version which should be totally capable for small
 deployments (up to a hundred screens or so, I guess).  If you are going to be
 on a public network, then it's advised that you run streetsign - either with
@@ -44,6 +47,11 @@ is using, so any scripts you write need to use the python found in there
 (``.virtualenv/bin/python``).  You can use pip from in there to install any
 pypi packages you need too (``.virtualenv/bin/pip install gunicorn``, say).
 
+If you want to run the bare development server (not for production) you can run
+``./run.py`` with no argument. The interactive Werkzeug debugger is **off by
+default**; if you opt in with ``FLASK_DEBUG=1`` the server binds only to
+``127.0.0.1``, because the debugger exposes a remote code-execution console.
+
 Some links:
 ~~~~~~~~~~~
 
@@ -54,28 +62,42 @@ Some links:
 Users
 -----
 
-When you first install, the ``setup.sh`` script will create some default users
-for you.  The admin user has the default password ``password``.  You should
-change this as soon as possible.
+When you first install, the database is seeded with three demo users for you.
+The password for each one matches its login name, so:
 
-Since some things display differently for admins compared to 'normal' users,
-it's probably a good idea if you are supporting other users, to create a 'normal'
-user for yourself as well.  Then if someone is finding something confusing, you
-can check from that non-admin user quickly.
+- ``admin`` / ``admin`` — a full administrator (in the ``admins`` group)
+- ``editor`` / ``editor`` — can write and publish on all feeds (in the
+  ``editors`` group)
+- ``viewer`` / ``viewer`` — read-only
+
+**Change these passwords as soon as possible**, especially ``admin``.
+
+Because some things display differently for admins compared to 'normal' users,
+the pre-created ``editor`` and ``viewer`` accounts are handy for checking how
+the interface looks for non-admins.
+
+Account lockout
+~~~~~~~~~~~~~~~
+
+To slow down password-guessing, an account is automatically locked out after a
+number of consecutive failed login attempts (``MAX_FAILED_LOGINS``, default
+``10``). A locked-out account cannot log in until an admin clears the lock from
+the user's edit page.
 
 Password hashes and moving the database
---------------------------------------
+---------------------------------------
 
-The user passwords are stored in the database hashed using two salts - an
-individual salt per password (stored in standard bcrypt format in the password
-field) and also with the site-wide "secret".  This ``SECRET_KEY`` must be set
-in ``config.py`` or via environment variable, and should be a long random string.
-(It's also used by flask for encrypting session data, and so should
-NEVER be stored in a repository, or shared outside deployment.)
+User passwords are stored hashed with bcrypt (each with its own per-password
+salt). Before hashing, the password is run through SHA-256 so that passwords
+longer than bcrypt's 72-byte limit are fully used. The password hashes are
+**independent of** ``SECRET_KEY`` — you can rotate ``SECRET_KEY`` without
+locking anyone out, and you can move a ``database.db`` file between
+installations without needing to copy the ``SECRET_KEY``.
 
-What this means is that if you move a database.db file from one installation
-to anonther, you will also need to bring the same config.py (or, at least, copy
-the SECRET from there.)
+``SECRET_KEY`` is still important: it signs Flask session cookies, so it must
+be set to a long random value in ``config.py`` or via the environment, and
+should NEVER be committed to a repository or shared outside the deployment. The
+server refuses to start in production if it is left at the insecure default.
 
 Housekeeping & removing old content
 -----------------------------------
@@ -131,11 +153,16 @@ All configuration options can be set in ``config.py`` (do not edit
 ``config_default.py``). See ``config_default.py`` for the full list of defaults.
 Key options:
 
-- ``SECRET_KEY`` — Flask session signing key (required in production)
+- ``SECRET_KEY`` — Flask session signing key. Must be set to a unique random
+  value in production; the server refuses to start if left at the insecure
+  default. No longer used for password hashing, so it can be rotated freely.
 - ``DATABASE_FILE`` — path to the SQLite database (default: ``database.db``)
 - ``TIME_OFFSET`` — timezone offset in minutes (default: ``0``)
 - ``MODE`` — ``'production'`` or ``'development'`` (default: ``'production'``)
-- ``CSRF_ENABLED`` — enable CSRF protection (default: ``True``)
+- ``CSRF_ENABLED`` — enable CSRF protection for all state-changing requests,
+  including login and logout (default: ``True``)
+- ``MAX_FAILED_LOGINS`` — consecutive failed logins before an account is locked
+  out (default: ``10``)
 - ``MAX_CONTENT_LENGTH`` — max upload size in bytes (default: 1 GB)
 - ``SITE_VARS`` — dict with ``site_title``, ``site_dir``, ``user_dir``,
   ``user_url`` for paths and branding

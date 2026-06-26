@@ -33,12 +33,19 @@ the initial database (a local sqlite file).  (The script delegates to
 
     ./run.py
 
-To actually run a local test server.
+To actually run a local test server. The development server runs **without**
+the interactive debugger by default; set ``FLASK_DEBUG=1`` to enable it (in
+which case it binds only to ``127.0.0.1`` for safety).
 
 To deploy streetsign for production use, check out the :doc:`deployment` guide.
 
-The initial administration user 'admin' is created, with a password of 'password'.
-A default "News" feed and a "Default" screen are also created.
+A fresh database is seeded with three demo accounts (the password matches the
+login name): ``admin`` (full administrator), ``editor`` (can write and publish
+on all feeds, via the ``editors`` group), and ``viewer`` (read-only). Two
+groups, ``admins`` and ``editors``, are created too. **Change these passwords
+immediately**, especially ``admin``. Some example feeds ("Welcome", "News",
+"Announcements") and posts are created, along with a ready-to-use two-zone
+"Default" screen (a main content area plus a scrolling announcements ticker).
 
 If you need to start again with a fresh database, then delete the `database.db` file,
 and re-run `./setup.sh`.

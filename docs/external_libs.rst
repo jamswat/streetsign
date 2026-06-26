@@ -41,10 +41,12 @@ Stripping and cleaning HTML is so easy with this great library!
 
 Parsing XML (RSS & Atom) feeds has never been so easy!
 
-`Passlib`_
-----------
+`bcrypt`_
+---------
 
-Secure password hashing with bcrypt
+Secure password hashing. Passwords are SHA-256 pre-hashed (so they aren't
+silently truncated at bcrypt's 72-byte limit) and then bcrypt-hashed with a
+per-password salt.
 
 `Waitress`_
 -----------
