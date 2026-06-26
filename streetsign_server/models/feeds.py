@@ -102,8 +102,8 @@ class Feed(DBModel):
             return False
 
         # check for user-level read permission:
-        if self.permissions.where((FeedPermission.user == User)
-                                 &((FeedPermission.read == True))).exists():
+        if self.permissions.where((FeedPermission.user == user)
+                                  &(FeedPermission.read == True)).exists():
             return True
 
         # check for group-level read permission:

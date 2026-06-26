@@ -32,9 +32,9 @@ import streetsign_server.user_session as user_session
 from streetsign_server.views.utils import admin_only, registered_users_only
 
 from glob import glob
-from os.path import basename, dirname, join as pathjoin, splitext, isdir, isfile
+from os.path import basename, dirname, join as pathjoin, splitext, isdir, isfile, realpath
 from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
-from os import makedirs, remove, stat
+from os import makedirs, remove, stat, sep as ossep
 from streetsign_server import app
 from subprocess import check_call # for making thumbnails
 
@@ -102,6 +102,11 @@ def user_files_list(dir_name=""):
     user = user_session.get_user()
 
     full_path = pathjoin(g.site_vars['user_dir'], dir_name)
+    real_base = realpath(g.site_vars['user_dir'])
+    real_path = realpath(full_path)
+    if not real_path.startswith(real_base + ossep) and real_path != real_base:
+        flash('Invalid path')
+        return redirect(url_for('user_files_list'))
 
     if not isdir(full_path):
         makedirs(full_path)
@@ -148,12 +153,18 @@ def user_files_list(dir_name=""):
                                         ('Uploaded Files', None)])
 
 @app.route('/thumbnail/<path:filename>')
+@registered_users_only('GET')
 def thumbnail(filename):
     ''' return a thumbnail of an (image) file.  if one doesn't exist,
         create one (with imagemagick(convert)) '''
 
     full_path = pathjoin(g.site_vars['user_dir'], filename)
     thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails', filename)
+    real_base = realpath(g.site_vars['user_dir'])
+    real_path = realpath(full_path)
+    if not real_path.startswith(real_base + ossep) and real_path != real_base:
+        flash('Invalid path')
+        return redirect(url_for('user_files_list'))
 
     if splitext(filename)[-1].lower() not in IMAGE_FORMATS:
         return 'not an image I will not make a thumbnail.'

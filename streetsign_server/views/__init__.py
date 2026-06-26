@@ -27,7 +27,6 @@
 from flask import render_template, g, Response, url_for, request, session
 from uuid import uuid4
 from markupsafe import Markup
-import datetime
 
 ##########################
 # views submodules:
@@ -40,7 +39,7 @@ import streetsign_server.user_session as user_session
 # set up the app
 from streetsign_server import app
 from streetsign_server.models import DB, ALL_MODELS, \
-     Post, Screen, Feed, User, config_var
+     Post, Screen, Feed, User, config_var, now
 
 ######################################################################
 # Basic App stuff:
@@ -94,7 +93,7 @@ def index():
 
 
     posts_to_publish = Post.select()\
-                           .where((Post.published is False) &
+                           .where((Post.published == False) &
                                   (Post.feed << publishable_feeds))
 
     screens = Screen.select()
@@ -107,8 +106,8 @@ def index():
     unpublished_posts = Post.select().where(Post.published == False).count()
     active_posts_count = Post.select().where(
         (Post.published == True) &
-        (Post.active_start <= datetime.datetime.now()) &
-        (Post.active_end >= datetime.datetime.now())
+        (Post.active_start <= now()) &
+        (Post.active_end >= now())
     ).count()
 
     recent_posts = Post.select().where(Post.published == True)\

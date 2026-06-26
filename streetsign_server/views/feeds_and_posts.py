@@ -400,7 +400,7 @@ def postpage(postid):
 
         except PleaseRedirect as e:
             flash(str(e.msg))
-            redirect(e.url)
+            return redirect(e.url)
 
         # if it's a publish or delete request, handle that instead:
         action = request.form.get('action', 'edit')
@@ -474,6 +474,7 @@ def postedit_type(typeid):
 
 
 @app.route('/posts/housekeeping', methods=['POST'])
+@admin_only('POST')
 def posts_housekeeping():
     ''' goes through all posts, move 'old' posts to archive status,
         delete reeeeealy old posts. '''
@@ -647,6 +648,7 @@ def external_source_test():
     return module.test(request.args)
 
 @app.route('/external_data_sources/<int:source_id>/run', methods=['POST'])
+@admin_only('POST')
 def external_source_run(source_id):
     ''' use the importer specified to see if there is any new data,
         and if there is, then import it. '''
@@ -657,7 +659,7 @@ def external_source_run(source_id):
         return 'Invalid Source', 404
 
     time_now = now()
-    if user_session.is_admin() and request.form.get('force', 'no') == 'yes':
+    if request.form.get('force', 'no') == 'yes':
         flash("Update forced.")
     else:
         if source.last_checked:
@@ -700,6 +702,7 @@ def external_source_run(source_id):
 
 
 @app.route('/external_data_sources/', methods=['POST'])
+@admin_only('POST')
 def external_data_sources_update_all():
     ''' update all external data sources. '''
     sources = [x[0] for x in ExternalSource.select(ExternalSource.id).tuples()]
