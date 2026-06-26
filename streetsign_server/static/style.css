@@ -167,6 +167,9 @@ footer a {
     color: #aaa;
 }
 
+[data-bs-theme="dark"] .logo-light { display: none !important; }
+[data-bs-theme="dark"] .logo-dark { display: inline !important; }
+
 [data-bs-theme="dark"] footer a {
     color: #8ab4f8;
 }

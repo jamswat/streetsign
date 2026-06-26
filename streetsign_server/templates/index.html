@@ -9,7 +9,8 @@
 		<meta name="theme-color" content="#212529" />
 		<meta name="robots" content="noindex" />
 		<meta name="csrf-token" content="{{ csrf_token }}" />
-		<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>" />
+		<link rel="icon" id="favicon-light" href="{{ url_for('static', filename='resources/streetsign_icon.svg') }}" type="image/svg+xml" />
+		<link rel="icon" id="favicon-dark" href="{{ url_for('static', filename='resources/streetsign_icon_dark.svg') }}" type="image/svg+xml" disabled />
 		<script id="csrf-script" type="text/javascript">
 			document.addEventListener('DOMContentLoaded', function() {
 				const token = document.querySelector('meta[name="csrf-token"]').content;
@@ -36,6 +37,8 @@
 			(function() {
 				const theme = localStorage.getItem('theme') || 'light';
 				document.documentElement.setAttribute('data-bs-theme', theme);
+				document.getElementById('favicon-dark').disabled = (theme !== 'dark');
+				document.getElementById('favicon-light').disabled = (theme === 'dark');
 			})();
 		</script>
 		<script type="text/javascript">
@@ -51,7 +54,7 @@
 	<aside class="sidebar">
 		<div class="sidebar-brand">
 			<a href="{{ url_for('index') }}" class="text-decoration-none text-reset">
-				<span class="fs-5 fw-bold">{{ g.site_vars.site_title }}</span>
+				<img src="{{ url_for('static', filename='resources/streetsign_text_dark.svg') }}" alt="StreetSign" style="width:140px;height:auto" />
 			</a>
 		</div>
 
@@ -121,6 +124,7 @@
 		<button type="button" class="btn btn-link text-reset sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">
 			<span class="bi bi-list fs-4"></span>
 		</button>
+		<img src="{{ url_for('static', filename='resources/streetsign_icon_dark.svg') }}" alt="StreetSign" style="width:24px;height:24px" />
 		<span class="fw-bold">{{ g.site_vars.site_title }}</span>
 	</header>
 

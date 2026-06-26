@@ -60,10 +60,16 @@ $('#sidebar-overlay').click(function() {
 ////////////////////////////////////////////////
 // Dark mode toggle:
 
+function swapFavicon(theme) {
+    document.getElementById('favicon-dark').disabled = (theme !== 'dark');
+    document.getElementById('favicon-light').disabled = (theme === 'dark');
+}
+
 $(() => {
     const theme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-bs-theme', theme);
     updateThemeIcon(theme);
+    swapFavicon(theme);
 
     $('#theme-toggle').click(() => {
         const current = document.documentElement.getAttribute('data-bs-theme');
@@ -71,6 +77,7 @@ $(() => {
         document.documentElement.setAttribute('data-bs-theme', next);
         localStorage.setItem('theme', next);
         updateThemeIcon(next);
+        swapFavicon(next);
     });
 });
 
