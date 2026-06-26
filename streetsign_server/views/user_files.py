@@ -28,10 +28,12 @@
 
 from flask import render_template, request, redirect, \
                   flash, g, url_for, Response
+from markupsafe import Markup, escape
 import streetsign_server.user_session as user_session
 from streetsign_server.views.utils import admin_only, registered_users_only
 
 from glob import glob
+import re
 from os.path import basename, dirname, join as pathjoin, splitext, isdir, isfile, realpath
 from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
 from os import makedirs, remove, stat, sep as ossep
@@ -78,7 +80,10 @@ def make_dirlist(path):
         else:
             ext = splitext(name)[1].lower()
             if ext in IMAGE_FORMATS:
-                thumb = f'<img src="{url_for("thumbnail", filename=path + name)}" alt="{name}" />'
+                safe_name = escape(name)
+                thumb = Markup(
+                    f'<img src="{url_for("thumbnail", filename=path + name)}"'
+                    f' alt="{safe_name}" />')
             elif ext in FONT_EXTENSIONS:
                 thumb = '<i class="bi bi-file-earmark-font" style="font-size: 1.5rem;" title="Font file"></i> '
             else:
@@ -109,7 +114,13 @@ def user_files_list(dir_name=""):
         return redirect(url_for('user_files_list'))
 
     if not isdir(full_path):
-        makedirs(full_path)
+        # Only an admin POST (an actual upload/management action) may create
+        # directories - a GET must never have filesystem side effects.
+        if request.method == 'POST' and user.is_admin:
+            makedirs(full_path)
+        else:
+            flash('No such directory')
+            return redirect(url_for('user_files_list'))
 
     if request.method == 'POST' and user.is_admin:
         if request.form.get('action') == 'upload':
@@ -134,7 +145,11 @@ def user_files_list(dir_name=""):
                 remove(full_filename)
                 try:
                     thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails', dir_name, filename)
-                    if isfile(thumb_path):
+                    # only remove if it really resolves under .thumbnails.
+                    thumb_base = realpath(pathjoin(g.site_vars['user_dir'],
+                                                   '.thumbnails'))
+                    if realpath(thumb_path).startswith(thumb_base + ossep) \
+                            and isfile(thumb_path):
                         remove(thumb_path)
                 except OSError:
                     pass
@@ -163,6 +178,12 @@ def thumbnail(filename):
     real_base = realpath(g.site_vars['user_dir'])
     real_path = realpath(full_path)
     if not real_path.startswith(real_base + ossep) and real_path != real_base:
+        flash('Invalid path')
+        return redirect(url_for('user_files_list'))
+
+    # the thumbnail target must also resolve under .thumbnails/
+    thumb_base = realpath(pathjoin(g.site_vars['user_dir'], '.thumbnails'))
+    if not realpath(thumb_path).startswith(thumb_base + ossep):
         flash('Invalid path')
         return redirect(url_for('user_files_list'))
 
@@ -210,13 +231,20 @@ def user_fonts_css():
     fmt_map = {'.ttf': 'truetype', '.otf': 'opentype',
                '.woff': 'woff', '.woff2': 'woff2'}
     for name, url in fonts:
+        # The font name derives from the uploaded filename - strip anything
+        # that could break out of the CSS string/declaration (CSS injection).
+        safe_name = re.sub(r'[^A-Za-z0-9 _-]', '', name).strip()
+        if not safe_name:
+            continue
         ext = splitext(url)[1].lower()
         fmt = fmt_map.get(ext, '')
         if fmt:
             css_fonts.append(
-                '@font-face {font-family: %s; src:url(%s) format("%s")}' % (name, url, fmt))
+                '@font-face {font-family: "%s"; src:url("%s") format("%s")}'
+                % (safe_name, url, fmt))
         else:
             css_fonts.append(
-                '@font-face {font-family: %s; src:url(%s)}' % (name, url))
+                '@font-face {font-family: "%s"; src:url("%s")}'
+                % (safe_name, url))
 
     return Response('\n'.join(css_fonts), status=200, mimetype='text/css')

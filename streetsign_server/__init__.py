@@ -31,6 +31,31 @@ except ImportError:
 app = Flask(__name__) # pylint: disable=invalid-name
 app.config.from_object(config)
 
+# The known, insecure default SECRET_KEY signs session cookies, so a public
+# default lets anyone forge sessions. Warn loudly on import; the server
+# entrypoints (run.py) call assert_secret_key_is_safe() to hard-fail before
+# actually serving requests in production.
+_INSECURE_KEY = app.config.get('DEFAULT_INSECURE_SECRET_KEY',
+                               'dev-default-key-change-in-production')
+
+def using_insecure_secret_key():
+    ''' True if SECRET_KEY is still the public, insecure default. '''
+    return app.config.get('SECRET_KEY') == _INSECURE_KEY
+
+def assert_secret_key_is_safe():
+    ''' Refuse to serve in production with the insecure default SECRET_KEY.
+        Call this from the server entrypoint before binding a socket. '''
+    if using_insecure_secret_key():
+        raise RuntimeError(
+            'SECRET_KEY is set to the insecure default. Set the SECRET_KEY '
+            'environment variable (or config.py) to a unique random value '
+            'before running. Generate one with: '
+            'python3 -c "import uuid; print(uuid.uuid4())"')
+
+if using_insecure_secret_key():
+    print('WARNING: using the insecure default SECRET_KEY. '
+          'Set SECRET_KEY before deploying!')
+
 def _static_security_headers(headers, _path, _url):
     ''' Add security headers to WhiteNoise-served static file responses,
         matching those applied to dynamic responses by set_security_headers. '''

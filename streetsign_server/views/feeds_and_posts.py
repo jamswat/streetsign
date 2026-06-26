@@ -115,6 +115,7 @@ def feeds():
                            breadcrumbs=[('Dashboard', url_for('index')), ('Feeds', None)])
 
 @app.route('/feeds/<int:feedid>', methods=['GET', 'POST'])
+@registered_users_only('GET', 'POST')
 def feedpage(feedid):
     ''' the back end settings for one feed. '''
 
@@ -280,8 +281,8 @@ def posts():
                            breadcrumbs=[('Dashboard', url_for('index')),
                                         ('All Posts', None)])
 
-@registered_users_only('GET', 'POST')
 @app.route('/posts/new/<int:feed_id>', methods=['GET', 'POST'])
+@registered_users_only('GET', 'POST')
 def post_new(feed_id):
     ''' create a new post! '''
 
@@ -422,7 +423,7 @@ def postpage(postid):
         elif action == 'unpublish':
             try:
                 post.publish(user, False)
-                flash("Published!")
+                flash("Unpublished!")
             except PermissionDenied:
                 flash('Sorry, you do NOT have permission' \
                        ' to unpublish on this feed.')
@@ -463,6 +464,7 @@ def postpage(postid):
                                         (post.title, None)])
 
 @app.route('/posts/edittype/<typeid>')
+@registered_users_only('GET')
 def postedit_type(typeid):
     ''' returns an editor page, of type typeid '''
 

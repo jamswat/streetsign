@@ -33,9 +33,11 @@ from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
 from os.path import splitext, join as pathjoin, isdir, isfile, abspath, dirname, basename
 from subprocess import check_call
 from os import makedirs, remove
+from shutil import copyfile
 from uuid import uuid4
 
 from streetsign_server.post_types import my
+from streetsign_server.logic.urlsafety import check_fetch_url, UnsafeURL
 
 ########################################################################
 #
@@ -83,6 +85,7 @@ def form(data):
     return render_template_string(my('form.html'), **data)
 
 def receive(data):
+    # pylint: disable=too-many-branches
     ''' revieve the form data, including the uploaded file, and put it
         where it should be, and return all the image data we need. '''
 
@@ -102,23 +105,43 @@ def receive(data):
     elif 'url' in data:
         # Download an image file from an external URL.
 
+        # Guard against SSRF / local-file reads: only http(s) URLs that
+        # resolve to public addresses may be fetched server-side.
+        try:
+            check_fetch_url(data['url'])
+        except UnsafeURL as exc:
+            raise IOError(f'Refusing to fetch image: {exc}') from exc
+
         filename = secure_filename(str(uuid4()) + basename(data['url']))
         if filename and allow_filetype(filename):
             full_path = pathjoin(image_path(), filename)
 
             try:
-                print(data['url'])
                 run_local_script('getexternalimage.sh',
                                  data['url'],
                                  full_path)
                 flash('image Downloaded')
-            except:
+            except Exception as exc:
                 flash('tried to download image. Failed')
-                raise IOError(f'Unable to download image! ({full_path})')
+                raise IOError(f'Unable to download image! ({full_path})') \
+                    from exc
 
             resize_image(full_path)
         else:
             raise IOError(f'Invalid file ({data["url"]}). Sorry.')
+
+    elif 'localpath' in data:
+        # Import an image from a trusted server-local path (used by the
+        # localfolderimages external source). Copy it into the managed
+        # post_images directory rather than fetching a URL.
+        srcpath = data['localpath']
+        if not (isfile(srcpath) and allow_filetype(srcpath)):
+            raise IOError(f'Invalid file ({srcpath}). Sorry.')
+
+        filename = secure_filename(str(uuid4()) + basename(srcpath))
+        full_path = pathjoin(image_path(), filename)
+        copyfile(srcpath, full_path)
+        resize_image(full_path)
 
     else:
         filename = data.get('filename')

@@ -34,10 +34,26 @@ and users at runtime without introducing module-level cycles.
 # pylint: disable=import-outside-toplevel
 
 
+import base64
+import hashlib
+
 import bcrypt
 from peewee import * # pylint: disable=wildcard-import,unused-wildcard-import
 
-from .base import DBModel, now, SECRET_KEY
+from .base import DBModel, now
+
+
+def _prehash(password):
+    ''' bcrypt silently truncates its input at 72 bytes. To support
+        arbitrarily long passwords (and avoid that footgun) we first run the
+        password through SHA-256 and base64-encode the digest, yielding a
+        fixed 44-byte token that always fits within bcrypt's limit.
+
+        Note: this is independent of SECRET_KEY - password hashes no longer
+        depend on the Flask signing key, so rotating SECRET_KEY no longer
+        locks every user out. '''
+    digest = hashlib.sha256(password.encode('utf-8')).digest()
+    return base64.b64encode(digest)
 
 
 class User(DBModel):
@@ -74,15 +90,18 @@ class User(DBModel):
             Not stored until you save! '''
 
         self.passwordhash = bcrypt.hashpw(
-            (password + SECRET_KEY).encode('utf-8'),
+            _prehash(password),
             bcrypt.gensalt(),
         ).decode('utf-8')
 
     def confirm_password(self, password):
         ''' Check that password does verify against the stored hash '''
 
+        if not self.passwordhash:
+            return False
+
         return bcrypt.checkpw(
-            (password + SECRET_KEY).encode('utf-8'),
+            _prehash(password),
             self.passwordhash.encode('utf-8'),
         )
 

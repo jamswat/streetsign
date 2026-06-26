@@ -200,16 +200,22 @@ def cleanup_orphaned_media_files():
     removed_files = 0
     removed_thumbs = 0
 
-    # Build the set of known filenames from all image and video posts:
+    # Build the set of known filenames from all image and video posts.
+    # If ANY post's content can't be parsed we must NOT delete anything -
+    # otherwise a single corrupt row would cause us to treat its (live)
+    # backing file as an orphan and delete it. Fail safe instead.
     known_filenames = set()
     for post in Post.select().where(Post.type << ['image', 'video']):
         try:
             data = json.loads(post.content)
-            filename = data.get('filename', '')
-            if filename:
-                known_filenames.add(filename)
         except Exception:
-            pass
+            return {'removed_files': 0, 'removed_thumbs': 0,
+                    'aborted': True,
+                    'reason': f'Could not parse content of post {post.id}; '
+                              'aborting cleanup to avoid deleting live files.'}
+        filename = data.get('filename', '')
+        if filename:
+            known_filenames.add(filename)
 
     # Scan post_images/ directory:
     image_dir = pathjoin(user_dir, 'post_images')

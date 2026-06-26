@@ -19,6 +19,13 @@ SECRET_KEY = environ.get('SECRET_KEY', 'dev-default-key-change-in-production')
 CSRF_ENABLED = True
 DATABASE_FILE = environ.get('DATABASE_FILE', 'database.db')
 
+# The known, insecure default. The app refuses to start in production mode
+# (MODE='production') if SECRET_KEY is left at this value.
+DEFAULT_INSECURE_SECRET_KEY = 'dev-default-key-change-in-production'
+
+# How many consecutive failed logins before an account is locked out:
+MAX_FAILED_LOGINS = 10
+
 # Refuse to accept file uploads bigger than this:
 
 MAX_CONTENT_LENGTH = 1024 * 1024 * 1024 # 1GB. reasonable for video uploads.

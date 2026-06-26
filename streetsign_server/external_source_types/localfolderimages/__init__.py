@@ -77,7 +77,7 @@ def get_new(data):
 
     for filename in current_files:
         if basename(filename) not in previous_list:
-            new_posts.append({'type': 'image', 'url': 'file://' + filename})
+            new_posts.append({'type': 'image', 'localpath': filename})
 
     data['current_posts'] = [basename(f) for f in current_files]
 

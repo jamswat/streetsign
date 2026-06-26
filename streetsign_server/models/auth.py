@@ -28,10 +28,13 @@ Session tracking and authentication functions.
 from uuid import uuid4
 from peewee import * # pylint: disable=wildcard-import,unused-wildcard-import
 
-import bcrypt
+from streetsign_server import app
 
-from .base import DBModel, now, SECRET_KEY, InvalidPassword
+from .base import DBModel, now, InvalidPassword
 from .users import User
+
+#: how many consecutive failed logins before an account is locked out.
+MAX_FAILED_LOGINS = app.config.get('MAX_FAILED_LOGINS', 10)
 
 
 class UserSession(DBModel):
@@ -53,15 +56,26 @@ def user_login(name, password):
     if user.is_locked_out:
         raise InvalidPassword('Invalid Password!')
 
-    if bcrypt.checkpw(
-            (password + SECRET_KEY).encode('utf-8'),
-            user.passwordhash.encode('utf-8'),
-    ):
+    if user.confirm_password(password):
+        # successful login - reset the failed-login counter.
+        if user.failed_logins:
+            user.failed_logins = 0
+            user.save()
+
         session = UserSession(id=str(uuid4()), username=user.loginname,
                                                user=user)
         session.save(force_insert=True)
 
         return user, session.id
+
+    # failed login - count it, and lock the account out if there have been
+    # too many consecutive failures.
+    user.failed_logins = (user.failed_logins or 0) + 1
+    user.last_login_attempt = now()
+    if user.failed_logins >= MAX_FAILED_LOGINS:
+        user.is_locked_out = True
+    user.save()
+
     raise InvalidPassword('Invalid Password!')
 
 def get_logged_in_user(name, session_uuid):

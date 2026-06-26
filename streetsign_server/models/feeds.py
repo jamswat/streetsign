@@ -107,10 +107,11 @@ class Feed(DBModel):
             return True
 
         # check for group-level read permission:
-        if (self.permissions.join(Group)
-                            .join(UserGroup)
-                            .where((UserGroup.user == user)
-                                  &(FeedPermission.read == True)).exists()):
+        if (self.permissions
+                .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+                .where((UserGroup.user == user)
+                      &(FeedPermission.group.is_null(False))
+                      &(FeedPermission.read == True)).exists()):
             return True
 
         # oh well! no permission!
@@ -132,11 +133,12 @@ class Feed(DBModel):
                                   (FeedPermission.write == True)).exists():
             return True
 
-        # check for group-level read permission:
-        if (self.permissions.join(Group)
-                            .join(UserGroup)
-                            .where((UserGroup.user == user) &
-                                   (FeedPermission.write == True)).exists()):
+        # check for group-level write permission:
+        if (self.permissions
+                .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+                .where((UserGroup.user == user) &
+                       (FeedPermission.group.is_null(False)) &
+                       (FeedPermission.write == True)).exists()):
             return True
 
         # oh well! no permission!
@@ -158,11 +160,12 @@ class Feed(DBModel):
                                   (FeedPermission.publish == True)).exists():
             return True
 
-        # check for group-level read permission:
-        if (self.permissions.join(Group)
-                            .join(UserGroup)
-                            .where((UserGroup.user == user) &
-                                   (FeedPermission.publish == True)).exists()):
+        # check for group-level publish permission:
+        if (self.permissions
+                .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+                .where((UserGroup.user == user) &
+                       (FeedPermission.group.is_null(False)) &
+                       (FeedPermission.publish == True)).exists()):
             return True
 
         # oh well! no permission!
@@ -170,43 +173,41 @@ class Feed(DBModel):
 
     def grant(self, permission, user=None, group=None):
         ''' Give either a user or group permission
-            (either 'Read','Write' or 'Publish') on this Feed. '''
+            (either 'Read','Write' or 'Publish') on this Feed.
+
+            Granting one permission does not revoke any others the user/group
+            already holds on this feed - the flags accumulate on a single
+            FeedPermission row. '''
 
         # one of them *must* be selected...
         assert (user, group) != (None, None)
         assert (user and group) is None
         assert permission in ('Read', 'Write', 'Publish')
-        # first get previous permission, if there is one.
 
-        if permission == 'Read':
-            p = FeedPermission.read
-        elif permission == 'Write':
-            p = FeedPermission.write
-        elif permission == 'Publish':
-            p = FeedPermission.publish
-        else:
-            raise ValueError('Invalid permission.'
-                            ' Must be Read,Write, or Publish')
-
+        # find any existing permission row for this user/group on this feed,
+        # so we add to it rather than clobbering other granted permissions.
         try:
             if user:
                 perm = FeedPermission.get((FeedPermission.feed == self)
-                                         &(FeedPermission.user == user)
-                                         &(p == True))
+                                         &(FeedPermission.user == user))
             elif group:
                 perm = FeedPermission.get((FeedPermission.feed == self)
-                                         &(FeedPermission.group == group)
-                                         &(p == True))
+                                         &(FeedPermission.group == group))
             else:
                 raise ValueError('You must specify either a user or a group!')
         except FeedPermission.DoesNotExist:
-            perm = FeedPermission(feed=self, user=user, group=group)
+            # a fresh row defaults read=True, so start everything off.
+            perm = FeedPermission(feed=self, user=user, group=group,
+                                  read=False, write=False, publish=False)
 
         assert perm.user or perm.group
 
-        perm.read = permission == 'Read'
-        perm.write = permission == 'Write'
-        perm.publish = permission == 'Publish'
+        if permission == 'Read':
+            perm.read = True
+        elif permission == 'Write':
+            perm.write = True
+        elif permission == 'Publish':
+            perm.publish = True
 
         # if we try and grant permission *before* this is saved, it will
         # fail. So cascade the saves!
@@ -218,23 +219,32 @@ class Feed(DBModel):
             perm.save()
 
     # and some convenience functions:
+    def _clear_permission(self, field, is_group):
+        ''' Clear a single permission flag (read/write/publish) on all
+            user- or group-rows for this feed, then remove any rows that no
+            longer grant anything. Avoids clobbering the other flags that may
+            share the same FeedPermission row. '''
+        owner = (FeedPermission.group.is_null(False) if is_group
+                 else FeedPermission.user.is_null(False))
+        FeedPermission.update(**{field.name: False}) \
+            .where((FeedPermission.feed == self) & owner).execute()
+        FeedPermission.delete() \
+            .where((FeedPermission.feed == self)
+                   &(FeedPermission.read == False)
+                   &(FeedPermission.write == False)
+                   &(FeedPermission.publish == False)).execute()
+
     def set_authors(self, authorlist):
         ''' set the complete authorlist. deletes previous set '''
 
-        # delete old permissions first.
-        FeedPermission.delete().where((FeedPermission.feed == self)
-                                     &(FeedPermission.write == True)
-                                     &(FeedPermission.user)).execute()
+        self._clear_permission(FeedPermission.write, is_group=False)
         for a in authorlist:
             assert isinstance(a, User)
             self.grant('Write', user=a)
 
     def set_publishers(self, publisherlist):
         ''' set the complete publisherlist. deletes previous set '''
-        # delete old permissions first.
-        FeedPermission.delete().where((FeedPermission.feed == self)
-                                     &(FeedPermission.publish == True)
-                                     &(FeedPermission.user)).execute()
+        self._clear_permission(FeedPermission.publish, is_group=False)
 
         for p in publisherlist:
             assert isinstance(p, User)
@@ -243,20 +253,14 @@ class Feed(DBModel):
     def set_author_groups(self, authorlist):
         ''' set the complete author_groups list. deletes previous set '''
 
-        # delete old permissions first.
-        FeedPermission.delete().where((FeedPermission.feed == self)
-                                     &(FeedPermission.write == True)
-                                     &(FeedPermission.group)).execute()
+        self._clear_permission(FeedPermission.write, is_group=True)
         for a in authorlist:
             assert isinstance(a, Group)
             self.grant('Write', group=a)
 
     def set_publisher_groups(self, publisherlist):
         ''' set the complete publisher_groups list. deletes previous set '''
-        # delete old permissions first.
-        FeedPermission.delete().where((FeedPermission.feed == self)
-                                     &(FeedPermission.publish == True)
-                                     &(FeedPermission.group)).execute()
+        self._clear_permission(FeedPermission.publish, is_group=True)
 
         for p in publisherlist:
             assert isinstance(p, Group)
@@ -340,9 +344,10 @@ class Post(DBModel):
             content = "N/A"
 
         if self.type == 'image':
+            safe_name = Markup.escape(content)
             return Markup(
                 f'<img src="{url_for("thumbnail", filename="post_images/"+content)}"'
-                f' alt="{content}" />')
+                f' alt="{safe_name}" />')
         return bleach.clean(content, tags=[], strip=True)[0:15] + '...(' + \
                 self.type + ')'
 

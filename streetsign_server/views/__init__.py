@@ -26,6 +26,7 @@
 
 from flask import render_template, g, Response, url_for, request, session
 from uuid import uuid4
+from hmac import compare_digest
 from markupsafe import Markup
 
 ##########################
@@ -57,7 +58,6 @@ def before_the_action():
         if app.config.get('TESTING') or not app.config.get('CSRF_ENABLED', True):
             return
         if request.endpoint in (
-            'login', 'logout',
             'screendisplay', 'screens_posts_from_feeds', 'screen_json',
             'post_types_js', 'json_post', 'client_alias', 'robots_txt',
         ):
@@ -65,7 +65,7 @@ def before_the_action():
 
         form_token = request.form.get('_csrf_token', '') or \
                      request.headers.get('X-CSRF-Token', '')
-        if form_token != session['_csrf_token']:
+        if not compare_digest(str(form_token), str(session['_csrf_token'])):
             return Response('CSRF validation failed', status=403)
 
 

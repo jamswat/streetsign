@@ -28,13 +28,19 @@ import sys
 
 # Load the app:
 
-from streetsign_server import app
+from streetsign_server import app, assert_secret_key_is_safe
+
+# Whether to run the dev server with the (RCE-capable) Werkzeug debugger.
+# Off by default; opt in explicitly with FLASK_DEBUG=1. The debugger must
+# never be exposed on a public interface.
+__DEBUG__ = environ.get('FLASK_DEBUG', '').lower() in ('1', 'true', 'yes', 'on')
 
 # And start the correct server
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         if sys.argv[1] == 'waitress':
+            assert_secret_key_is_safe()
             print("'Production' Server with Waitress.")
             print("Press <Ctrl-C> to stop")
             from waitress import serve
@@ -45,8 +51,15 @@ if __name__ == '__main__':
             from werkzeug.middleware.profiler import ProfilerMiddleware
             app.config['PROFILE'] = True
             app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[20])
-            app.run(debug=True)
+            app.run(debug=__DEBUG__)
     else:
-        print("Starting Development Server...")
+        print("Starting Development Server (DEVELOPMENT ONLY)...")
+        if __DEBUG__:
+            # With the interactive debugger enabled, refuse to listen on a
+            # public interface - it is a remote-code-execution console.
+            host = '127.0.0.1'
+            print("Debugger ON - binding to 127.0.0.1 only.")
+        else:
+            host = __HOST__
         print("Press <Ctrl-C> to stop")
-        app.run(host=__HOST__, port=__PORT__, debug = True)
+        app.run(host=host, port=__PORT__, debug=__DEBUG__)

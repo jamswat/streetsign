@@ -32,8 +32,20 @@ import bleach
 from collections import defaultdict
 
 from streetsign_server.external_source_types import my
+from streetsign_server.logic.urlsafety import check_fetch_url, UnsafeURL
 
 DEFAULT_TAGS = "span,b,i,u,em,img"
+
+# Tags an admin is allowed to enable for a feed. Even though feeds are
+# admin-configured, the *content* comes from an untrusted remote source, so
+# we never let dangerous tags (script, iframe, object, style, svg, ...)
+# through regardless of what is requested in the form.
+SAFE_TAGS = frozenset((
+    'a', 'abbr', 'acronym', 'b', 'blockquote', 'br', 'code', 'div', 'em',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'li', 'ol', 'p',
+    'pre', 'small', 'span', 'strong', 'sub', 'sup', 'table', 'tbody', 'td',
+    'th', 'thead', 'tr', 'u', 'ul',
+))
 
 def receive(request):
     ''' get data from the admin, extract the data, and return the object we
@@ -55,6 +67,8 @@ def make_templater(data):
 
     tags = [x.strip() for x in
             data.get("allowed_tags", DEFAULT_TAGS).split(',')]
+    # never allow tags outside the safe set, no matter what was requested.
+    tags = [t for t in tags if t in SAFE_TAGS]
     try:
         template = Template(data.get('display_template', '{{title}}'))
     except Exception:
@@ -80,7 +94,10 @@ def test(data):
         with some data from the feed) '''
 
     try:
+        check_fetch_url(data['url'])
         feed = feedparser.parse(data['url'])
+    except UnsafeURL as e:
+        return f'unsafe url: {e!s}'
     except Exception as e:
         return f'invalid url({e!s})'
 
@@ -98,6 +115,7 @@ def get_new(data):
         update data with any hidden fields updated that we need to
         (current_posts, for instance))'''
 
+    check_fetch_url(data['url'])
     feed = feedparser.parse(data['url'])
 
     previous_list = data['current_posts']
