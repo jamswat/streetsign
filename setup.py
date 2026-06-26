@@ -17,7 +17,7 @@ setup(
               'streetsign_server.logic',
               'streetsign_server.post_types',
               'streetsign_server.external_source_types'],
-    version="0.6",
+    version="1.0",
     description='A simple python/flask/web based digital signage system',
     long_description=long_description,
     author='Daniel Fairhead',

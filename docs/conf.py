@@ -24,9 +24,9 @@ master_doc = 'index'
 project = 'StreetSign'
 copyright = '2013-2026, Daniel Fairhead, et al.'
 
-version = '0.6'
+version = '1.0'
 # The full version, including alpha/beta/rc tags.
-release = '0.6'
+release = '1.0'
 
 exclude_patterns = ['_build']
 pygments_style = 'sphinx'

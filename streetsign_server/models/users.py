@@ -152,7 +152,7 @@ class Group(DBModel):
     ''' User groups (for permissions.) Groups can be given permission to
         publish/write/etc for certain Feeds, so this simplifies admin. '''
 
-    name = CharField()
+    name = CharField(unique=True)
     display = BooleanField(default=True)
 
     def __repr__(self):

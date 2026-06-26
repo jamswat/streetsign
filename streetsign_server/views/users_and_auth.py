@@ -84,11 +84,14 @@ def users_and_groups():
         action = request.form.get('action', 'creategroup')
 
         if action == 'creategroup':
-            if not request.form.get('name', '').strip():
+            name = request.form.get('name', '').strip()
+            if not name:
                 flash("I'm not making you an un-named group!")
                 return redirect(url_for('users_and_groups'))
-
-            Group.create(name=request.form.get('name', 'blank').strip())
+            if Group.select().where(Group.name == name).exists():
+                flash("Sorry! A group with that name already exists.")
+            else:
+                Group.create(name=name)
 
 
     return render_template('users_and_groups.html',
@@ -236,12 +239,15 @@ def group(groupid):
             return redirect(url_for('users_and_groups'))
 
         if request.form.get('action', 'none') == 'update':
-            thisgroup.name = request.form.get('groupname', thisgroup.name)
-            thisgroup.save()
-
-            groupusers = request.form.getlist('groupusers')
-            thisgroup.set_users(groupusers)
-            flash('saved')
+            newname = request.form.get('groupname', thisgroup.name)
+            if newname != thisgroup.name and Group.select().where(Group.name == newname).exists():
+                flash("Sorry! A group with that name already exists.")
+            else:
+                thisgroup.name = newname
+                thisgroup.save()
+                groupusers = request.form.getlist('groupusers')
+                thisgroup.set_users(groupusers)
+                flash('saved')
 
     return render_template('group.html', group=thisgroup,
                            allusers=User.select().where(User.is_admin == False),

@@ -28,7 +28,6 @@
 		<tr>
 			<th scope="col" style="width:2em"><input type="checkbox" id="select-all-posts" title="Select all"></th>
 			<th scope="col">Title</th>
-			<th scope="col">Content</th>
 			<th scope="col">Author</th>
 			<th scope="col">Feed</th>
 			<th scope="col">
@@ -47,7 +46,6 @@
 				data-post-id="{{ post.id }}" >
 				<td><input type="checkbox" class="post-checkbox" data-post-id="{{ post.id }}" onclick="event.stopPropagation()"></td>
 				<td>{{ linkmacros.post_title(post) }}</td>
-				<td>{{ linkmacros.post(post) }}</td>
 				<td>
 					{% if post.author %}
 						{{linkmacros.user(post.author)}} (on {{ post.write_date.date() }})

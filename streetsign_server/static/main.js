@@ -71,7 +71,7 @@ $(() => {
     updateThemeIcon(theme);
     swapFavicon(theme);
 
-    $('#theme-toggle').click(() => {
+    $('.theme-toggle').click(() => {
         const current = document.documentElement.getAttribute('data-bs-theme');
         const next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-bs-theme', next);
@@ -82,9 +82,9 @@ $(() => {
 });
 
 function updateThemeIcon(theme) {
-    const icon = $('#theme-toggle span.bi');
-    icon.removeClass('bi-sun-fill bi-moon-stars-fill');
-    icon.addClass(theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill');
+    const icons = $('.theme-toggle span.bi');
+    icons.removeClass('bi-sun-fill bi-moon-stars-fill');
+    icons.addClass(theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill');
 }
 
 ////////////////////////////////////////////////

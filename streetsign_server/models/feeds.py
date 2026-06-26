@@ -40,7 +40,6 @@ from datetime import datetime, timedelta
 from flask import url_for
 from markupsafe import Markup
 from peewee import * # pylint: disable=wildcard-import,unused-wildcard-import
-import bleach
 
 from .base import DBModel, now, safe_json_load, eval_datetime_formula, PermissionDenied
 from .users import User, Group, UserGroup
@@ -51,7 +50,7 @@ class Feed(DBModel):
         Different 'zones' on screen outputs will subscribe to these Feeds. '''
 
     #: the name of the feed.
-    name = CharField(default='New Feed')
+    name = CharField(default='New Feed', unique=True)
 
     #: which types of posts are allowed in this feed (comma,separated)?
     post_types = CharField(default='')
@@ -348,8 +347,7 @@ class Post(DBModel):
             return Markup(
                 f'<img src="{url_for("thumbnail", filename="post_images/"+content)}"'
                 f' alt="{safe_name}" />')
-        return bleach.clean(content, tags=[], strip=True)[0:15] + '...(' + \
-                self.type + ')'
+        return self.title + ' (' + self.type + ')'
 
     def dict_repr(self):
         ''' must give all info, for use on screens, etc. '''
@@ -407,7 +405,7 @@ class ExternalSource(DBModel):
     ''' How do we pull data in from external sources? '''
 
     #: name, displayed in the interface
-    name = CharField()
+    name = CharField(unique=True)
 
     #: source types are loaded in later, the same as post types.
     type = CharField()

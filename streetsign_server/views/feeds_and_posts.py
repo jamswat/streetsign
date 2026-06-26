@@ -98,10 +98,14 @@ def feeds():
         action = request.form.get('action', 'create')
 
         if action == 'create':
-            if not request.form.get('title', '').strip():
+            name = request.form.get('title', '').strip()
+            if not name:
                 flash("I'm not making you an un-named feed!")
                 return redirect(url_for('feeds'))
-            Feed(name=request.form.get('title', 'blank').strip()).save()
+            if Feed.select().where(Feed.name == name).exists():
+                flash("Sorry! A feed with that name already exists.")
+            else:
+                Feed(name=name).save()
 
     try:
         user = user_session.get_user()
@@ -141,19 +145,23 @@ def feedpage(feedid):
         action = request.form.get('action', 'none')
 
         if action == 'edit':
-            feed.name = request.form.get('title', feed.name).strip()
+            newname = request.form.get('title', feed.name).strip()
+            if newname != feed.name and Feed.select().where(Feed.name == newname).exists():
+                flash("Sorry! A feed with that name already exists.")
+            else:
+                feed.name = newname
 
-            inlist = request.form.getlist
+                inlist = request.form.getlist
 
-            feed.post_types = ', '.join(inlist('post_types'))
+                feed.post_types = ', '.join(inlist('post_types'))
 
-            feed.set_authors(by_id(User, inlist('authors')))
-            feed.set_publishers(by_id(User, inlist('publishers')))
-            feed.set_author_groups(by_id(Group, inlist('author_groups')))
-            feed.set_publisher_groups(by_id(Group, inlist('publisher_groups')))
+                feed.set_authors(by_id(User, inlist('authors')))
+                feed.set_publishers(by_id(User, inlist('publishers')))
+                feed.set_author_groups(by_id(Group, inlist('author_groups')))
+                feed.set_publisher_groups(by_id(Group, inlist('publisher_groups')))
 
-            feed.save()
-            flash('Saved')
+                feed.save()
+                flash('Saved')
         elif action == 'delete':
 
             for post in feed.posts:
@@ -621,28 +629,34 @@ def external_data_source_edit(source_id):
 
         source.settings = json.dumps(module.receive(request))
         source.name = request.form.get('name', source.name)
-
-        source.frequency = getint('frequency', 60)
-        source.publish = getbool('publish', False)
-        source.lifetime_start = getstr('active_start',
-                                       source.lifetime_start,
-                                       validate=DATESTR)
-        source.lifetime_end = getstr('active_end',
-                                     source.lifetime_end,
-                                     validate=DATESTR)
-        source.display_time = getint('display_time', source.display_time)
-        source.post_template = request.form.get('post_template',
-                                                source.post_template)
-        try:
-            source.feed = Feed.get(Feed.id == getint('feed', 100))
-            source.save()
-            if source_id is None:
-                # new source!
-                return redirect(url_for('external_data_source_edit',
-                                        source_id=source.id))
-            flash('Updated.')
-        except Feed.DoesNotExist:
-            flash(f"Can't save! Invalid Feed!{getint('feed', '-11')}")
+        name_query = ExternalSource.select().where(ExternalSource.name == source.name)
+        if source_id is not None:
+            name_query = name_query.where(ExternalSource.id != source_id)
+        if name_query.exists():
+            flash("An external source with that name already exists.")
+        else:
+            source.frequency = getint('frequency', 60)
+            source.publish = getbool('publish', False)
+            source.lifetime_start = getstr('active_start',
+                                           source.lifetime_start,
+                                           validate=DATESTR)
+            source.lifetime_end = getstr('active_end',
+                                         source.lifetime_end,
+                                         validate=DATESTR)
+            source.display_time = getint('display_time', source.display_time)
+            source.post_template = request.form.get('post_template',
+                                                     source.post_template)
+            try:
+                source.feed = Feed.get(Feed.id == getint('feed', 100))
+                source.save()
+                if source_id is None:
+                    return redirect(url_for('external_data_source_edit',
+                                            source_id=source.id))
+                flash('Updated.')
+            except Feed.DoesNotExist:
+                flash(f"Can't save! Invalid Feed!{getint('feed', '-11')}")
+            except peewee.IntegrityError:
+                flash("An external source with that name already exists.")
 
 
     return render_template("external_source.html",

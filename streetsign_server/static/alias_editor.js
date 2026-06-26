@@ -68,7 +68,10 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
             $.post('/aliases',
                 { 'aliases': JSON.stringify(this.aliases) },
                 function() { showToast('Aliases saved.', 'success'); })
-             .fail(function() { showToast('Failed to save aliases.', 'error'); });
+             .fail(function(jqXHR) {
+                var msg = jqXHR.responseJSON?.error || 'Failed to save aliases.';
+                showToast(msg, 'error');
+             });
         }
     };
 };

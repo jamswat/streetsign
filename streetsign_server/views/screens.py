@@ -233,6 +233,11 @@ def save_aliases():
     if request.method == 'POST':
         aliases = form_json('aliases', [])
 
+        aliases_list = json.loads(aliases)
+        names = [a.get('name', '').strip() for a in aliases_list if a.get('name', '').strip()]
+        if len(names) != len(set(names)):
+            return jsonify(error='Duplicate alias names are not allowed.'), 400
+
         try:
             alias_configvar = ConfigVar.get(ConfigVar.id == 'screens.aliases')
         except ConfigVar.DoesNotExist:
