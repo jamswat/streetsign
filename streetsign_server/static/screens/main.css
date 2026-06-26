@@ -45,6 +45,14 @@ div.zone {
 
 .zone_scroll .post {
     position: absolute;
+    /* Anchor to the zone's top-left corner. The parent .zone is a flex
+       container (justify-content/align-items: center); without an explicit
+       left/top the absolutely-positioned post is placed at the flex
+       static-position (centred), which throws off the transform-based scroll
+       animation in basic.js so the text stops mid-screen instead of leaving
+       the left edge. */
+    left: 0;
+    top: 0;
     overflow: hidden;
     width: auto;
     height: 100%;

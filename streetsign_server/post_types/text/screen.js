@@ -7,6 +7,10 @@
 
         console.log('making new text-post');
 
+        // Populate any magic_time/magic_date placeholders immediately so they
+        // are visible right away and measured correctly during font auto-fit.
+        fill_magic_vars(newhtml);
+
         if (data.fontsize > 0) {
             newhtml.children('.post_inner').css('font-size', data.fontsize + 'pt');
         } else {

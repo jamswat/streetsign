@@ -16,6 +16,11 @@
                     .prependTo(zone);
         }
 
+        // Populate any magic_time/magic_date placeholders immediately so they
+        // are visible right away (in fade zones nothing else fills them) and
+        // so the font auto-fit / scroll-width measurements use the real text.
+        fill_magic_vars(newhtml);
+
         if (data.fontsize > 0) {
             newhtml.children('.post_inner').css('font-size', data.fontsize + 'pt');
         } else {
