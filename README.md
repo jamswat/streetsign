@@ -5,8 +5,7 @@
 </div>
 
 **A lightweight, self-hosted, plugin-extensible digital signage server.**
-Point any browser at a URL and it becomes a screen — no agents to install,
-no cloud account, no per-display licensing.
+Point any browser at a URL and it becomes a screen
 
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](COPYING)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-3776ab.svg)](https://www.python.org/)
@@ -21,7 +20,7 @@ no cloud account, no per-display licensing.
 StreetSign is a self-contained web server for running digital signage. You
 create and schedule posts (text, images, video, web pages, and more),
 organise them into feeds, and arrange those feeds into zones on
-configurable *screen layouts.
+configurable screen layouts.
 
 Each physical display is just a browser — a PC, a Raspberry Pi, a smart TV, tablet, etc. pointed at a URL.
 The display client loads its layout and continuously
@@ -36,12 +35,10 @@ deliberate choices that set it apart:
 
 - **Genuinely lightweight.** SQLite is the only datastore, and static assets
   are served in-process by [WhiteNoise](https://whitenoise.evans.io/)
-
+  
   
 - **Nothing to install on the screens.** Display clients are ordinary web
-  browsers. A dedicated `notrans` rendering engine (using
-  `requestAnimationFrame`) targets low-powered devices, and a separate `mobile`
-  engine handles phones and tablets.
+  browsers.
   
 - **An editorial workflow.** Permissions are granted
   per-feed at three levels — **read**, **write**, and **publish** — to
@@ -61,8 +58,7 @@ deliberate choices that set it apart:
   auto-imported on a schedule, with a preview before you commit.
 
 - **Free, self-hosted, GPLv3.** Your content and database stay on your hardware.
-  No SaaS subscription, no per-screen fees, no phone-home.
-
+ 
 ## Use cases
 
 StreetSign grew out of running signage for large conferences, and it's well
@@ -85,9 +81,9 @@ control:
 | Type | Description |
 |------|-------------|
 | **Plain Text** | Unformatted text, auto-scaled to fill the zone |
-| **Rich Text** | Formatted content via the Quill WYSIWYG editor, sanitised with Bleach |
-| **Image** | Uploaded or remote images, displayed with `background-size: contain` |
-| **Video** | HTML5 video with loop — muted autoplay by default, tap to enable audio |
+| **Rich Text** | Formatted content via WYSIWYG editor |
+| **Image** | Uploaded images |
+| **Video** | HTML5 video with loop — muted autoplay by default|
 | **External Web Page** | Embeds any URL in a full-zone iframe |
 | **Web hook** | POSTs to external URLs on render, display, and hide — for controlling stream players (e.g. VLC) or automation systems |
 | **Raw HTML** | Arbitrary, unsanitised HTML rendered in a sandboxed iframe |
@@ -98,11 +94,11 @@ New post types can be added via the plugin system (`streetsign_server/post_types
 
 Display clients load one of three rendering engines, selected per client alias:
 
-| Engine | Technology | Best for |
-|--------|-----------|----------|
-| **basic** | CSS3 transitions (`opacity` for fades, `translateX` for scroll) | Modern browsers, full-featured PCs |
-| **notrans** | JavaScript `requestAnimationFrame` for scroll | Raspberry Pi, low-powered devices |
-| **mobile** | Lightweight vanilla CSS | Phones and tablets |
+| Engine | Technology |
+|--------|-----------|
+| **basic** | CSS3 transitions (`opacity` for fades, `translateX` for scroll)
+| **notrans** | JavaScript `requestAnimationFrame` for scroll 
+| **mobile** | Lightweight vanilla CSS 
 
 ### Scheduling
 
@@ -129,15 +125,13 @@ Sessions are tracked server-side and validated on every request.
 
 StreetSign is a single web server. Browsers acting as display clients load a
 screen layout, then continuously poll for posts from the feeds assigned to each
-zone. Admins create and publish posts through the web control panel, design
-multi-zone screen layouts, and optionally import content automatically from RSS
-feeds or local image folders.
+zone.
 
 Each screen layout is a set of rectangular **zones** positioned on a background.
 Each zone subscribes to one or more feeds and cycles through their posts, using
 either a **fade** (opacity cross-fade) or **scroll** (horizontal slide)
 transition. Zones can be styled per-layout with custom CSS, background images,
-user-uploaded fonts (`.ttf`/`.otf`), and per-zone font and colour overrides.
+user-uploaded fonts, and per-zone font and colour overrides.
 
 **Client aliases** map a short access key (like `/client/mainhall`) to a
 specific screen + engine combination with display overrides (aspect ratio,
@@ -184,7 +178,7 @@ reverse proxy.
 ### Quick start (pre-built image)
 
 ```bash
-docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.0.2
+docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:latest
 ```
 
 Open <http://localhost:5000> — default login is `admin` / `admin`.
@@ -201,9 +195,7 @@ docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:latest
 docker compose up -d
 ```
 
-The compose file pulls `ghcr.io/jamswat/streetsign:1.0.2` — no local build
-required. To build locally instead, uncomment the `build: .` line (and
-comment out or remove the `image:` line).
+The compose file pulls `ghcr.io/jamswat/streetsign:latest` 
 
 This brings up a single `app` service on `${WEB_PORT:-5000}`. Two named volumes
 are created automatically and persist across rebuilds:
@@ -236,7 +228,7 @@ lost when the container is removed:
 docker run -d -p 5000:5000 \
   -v streetsign-db:/data \
   -v streetsign-uploads:/app/streetsign_server/static/user_files \
-  ghcr.io/jamswat/streetsign:1.0.2
+  ghcr.io/jamswat/streetsign:latest
 ```
 
 On first start (empty `/data`), the container seeds a fresh database with the
@@ -256,7 +248,7 @@ runs pending migrations.
 Override at runtime, e.g. to serve on port 8080:
 
 ```bash
-docker run -d -p 8080:8080 -e PORT=8080 ghcr.io/jamswat/streetsign:1.0.2
+docker run -d -p 8080:8080 -e PORT=8080 ghcr.io/jamswat/streetsign:latest
 ```
 
 Or with compose, publish on a different host port:
@@ -269,7 +261,7 @@ For production you should mount your own `config.py` (see `config_default.py`
 for the full list of options):
 
 ```bash
-docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" ghcr.io/jamswat/streetsign:1.0.2
+docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" ghcr.io/jamswat/streetsign:latest
 ```
 
 ## Production
@@ -333,10 +325,6 @@ Full documentation at
 - Are time-of-day restrictions blocking it?
 - Is it within its active lifetime (start/end dates)?
 
-## Changelog
-
-See the [CHANGELOG](CHANGELOG.md) for a summary of recent improvements.
-
 ## Credits
 
 StreetSign was originally written by **Daniel Fairhead** for
@@ -347,9 +335,7 @@ appear to be abandoned; this is a maintained fork that continues their work.
 
 ## AI Usage
 
-Code in this repository has been developed with assistance from AI coding tools,
-including the Bootstrap 3→5 migration, the Knockout.js→Alpine.js replacement,
-HTML/CSS/JS modernization, and dependency updates.
+Code in this repository has been developed with assistance from AI coding tools.
 
 ## License
 
