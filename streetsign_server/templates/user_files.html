@@ -88,10 +88,10 @@
 {% if parent_dir is not none %}
     <tr class="clickable-row" data-uri="{{ url_for('user_files_list', dir_name=parent_dir) }}">
         <td></td>
-        <td colspan="5"><a href="{{ url_for('user_files_list', dir_name=parent_dir) }}">
+        <td colspan="5" class="text-decoration-none" style="cursor:pointer">
             <span class="bi bi-folder-symlink" style="font-size: 1.5rem;"></span>
             <span class="ms-1">..</span>
-        </a></td>
+        </td>
     </tr>
 {% endif %}
 {% for f in file_list %}

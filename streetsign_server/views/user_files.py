@@ -34,7 +34,7 @@ from subprocess import check_call
 from datetime import datetime
 
 from flask import render_template, request, redirect, \
-                  flash, g, url_for, Response, jsonify
+                  flash, g, url_for, Response
 from markupsafe import Markup, escape
 from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
 
@@ -219,7 +219,8 @@ def user_files_list(dir_name=""):
     dir_breadcrumbs = []
     parent_dir = None
     if dir_name:
-        parts = dir_name.strip('/').split('/')
+        clean = dir_name.rstrip('/')
+        parts = clean.split('/')
         acc = ''
         for i, part in enumerate(parts):
             acc = pathjoin(acc, part) if acc else part
@@ -228,7 +229,7 @@ def user_files_list(dir_name=""):
                 'url': url_for('user_files_list', dir_name=acc),
                 'last': i == len(parts) - 1
             })
-        parent_dir = dir_name.rsplit('/', 1)[0] if '/' in dir_name else ''
+        parent_dir = clean.rsplit('/', 1)[0] if '/' in clean else ''
 
     return render_template('user_files.html',
                            full_path=full_path,

@@ -52,7 +52,8 @@
 		<div class="card-body">
 			<div class="mb-3">
 				<label class="form-label">Name</label>
-				<input type="text" name="urlname" value="{{ screen.urlname }}" class="form-control" required />
+				<input type="text" name="urlname" id="urlname" value="{{ screen.urlname }}" class="form-control" required
+		       title="Letters, numbers, hyphens and underscores only" />
 			</div>
 			<div class="mb-3">
 				<label class="form-label">Background:</label>
@@ -228,6 +229,10 @@ function update_fake_screen_size() {
 update_fake_screen_size();
 $('#fake_screen_aspect').change(update_fake_screen_size);
 $(window).resize(update_fake_screen_size);
+
+$('#urlname').on('input', function() {
+    this.value = this.value.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/\s+/g, '-');
+});
 
 </script>
 
