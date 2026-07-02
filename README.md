@@ -1,3 +1,4 @@
+
 # StreetSign
 
 <div align="center">
@@ -34,7 +35,7 @@ There are plenty of digital signage projects. StreetSign is built around a few
 deliberate choices that set it apart:
 
 - **Genuinely lightweight.** SQLite is the only datastore, and static assets
-  are served in-process by [WhiteNoise](https://whitenoise.evans.io/)
+  are served by [WhiteNoise](https://whitenoise.evans.io/)
   
   
 - **Nothing to install on the screens.** Display clients are ordinary web
@@ -53,9 +54,8 @@ deliberate choices that set it apart:
   new post types need no database migration.
 
 - **Automation-friendly.** A **web hook** post type fires HTTP requests on
-  render, display, and hide — ideal for driving external stream players (e.g.
-  VLC) or home/venue automation. RSS/Atom feeds and local image folders can be
-  auto-imported on a schedule, with a preview before you commit.
+  render, display, and hide. RSS/Atom feeds and local image folders can be
+  auto-imported on a schedule.
 
 - **Free, self-hosted, GPLv3.** Your content and database stay on your hardware.
  
@@ -72,7 +72,7 @@ control:
 - **Offices & lobbies** — dashboards, welcome messages, embedded web pages.
 - **Schools & campuses** — timetables, alerts, and per-department feeds.
 - **Retail & hospitality** — menu boards, promotions, looping video.
-- **Makerspaces & labs** — status screens driven by web hooks and automation.
+
 
 ## Features at a glance
 
@@ -90,15 +90,6 @@ control:
 
 New post types can be added via the plugin system (`streetsign_server/post_types/`).
 
-### Screen engines
-
-Display clients load one of three rendering engines, selected per client alias:
-
-| Engine | Technology |
-|--------|-----------|
-| **basic** | CSS3 transitions (`opacity` for fades, `translateX` for scroll)
-| **notrans** | JavaScript `requestAnimationFrame` for scroll 
-| **mobile** | Lightweight vanilla CSS 
 
 ### Scheduling
 
@@ -118,35 +109,23 @@ Three permission levels per feed, assignable to users and groups:
 - **Publish** — mark posts ready for display (separate from write — the
   dashboard highlights unpublished posts)
 
-Admins bypass all permission checks. Locked-out accounts are denied everything.
-Sessions are tracked server-side and validated on every request.
-
 ## How it works
 
 StreetSign is a single web server. Browsers acting as display clients load a
 screen layout, then continuously poll for posts from the feeds assigned to each
 zone.
 
-Each screen layout is a set of rectangular **zones** positioned on a background.
+Each screen layout is a set of rectangular zones positioned on a background.
 Each zone subscribes to one or more feeds and cycles through their posts, using
-either a **fade** (opacity cross-fade) or **scroll** (horizontal slide)
+either a fade (opacity cross-fade) or **scroll** (horizontal slide)
 transition. Zones can be styled per-layout with custom CSS, background images,
 user-uploaded fonts, and per-zone font and colour overrides.
 
-**Client aliases** map a short access key (like `/client/mainhall`) to a
+Client aliases map a short access key (like `/client/mainhall`) to a
 specific screen + engine combination with display overrides (aspect ratio,
 fade time, scroll speed). Different physical displays can use different layouts
 without ever changing the bookmark on the client.
 
-External content can be imported automatically:
-
-- **RSS / Atom feeds** — each entry is rendered through a Jinja2 template,
-  sanitised with Bleach, and saved as a Rich Text post (with deduplication).
-- **Local image folder** — a server-side directory is watched for new images,
-  each becoming an Image post.
-
-Both importers run on a configurable schedule, can optionally auto-publish, and
-offer a test/preview button plus a manual "Run Now".
 
 ## Quick start
 
@@ -158,22 +137,16 @@ cd streetsign
 ```
 
 Open <http://localhost:5000> — default login is `admin` / `admin`.
-**Change the password immediately** before deploying anywhere.
 
 A fresh database is seeded with three demo accounts (password = login name):
 `admin` (full admin), `editor` (write/publish on all feeds via the `editors`
-group), and `viewer` (read-only). It also includes example feeds, posts, and a
-ready-to-use two-zone `Default` screen at `/screens/basic/Default`.
+group), and `viewer` (read-only).
+Please change these logins before deploying!
+
 
 ## Docker
 
-A multi-stage Docker image is built and published to
-[GitHub Container Registry](https://github.com/jamswat/streetsign/pkgs/container/streetsign)
-on every tagged release. The build compiles C extensions in a builder stage
-and ships a slim final image (~45 MB) that runs as a non-root `streetsign`
-user. Static assets are served in-process by WhiteNoise (no nginx sidecar
-required), so the container can be exposed directly or placed behind any
-reverse proxy.
+A Docker image is built and published to [GitHub Container Registry](https://github.com/jamswat/streetsign/pkgs/container/streetsign) on every tagged release. 
 
 ### Quick start (pre-built image)
 
@@ -183,11 +156,6 @@ docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:latest
 
 Open <http://localhost:5000> — default login is `admin` / `admin`.
 
-To pull the latest stable release:
-
-```bash
-docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:latest
-```
 
 ### docker-compose
 
@@ -205,37 +173,10 @@ are created automatically and persist across rebuilds:
 | `db_data`   | `/data`                                       | SQLite database                  |
 | `uploads`   | `/app/streetsign_server/static/user_files`    | User-uploaded images, fonts, etc.|
 
-Built-in static assets (`main.js`, `style.css`, `lib/`, `screens/`) are baked
-into the image and are **not** mounted on a volume, so changes to them appear
-on the next rebuild without stale-file masking. Only `user_files/` (runtime
-uploads) is persisted.
+You may wish to set up bind mounts for these instead, or also configure for external image folders.
 
-### Building locally (alternative)
 
-If you prefer to build the image yourself:
-
-```bash
-docker build -t streetsign .
-docker run -d --name streetsign -p 5000:5000 streetsign
-```
-
-### Persistent data (plain `docker run`)
-
-Mount volumes for the SQLite database and uploaded files, otherwise data is
-lost when the container is removed:
-
-```bash
-docker run -d -p 5000:5000 \
-  -v streetsign-db:/data \
-  -v streetsign-uploads:/app/streetsign_server/static/user_files \
-  ghcr.io/jamswat/streetsign:latest
-```
-
-On first start (empty `/data`), the container seeds a fresh database with the
-default admin user, feeds, and a sample screen. On subsequent starts it only
-runs pending migrations.
-
-### Configuration
+### Docker Configuration
 
 | Variable         | Default                              | Notes                                            |
 |------------------|--------------------------------------|--------------------------------------------------|
@@ -245,34 +186,6 @@ runs pending migrations.
 | `HOST`           | `0.0.0.0`                            | Bind address inside the container                |
 | `DATABASE_FILE`  | `/data/database.db`                  | SQLite path (already volume-mounted in image)    |
 
-Override at runtime, e.g. to serve on port 8080:
-
-```bash
-docker run -d -p 8080:8080 -e PORT=8080 ghcr.io/jamswat/streetsign:latest
-```
-
-Or with compose, publish on a different host port:
-
-```bash
-WEB_PORT=8080 docker compose up -d
-```
-
-For production you should mount your own `config.py` (see `config_default.py`
-for the full list of options):
-
-```bash
-docker run -d -p 5000:5000 -v "$PWD/config.py:/app/config.py:ro" ghcr.io/jamswat/streetsign:latest
-```
-
-## Production
-
-```bash
-./run.py waitress
-```
-
-This runs the app under the [Waitress](https://github.com/Pylons/waitress) WSGI
-server. Put it behind any reverse proxy you like (or expose it directly —
-WhiteNoise handles static files in-process).
 
 ## Configuration
 
@@ -281,12 +194,6 @@ StreetSign loads `config.py` if present, falling back to the defaults in
 you want to change into `config.py`. Common environment variables
 (`SECRET_KEY`, `DATABASE_FILE`, `PORT`, `HOST`) are honoured directly.
 
-## Upgrading
-
-1. Back up `database.db` and `config.py`
-2. `git pull`
-3. `make migrate`
-4. Restart the server
 
 ## Requirements
 
@@ -302,28 +209,11 @@ apt-get install python3-dev python3-pip imagemagick
 The `setup.sh` script (which runs `make all`) creates a `.virtualenv` with all
 Python dependencies. To use the virtualenv directly: `.virtualenv/bin/python`.
 
-## Development
-
-Tests run against an in-memory SQLite database, so they're fast and isolated:
-
-```bash
-.virtualenv/bin/python -m pytest tests/
-.virtualenv/bin/python -m pylint streetsign_server/
-```
-
 ## Documentation
 
-Full documentation at
+Full documentation (WIP) can be found at
 [https://jamswat.github.io/streetsign/](https://jamswat.github.io/streetsign/).
 
-## Troubleshooting
-
-**Why isn't my post showing up?**
-
-- Is it published?
-- Does the screen have the correct feeds selected?
-- Are time-of-day restrictions blocking it?
-- Is it within its active lifetime (start/end dates)?
 
 ## Credits
 
