@@ -25,7 +25,7 @@
 window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
     const aliases = (initialList || []).map(function(a) {
         return {
-            name: a.name || 'client-name...',
+            name: a.name || 'client-name',
             show_on_dashboard: a.show_on_dashboard || false,
             screen_name: a.screen_name || 'Default',
             screen_type: a.screen_type || 'basic',
@@ -47,7 +47,7 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
 
         addAlias() {
             this.aliases.push({
-                name: 'client-name...',
+                name: 'client-name',
                 show_on_dashboard: false,
                 screen_name: 'Default',
                 screen_type: 'basic',
@@ -62,6 +62,10 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
             confirmAction('Really delete this alias?', () => {
                 this.aliases.splice(idx, 1);
             });
+        },
+
+        sanitizeAliasName(alias) {
+            alias.name = alias.name.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/\s+/g, '-');
         },
 
         saveAliases() {

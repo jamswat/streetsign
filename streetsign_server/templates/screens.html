@@ -70,7 +70,9 @@
 			<template x-for="(alias, idx) in aliases" :key="idx">
 			<tr>
 				<td>
-						<input x-model="alias.name" class="form-control" /><br/>
+						<input x-model="alias.name" class="form-control"
+				       @input="sanitizeAliasName(alias)"
+				       title="Letters, numbers, hyphens and underscores only" /><br/>
 						URL: <a :href="urlFor(alias)" x-text="'/client/' + alias.name">URL</a><br/>
 						{% if session.display_admin_stuff %}
 							<label>
