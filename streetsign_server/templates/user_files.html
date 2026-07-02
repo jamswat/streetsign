@@ -4,21 +4,42 @@
 {% block body %}
 <h1>Uploaded Files</h1>
 <div class="alert alert-info" role="alert">
-  <strong>Upload images and fonts for use in your screens.</strong><br>
-  <strong>Images</strong> (PNG, JPG, GIF, BMP, SVG) can be selected as screen backgrounds when editing screens.<br>
-  <strong>Fonts</strong> (TTF, OTF, WOFF, WOFF2) are automatically detected and appear in the font-family dropdown when editing screen zones.
+  <strong>Upload images, videos, and fonts for use in your screens.</strong><br>
+  <strong>Images</strong> (PNG, JPG, GIF, BMP, SVG) can be selected as screen backgrounds.<br>
+  <strong>Videos</strong> (MP4, WebM, Ogg, MOV) can be used in video posts via the "Choose from uploaded files" option.<br>
+  <strong>Fonts</strong> (TTF, OTF, WOFF, WOFF2) are automatically detected and appear in the font-family dropdown.
 </div>
 
 {% set file_count = file_list|selectattr('is_dir', 'equalto', false)|list|length %}
 {% set image_count = file_list|selectattr('file_type', 'equalto', 'Image')|list|length %}
+{% set video_count = file_list|selectattr('file_type', 'equalto', 'Video')|list|length %}
 {% set font_count = file_list|selectattr('file_type', 'equalto', 'Font')|list|length %}
+
+{# Breadcrumbs for subdirectories #}
+{% if dir_breadcrumbs %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('user_files_list') }}">Uploaded Files</a></li>
+    {% for crumb in dir_breadcrumbs %}
+      {% if crumb.last %}
+        <li class="breadcrumb-item active" aria-current="page">{{ crumb.name }}</li>
+      {% else %}
+        <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.name }}</a></li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+</nav>
+{% endif %}
+
 <p>
   <strong>{{ file_count }}</strong> file{% if file_count != 1 %}s{% endif %}
-  {%- if image_count or font_count %} ({% endif %}
+  {%- if image_count or video_count or font_count %} ({% endif %}
   {%- if image_count %}{{ image_count }} image{% if image_count != 1 %}s{% endif %}{% endif %}
-  {%- if image_count and font_count %}, {% endif %}
+  {%- if image_count and (video_count or font_count) %}, {% endif %}
+  {%- if video_count %}{{ video_count }} video{% if video_count != 1 %}s{% endif %}{% endif %}
+  {%- if video_count and font_count %}, {% endif %}
   {%- if font_count %}{{ font_count }} font{% if font_count != 1 %}s{% endif %}{% endif %}
-  {%- if image_count or font_count %}){% endif %}
+  {%- if image_count or video_count or font_count %}){% endif %}
   in <code>{{ dirname or 'root' }}</code>
 </p>
 
@@ -44,7 +65,7 @@
   <div class="card-body">
   <form method="POST" enctype="multipart/form-data" class="d-flex" role="form" id="upload-form">
     <input type="hidden" name="action" value="upload" />
-    <input type="file" name="file" id="upload-file-input" accept="image/*,.ttf,.otf,.woff,.woff2" class="btn btn-secondary" />
+    <input type="file" name="file" id="upload-file-input" accept="image/*,.ttf,.otf,.woff,.woff2,.mp4,.webm,.ogg,.ogv,.mov" class="btn btn-secondary" />
     <input type="submit" value="Upload" class="btn btn-primary ms-2" />
   </form>
   </div>
@@ -64,6 +85,15 @@
   </tr>
 </thead>
 <tbody>
+{% if parent_dir is not none %}
+    <tr class="clickable-row" data-uri="{{ url_for('user_files_list', dir_name=parent_dir) }}">
+        <td></td>
+        <td colspan="5"><a href="{{ url_for('user_files_list', dir_name=parent_dir) }}">
+            <span class="bi bi-folder-symlink" style="font-size: 1.5rem;"></span>
+            <span class="ms-1">..</span>
+        </a></td>
+    </tr>
+{% endif %}
 {% for f in file_list %}
     <tr class="clickable-row{% if not f.is_dir and session.display_admin_stuff %} selectable-row{% endif %}"
         data-uri="{{ f.url }}"
@@ -91,6 +121,8 @@
             <span class="badge bg-primary">Image</span>
           {% elif f.file_type == 'Font' %}
             <span class="badge bg-info text-dark">Font</span>
+          {% elif f.file_type == 'Video' %}
+            <span class="badge bg-warning text-dark">Video</span>
           {% elif f.is_dir %}
             <span class="badge bg-secondary">Directory</span>
           {% endif %}

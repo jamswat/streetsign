@@ -1,9 +1,38 @@
 <br/><br/>
-<label>Video file:</label><br/>
-<input type="file" name="video_file"
-       accept=".mp4,.webm,.ogg,.ogv,.mov"
-       style="width: 100%;" />
-<input type="hidden" name="upload" value="1" />
+<div class="mb-3">
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="source" id="source-upload" value="upload"
+           {{ 'checked' if source != 'browser' }}>
+    <label class="form-check-label" for="source-upload">Upload new video</label>
+  </div>
+  {% if uploaded_videos %}
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="source" id="source-browser" value="browser"
+           {{ 'checked' if source == 'browser' }}>
+    <label class="form-check-label" for="source-browser">Choose from uploaded files</label>
+  </div>
+  {% endif %}
+</div>
+
+<div id="upload-section">
+  <label>Video file:</label><br/>
+  <input type="file" name="video_file"
+         accept=".mp4,.webm,.ogg,.ogv,.mov"
+         style="width: 100%;" />
+  <input type="hidden" name="upload" value="1" />
+</div>
+
+{% if uploaded_videos %}
+<div id="browser-section" style="display:none">
+  <label>Select video:</label><br/>
+  <select name="selected_video" class="form-control">
+    <option value="">-- choose a video --</option>
+    {% for v in uploaded_videos %}
+      <option value="{{ v }}" {{ 'selected' if filename == v }}>{{ v }}</option>
+    {% endfor %}
+  </select>
+</div>
+{% endif %}
 
 {% if file_url %}
 <hr/>
@@ -22,3 +51,26 @@
 <p class="text-muted">
   Supported formats: MP4 (.mp4), WebM (.webm), Ogg (.ogg, .ogv), MOV (.mov)
 </p>
+
+<script type="text/javascript">
+(function() {
+  var uploadRadio = document.getElementById('source-upload');
+  var browserRadio = document.getElementById('source-browser');
+  var uploadSection = document.getElementById('upload-section');
+  var browserSection = document.getElementById('browser-section');
+
+  function updateVisibility() {
+    if (browserRadio && browserRadio.checked) {
+      uploadSection.style.display = 'none';
+      browserSection.style.display = '';
+    } else {
+      uploadSection.style.display = '';
+      if (browserSection) browserSection.style.display = 'none';
+    }
+  }
+
+  if (uploadRadio) uploadRadio.addEventListener('change', updateVisibility);
+  if (browserRadio) browserRadio.addEventListener('change', updateVisibility);
+  updateVisibility();
+})();
+</script>

@@ -31,6 +31,7 @@ from os import makedirs, remove
 from os.path import splitext, isdir, abspath, dirname, basename
 from os.path import join as pathjoin
 from uuid import uuid4
+from glob import glob
 
 from flask import render_template_string, request, g, flash
 from werkzeug.utils import secure_filename
@@ -55,27 +56,46 @@ def allow_filetype(filename):
 
 def form(data):
     """Form for editing a video post."""
-    return render_template_string(my('form.html'), **data)
+    videos_dir = pathjoin(g.site_vars['user_dir'], 'videos')
+    uploaded_videos = []
+    if isdir(videos_dir):
+        for vf in sorted(glob(pathjoin(videos_dir, '*'))):
+            vname = basename(vf)
+            if allow_filetype(vname):
+                uploaded_videos.append(vname)
+    return render_template_string(my('form.html'), uploaded_videos=uploaded_videos, **data)
 
 
 def receive(data):
     ''' Receive the form data, save the uploaded video, return saved info. '''
 
-    if 'upload' in data:
+    source = data.get('source', 'upload')
+    from_browser = False
+
+    if source == 'browser':
+        filename = data.get('selected_video', '')
+        if not filename or not allow_filetype(filename):
+            raise IOError('Invalid video selection')
+        filename = secure_filename(filename)
+        file_url = g.site_vars['user_url'] + '/videos/' + filename
+        from_browser = True
+    elif 'upload' in data:
         f = request.files['video_file']
         if f and allow_filetype(f.filename):
             filename = secure_filename(str(uuid4()) + basename(f.filename))
             full_path = pathjoin(video_path(), filename)
             f.save(full_path)
             flash('Video uploaded')
+            file_url = g.site_vars['user_url'] + '/post_videos/' + filename
         else:
             raise IOError('Invalid file type. Allowed: .mp4, .webm, .ogg, .mov')
     else:
         filename = data.get('filename')
         if filename and allow_filetype(filename):
             filename = secure_filename(filename)
+            file_url = g.site_vars['user_url'] + '/post_videos/' + filename
         else:
-            raise Exception('Invalid filename')
+            raise IOError('Invalid filename')
 
     audio_enabled = data.get('audio_enabled', False) in (
         True, 'true', 'True', '1', 'on', 'checked'
@@ -84,8 +104,9 @@ def receive(data):
     return {
         'content': filename,
         'filename': filename,
-        'file_url': g.site_vars['user_url'] + '/post_videos/' + filename,
+        'file_url': file_url,
         'audio_enabled': audio_enabled,
+        'from_browser': from_browser,
     }
 
 
@@ -103,5 +124,8 @@ def screen_js():
 
 
 def delete(data):
-    ''' Clean up the video file when the post is deleted. '''
+    ''' Clean up the video file when the post is deleted.
+        Skip if the video was selected from the file browser (shared resource). '''
+    if data.get('from_browser'):
+        return
     remove(pathjoin(video_path(), secure_filename(data['filename'])))

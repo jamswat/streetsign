@@ -59,7 +59,8 @@ def human_size_str(filename):
 
 IMAGE_FORMATS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg']
 FONT_EXTENSIONS = ['.ttf', '.otf', '.woff', '.woff2']
-ALLOWED_FORMATS = IMAGE_FORMATS + FONT_EXTENSIONS
+VIDEO_FORMATS = ['.mp4', '.webm', '.ogg', '.ogv', '.mov']
+ALLOWED_FORMATS = IMAGE_FORMATS + FONT_EXTENSIONS + VIDEO_FORMATS
 
 def allow_filetype(filename):
     ''' is this file-type allowed to be uploaded? '''
@@ -98,6 +99,13 @@ def make_dirlist(path):
                 font_name = re.sub(r'[^A-Za-z0-9 _-]', '', splitext(name)[0]).strip()
                 font_family = font_name if font_name else name
                 font_preview_url = url_for('static', filename='user_files/fonts/' + name)
+            elif ext in VIDEO_FORMATS:
+                thumb = ('<i class="bi bi-film"'
+                            ' style="font-size: 1.5rem;"'
+                            ' title="Video file"></i> ')
+                file_type = 'Video'
+                font_family = ''
+                font_preview_url = ''
             else:
                 thumb = ''
                 file_type = 'Other'
@@ -157,6 +165,11 @@ def user_files_list(dir_name=""):
                     if not isdir(fonts_dir):
                         makedirs(fonts_dir)
                     save_dir = fonts_dir
+                elif ext in VIDEO_FORMATS:
+                    videos_dir = pathjoin(g.site_vars['user_dir'], 'videos')
+                    if not isdir(videos_dir):
+                        makedirs(videos_dir)
+                    save_dir = videos_dir
                 f.save(pathjoin(save_dir, filename))
                 flash('Uploaded file: ' + filename)
             else:
@@ -203,10 +216,26 @@ def user_files_list(dir_name=""):
 
     files = make_dirlist(dir_name)
 
+    dir_breadcrumbs = []
+    parent_dir = None
+    if dir_name:
+        parts = dir_name.strip('/').split('/')
+        acc = ''
+        for i, part in enumerate(parts):
+            acc = pathjoin(acc, part) if acc else part
+            dir_breadcrumbs.append({
+                'name': part,
+                'url': url_for('user_files_list', dir_name=acc),
+                'last': i == len(parts) - 1
+            })
+        parent_dir = dir_name.rsplit('/', 1)[0] if '/' in dir_name else ''
+
     return render_template('user_files.html',
                            full_path=full_path,
                            file_list=files,
                            dirname=dir_name,
+                           dir_breadcrumbs=dir_breadcrumbs,
+                           parent_dir=parent_dir,
                            breadcrumbs=[('Dashboard', url_for('index')),
                                         ('Uploaded Files', None)])
 
