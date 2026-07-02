@@ -42,6 +42,7 @@
   border-color: transparent;
   pointer-events: none;
   background: #f5f2f0;
+  overflow: hidden;
 }
 </style>
 
@@ -56,19 +57,31 @@
 (function() {
   var editor = document.getElementById('rawhtml-editor');
   var highlight = document.getElementById('rawhtml-highlight');
+  var pre = highlight.parentElement;
+
+  function syncHeight() {
+    pre.style.height = editor.clientHeight + 'px';
+  }
+
+  function syncScroll() {
+    pre.scrollTop = editor.scrollTop;
+    pre.scrollLeft = editor.scrollLeft;
+  }
 
   function update() {
     highlight.textContent = editor.value;
     Prism.highlightElement(highlight);
-    highlight.parentElement.scrollTop = editor.scrollTop;
-    highlight.parentElement.scrollLeft = editor.scrollLeft;
+    syncScroll();
+  }
+
+  syncHeight();
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(syncHeight).observe(editor);
   }
 
   editor.addEventListener('input', update);
-  editor.addEventListener('scroll', function() {
-    highlight.parentElement.scrollTop = editor.scrollTop;
-    highlight.parentElement.scrollLeft = editor.scrollLeft;
-  });
+  editor.addEventListener('scroll', syncScroll);
   editor.addEventListener('keydown', function(e) {
     if (e.key === 'Tab') {
       e.preventDefault();

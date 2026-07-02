@@ -76,7 +76,7 @@
 						<form action="{{ url_for('group',groupid=group.id) }}" method="POST">
 							<input type="hidden" name="action" value="delete" />
 							<input type="submit" class="btn btn-sm btn-close confirm_delete"
-							       value="&times;" />
+							       aria-label="Delete group" />
 						</form>
 					{% endif %}
 				</td>
