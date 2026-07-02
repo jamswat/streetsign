@@ -2,9 +2,17 @@
 
 ## v1.0.0 — Initial Rewrite/Modernization
 
-This release marks the initial fork and complete modernization of the StreetSign
-digital signage server, incorporating extensive security hardening, library
-upgrades, accessibility improvements, and new features.
+This release marks the initial fork and modernization of StreetSign.
+Many, many changes including:
+- Bootstrap 3 -> 5
+- Move from Knockout.js -> Alpine.js
+- Various library updates
+- Many bug fixes and security improvements
+- UI improvements
+- Move to Quill WYSIWYG for rich text
+- Add Video post type
+- Add raw html post type
+- Remove Twitter & Advanced html post types 
 
 ## v1.0.1 — UI Fixes, Deployment Improvements, and Branding
 
