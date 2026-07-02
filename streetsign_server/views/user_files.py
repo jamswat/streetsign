@@ -31,9 +31,10 @@ import re
 from os.path import basename, dirname, join as pathjoin, splitext, isdir, isfile, realpath
 from os import makedirs, remove, stat, sep as ossep
 from subprocess import check_call
+from datetime import datetime
 
 from flask import render_template, request, redirect, \
-                  flash, g, url_for, Response
+                  flash, g, url_for, Response, jsonify
 from markupsafe import Markup, escape
 from werkzeug.utils import secure_filename # pylint: disable=no-name-in-module
 
@@ -79,26 +80,45 @@ def make_dirlist(path):
                  'size': f"{len(glob(pathjoin(f, '*')))} items",
                  'is_dir': True})
         else:
+            file_stat = stat(f)
             ext = splitext(name)[1].lower()
             if ext in IMAGE_FORMATS:
                 safe_name = escape(name)
                 thumb = Markup(
                     f'<img src="{url_for("thumbnail", filename=path + name)}"'
                     f' alt="{safe_name}" />')
+                file_type = 'Image'
+                font_family = ''
+                font_preview_url = ''
             elif ext in FONT_EXTENSIONS:
                 thumb = ('<i class="bi bi-file-earmark-font"'
                             ' style="font-size: 1.5rem;"'
                             ' title="Font file"></i> ')
+                file_type = 'Font'
+                font_name = re.sub(r'[^A-Za-z0-9 _-]', '', splitext(name)[0]).strip()
+                font_family = font_name if font_name else name
+                font_preview_url = url_for('static', filename='user_files/fonts/' + name)
             else:
                 thumb = ''
+                file_type = 'Other'
+                font_family = ''
+                font_preview_url = ''
 
-            return_list.append(
-                {'name':  name,
-                 'thumb': thumb,
-                 'url':   pathjoin(g.site_vars['user_url'], path, name),
-                 'size':  human_size_str(f),
-                 'is_dir': False})
+            mod_time = datetime.fromtimestamp(file_stat.st_mtime)
+
+            return_list.append(locals_dict(name=name, thumb=thumb,
+                url=pathjoin(g.site_vars['user_url'], path, name),
+                size=human_size_str(f), size_raw=file_stat.st_size, is_dir=False,
+                ext=ext, file_type=file_type, font_family=font_family,
+                font_preview_url=font_preview_url,
+                mod_time=mod_time.strftime('%Y-%m-%d %H:%M'),
+                mod_time_raw=mod_time.isoformat(),
+                mod_ts=mod_time.timestamp()))
     return return_list
+
+
+def locals_dict(**kwargs):
+    return kwargs
 
 @app.route('/user_files/', methods=['GET', 'POST'])
 @app.route('/user_files/<path:dir_name>', methods=['GET', 'POST'])
@@ -127,7 +147,7 @@ def user_files_list(dir_name=""):
 
     if request.method == 'POST' and user.is_admin:
         if request.form.get('action') == 'upload':
-            f = request.files['image_file']
+            f = request.files.get('file') or request.files.get('image_file')
             if f and allow_filetype(f.filename):
                 filename = secure_filename(f.filename)
                 ext = splitext(filename)[-1].lower()
@@ -149,7 +169,6 @@ def user_files_list(dir_name=""):
                 try:
                     thumb_path = pathjoin(g.site_vars['user_dir'],
                                        '.thumbnails', dir_name, filename)
-                    # only remove if it really resolves under .thumbnails.
                     thumb_base = realpath(pathjoin(g.site_vars['user_dir'],
                                                    '.thumbnails'))
                     if realpath(thumb_path).startswith(thumb_base + ossep) \
@@ -160,6 +179,26 @@ def user_files_list(dir_name=""):
                 flash('Deleted ' + filename)
             else:
                 flash('Cannot delete directory: ' + filename)
+        elif request.form.get('action') == 'delete_selected':
+            filenames = request.form.getlist('filenames[]')
+            deleted = 0
+            for fname in filenames:
+                fname = secure_filename(fname)
+                full_filename = pathjoin(full_path, fname)
+                if isfile(full_filename):
+                    remove(full_filename)
+                    try:
+                        thumb_path = pathjoin(g.site_vars['user_dir'],
+                                           '.thumbnails', dir_name, fname)
+                        thumb_base = realpath(pathjoin(g.site_vars['user_dir'],
+                                                       '.thumbnails'))
+                        if realpath(thumb_path).startswith(thumb_base + ossep) \
+                                and isfile(thumb_path):
+                            remove(thumb_path)
+                    except OSError:
+                        pass
+                    deleted += 1
+            flash(f'Deleted {deleted} file(s)')
 
 
     files = make_dirlist(dir_name)
