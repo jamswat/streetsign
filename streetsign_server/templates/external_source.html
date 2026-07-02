@@ -114,10 +114,11 @@ $('#test_btn').click(function(e){
 $('#run_now').click(function(e){
     e.preventDefault();
     const btn = $(this);
+    const originalText = btn.text();
     btn.addClass('disabled').text('Running...');
     $.post(this.href, {"force":"yes"}, function() { location.reload(); })
       .fail(function() {
-        btn.removeClass('disabled').html(btn.data('original-text') || 'Run Now');
+        btn.removeClass('disabled').html(originalText);
         showToast('Failed to run external source.', 'error');
     });
 });

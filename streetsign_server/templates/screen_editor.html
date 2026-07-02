@@ -136,7 +136,7 @@
 						<select name="fontfamily" class="form-control form-control-sm"
 						    x-model="zone.fontfamily">
 							<template x-for="font in availableFonts" :key="font">
-								<option :value="font" x-text="font"></option>
+								<option :value="font" x-text="font || '(browser default)'"></option>
 							</template>
 						</select>
 					</div>
