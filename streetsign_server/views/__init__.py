@@ -152,7 +152,6 @@ def robots_txt():
 @app.errorhandler(user_session.NotLoggedIn)
 def not_logged_in(_err):
     ''' Not Logged In handler '''
-    # TODO: nicer looking.
     return render_template('error.html',
                           title='Permission Denied',
                           message="You're not logged in!"), 403
