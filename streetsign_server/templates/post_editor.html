@@ -23,7 +23,7 @@
 {{ linkmacros.static_js('lib/quill/quill.js') }}
 
 {{ linkmacros.static_js('post_times_editor.js') }}
-{% block page_specific_js %}}
+{% block page_specific_js %}
     <script type="text/javascript">
         window.TIME_RESTRICTIONS = {{ post.time_restrictions |safe }};
     </script>

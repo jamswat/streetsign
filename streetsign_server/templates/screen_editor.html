@@ -14,7 +14,7 @@
 		<div class="card-header">
 			<h2 class="card-title h5">Preview
 			<div class="float-end">
-			<a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname or '') }}" class="btn btn-secondary btn-sm">Full Preview</a>
+			{% if screen.urlname %}<a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname) }}" class="btn btn-secondary btn-sm">Full Preview</a>{% endif %}
 			</div>
 			</h2>
 		</div>
