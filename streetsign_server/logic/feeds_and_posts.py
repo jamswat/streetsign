@@ -28,7 +28,8 @@ logic for feeds_and_posts views, separated out for clarity.
 from datetime import datetime
 import os
 import re
-from os.path import join as pathjoin, isfile, isdir
+from os.path import join as pathjoin, isfile, isdir, realpath, splitext
+from os import sep as ossep
 
 from flask import flash, url_for, json, g
 
@@ -240,8 +241,11 @@ def cleanup_orphaned_media_files():
                     removed_files += 1
                 except OSError:
                     pass
-                thumb_path = pathjoin(user_dir, '.thumbnails', 'post_images', f)
-                if isfile(thumb_path):
+                thumb_path = pathjoin(user_dir, '.thumbnails', 'post_images',
+                                    splitext(f)[0] + '.png')
+                thumb_base = realpath(pathjoin(user_dir, '.thumbnails'))
+                if realpath(thumb_path).startswith(thumb_base + ossep) \
+                        and isfile(thumb_path):
                     try:
                         os.remove(thumb_path)
                         removed_thumbs += 1

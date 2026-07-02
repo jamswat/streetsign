@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # ---------- final ----------
 FROM python:3.12-alpine
 
-RUN apk add --no-cache imagemagick imagemagick-jpeg bash su-exec \
+RUN apk add --no-cache imagemagick imagemagick-jpeg imagemagick-webp imagemagick-heic imagemagick-svg bash su-exec \
  && adduser -D -h /app streetsign
 
 COPY --from=builder /opt/venv /opt/venv

@@ -30,7 +30,7 @@ from glob import glob
 import re
 from os.path import basename, dirname, join as pathjoin, splitext, isdir, isfile, realpath
 from os import makedirs, remove, stat, sep as ossep
-from subprocess import check_call
+from subprocess import run, CalledProcessError
 from datetime import datetime
 
 from flask import render_template, request, redirect, \
@@ -57,7 +57,7 @@ def human_size_str(filename):
 # TODO: move to file upload lib.
 
 
-IMAGE_FORMATS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg']
+IMAGE_FORMATS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.webp', '.avif']
 FONT_EXTENSIONS = ['.ttf', '.otf', '.woff', '.woff2']
 VIDEO_FORMATS = ['.mp4', '.webm', '.ogg', '.ogv', '.mov']
 ALLOWED_FORMATS = IMAGE_FORMATS + FONT_EXTENSIONS + VIDEO_FORMATS
@@ -181,7 +181,8 @@ def user_files_list(dir_name=""):
                 remove(full_filename)
                 try:
                     thumb_path = pathjoin(g.site_vars['user_dir'],
-                                       '.thumbnails', dir_name, filename)
+                                       '.thumbnails', dir_name,
+                                       splitext(filename)[0] + '.png')
                     thumb_base = realpath(pathjoin(g.site_vars['user_dir'],
                                                    '.thumbnails'))
                     if realpath(thumb_path).startswith(thumb_base + ossep) \
@@ -202,7 +203,8 @@ def user_files_list(dir_name=""):
                     remove(full_filename)
                     try:
                         thumb_path = pathjoin(g.site_vars['user_dir'],
-                                           '.thumbnails', dir_name, fname)
+                                           '.thumbnails', dir_name,
+                                           splitext(fname)[0] + '.png')
                         thumb_base = realpath(pathjoin(g.site_vars['user_dir'],
                                                        '.thumbnails'))
                         if realpath(thumb_path).startswith(thumb_base + ossep) \
@@ -247,7 +249,8 @@ def thumbnail(filename):
         create one (with imagemagick(convert)) '''
 
     full_path = pathjoin(g.site_vars['user_dir'], filename)
-    thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails', filename)
+    thumb_name = splitext(filename)[0] + '.png'
+    thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails', thumb_name)
     real_base = realpath(g.site_vars['user_dir'])
     real_path = realpath(full_path)
     if not real_path.startswith(real_base + ossep) and real_path != real_base:
@@ -261,27 +264,35 @@ def thumbnail(filename):
         return redirect(url_for('user_files_list'))
 
     if splitext(filename)[-1].lower() not in IMAGE_FORMATS:
-        return 'not an image I will not make a thumbnail.'
+        return Response('not an image I will not make a thumbnail.', status=415)
 
-    if isfile(full_path):
-        if not isfile(thumb_path):
-            # we need to make a thumbnail!
-            where = pathjoin(g.site_vars['user_dir'],
-                             '.thumbnails',
-                             dirname(filename))
-            if not isdir(where):
-                makedirs(where)
+    if not isfile(full_path):
+        return Response('Sorry! not a valid original file!', status=404)
 
-            try:
-                check_call([pathjoin(g.site_vars['site_dir'],
-                                     'scripts',
-                                     'makethumbnail.sh'),
-                           full_path, thumb_path])
-            except Exception:
-                return 'Sorry!'
-        # either there is a thumbnail, or we just made one.
-        return redirect(g.site_vars['user_url'] + '/.thumbnails/' + filename)
-    return 'Sorry! not a valid original file!'
+    if not isfile(thumb_path):
+        where = pathjoin(g.site_vars['user_dir'],
+                         '.thumbnails',
+                         dirname(filename))
+        if not isdir(where):
+            makedirs(where)
+
+        try:
+            result = run([pathjoin(g.site_vars['site_dir'],
+                                   'scripts',
+                                   'makethumbnail.sh'),
+                         full_path, thumb_path],
+                         capture_output=True, text=True)
+            result.check_returncode()
+        except CalledProcessError:
+            app.logger.error('thumbnail generation failed: %s\nstderr: %s',
+                             full_path, result.stderr.strip())
+            return Response('Sorry! Thumbnail generation failed.', status=500)
+        except OSError as exc:
+            app.logger.error('thumbnail generation failed: %s\nOSError: %s',
+                             full_path, exc)
+            return Response('Sorry! Thumbnail generation failed.', status=500)
+
+    return redirect(g.site_vars['user_url'] + '/.thumbnails/' + thumb_name)
 
 def user_fonts():
     ''' return a list of (name, url) tuples for all user-available fonts. 

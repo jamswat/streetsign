@@ -73,7 +73,7 @@ def allow_filetype(filename):
     ''' what kinds of files are allowed? '''
 
     return splitext(filename)[-1].lower() in \
-        ['.png','.jpg','.jpeg','.gif','.bmp','.svg']
+        ['.png','.jpg','.jpeg','.gif','.bmp','.svg','.webp','.avif']
 
 
 ########################################################################
@@ -170,7 +170,8 @@ def delete(data):
     remove(pathjoin(image_path(), secure_filename(data['filename'])))
     try:
         thumb_path = pathjoin(g.site_vars['user_dir'], '.thumbnails',
-                              'post_images', secure_filename(data['filename']))
+                              'post_images',
+                              splitext(secure_filename(data['filename']))[0] + '.png')
         if isfile(thumb_path):
             remove(thumb_path)
     except OSError:
