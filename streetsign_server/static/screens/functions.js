@@ -159,7 +159,6 @@ function any_relevent_restrictions(post) {
 function reload_page() {
     'use strict';
     $.get(document.URL, () => { window.location.reload(); });
-    setTimeout(reload_page, REFRESH_PAGE_TIMER);
 }
 
 function reduce_font_size_to_fit(inner, outer) {
@@ -211,5 +210,5 @@ function get_servertime(url) {
     return new Date(xhr.getResponseHeader('Date'));
 }
 
-setTimeout(reload_page, REFRESH_PAGE_TIMER);
+setInterval(reload_page, REFRESH_PAGE_TIMER);
 magic_time();

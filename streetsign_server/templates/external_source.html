@@ -102,14 +102,24 @@
 <script type="text/javascript">
 $('#test_btn').click(function(e){
     e.preventDefault();
+    const area = $('#test_area');
+    area.html('<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text skeleton-text-sm"></div>');
     $.post("{{ url_for('external_source_test') }}", $('#source_form').serialize(), function(data) {
-        $('#test_area').html(data);
+        area.html(data);
+    }).fail(function() {
+        area.html('<div class="alert alert-danger">Test failed. Check the server logs.</div>');
     });
 });
 
 $('#run_now').click(function(e){
     e.preventDefault();
-    $.post(this.href, {"force":"yes"}, function() { location.reload(); });
+    const btn = $(this);
+    btn.addClass('disabled').text('Running...');
+    $.post(this.href, {"force":"yes"}, function() { location.reload(); })
+      .fail(function() {
+        btn.removeClass('disabled').html(btn.data('original-text') || 'Run Now');
+        showToast('Failed to run external source.', 'error');
+    });
 });
 </script>
 {% endblock %}

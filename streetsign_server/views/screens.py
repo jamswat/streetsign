@@ -130,7 +130,7 @@ def screenedit(screenid):
         if int(screenid) == -1:
             return redirect(url_for('screenedit', screenid=screen.id))
 
-    fonts = ['', 'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy']
+    fonts = ['System Default', 'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy']
     fonts += [name for name, _ in user_fonts()]
 
     return render_template('screen_editor.html',

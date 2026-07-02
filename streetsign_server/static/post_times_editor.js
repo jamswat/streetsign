@@ -26,8 +26,8 @@
 window.makeTimesEditor = function(initialTimes) {
     const times = (initialTimes || []).map(function(t) {
         return {
-            start: t.start || '00:20',
-            end: t.end || '23:30',
+            start: t.start || '00:00',
+            end: t.end || '23:59',
             note: t.note || ''
         };
     });
@@ -40,7 +40,12 @@ window.makeTimesEditor = function(initialTimes) {
         },
 
         addTime() {
-            this.times.push({ start: '00:20', end: '23:30', note: '' });
+            this.times.push({ start: '00:00', end: '23:59', note: '' });
+        },
+
+        timeInvalid(idx) {
+            var t = this.times[idx];
+            return t.start && t.end && t.start >= t.end;
         },
 
         removeTime(idx) {

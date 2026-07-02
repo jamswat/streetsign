@@ -126,10 +126,4 @@
 
 {% block end_of_page_javascript %}
 {{ super() }}
-{% if not user.is_admin %}
-<script type="text/javascript">
-$('#users_and_groups input').attr('disabled','disabled');
-$('#users_and_groups select').attr('disabled','disabled');
-</script>
-{% endif %}
 {% endblock %}

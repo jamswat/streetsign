@@ -73,8 +73,10 @@
 						<input x-model="alias.name" class="form-control" /><br/>
 						URL: <a :href="urlFor(alias)" x-text="'/client/' + alias.name">URL</a><br/>
 						{% if session.display_admin_stuff %}
+							<label>
 							Display on public dashboard:
 							<input type=checkbox x-model="alias.show_on_dashboard" />
+							</label>
 						{% endif %}
 				</td>
 				<td>

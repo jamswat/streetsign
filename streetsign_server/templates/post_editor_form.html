@@ -121,7 +121,7 @@
 				</thead>
 				<tbody>
 				<template x-for="(time, idx) in times" :key="idx">
-					<tr>
+					<tr :class="{ 'table-warning': timeInvalid(idx) }">
 						<td>
 							<div class="input-group">
 								<input type="time" x-model="time.start" class="form-control" data-date-format="HH:mm" />
@@ -192,8 +192,7 @@
 	</button>
 	{% if not post.id %}
 		<input type="hidden" name="publish_after" value="1" id="publish-after-flag" disabled />
-		<button type="button" class="btn btn-success" id="save-publish-btn"
-		        onclick="document.getElementById('publish-after-flag').disabled=false; this.form.requestSubmit();">
+		<button type="button" class="btn btn-success" id="save-publish-btn">
 			<span class="bi bi-send"></span> Save &amp; Publish
 		</button>
 	{% elif not post.published and post.feed.user_can_publish(user) %}
@@ -219,6 +218,16 @@
 	if (checkbox) {
 		checkbox.addEventListener('change', update);
 		update();
+	}
+
+	// Save & Publish button for new posts
+	const newPublishBtn = document.getElementById('save-publish-btn');
+	if (newPublishBtn) {
+		newPublishBtn.addEventListener('click', function() {
+			const flag = document.getElementById('publish-after-flag');
+			if (flag) flag.disabled = false;
+			this.closest('form').requestSubmit();
+		});
 	}
 
 	// Save & Publish button for existing posts

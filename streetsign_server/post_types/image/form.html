@@ -4,15 +4,21 @@
     <input type="file" name="image_file" id="image_file" accept="image/*" />
     </label>
     <div id="img_preview"></div>
-    <!-- TODO
     <script type="text/javascript">
-    window.URL = window.URL || window.webkitURL;
-
-        $('#image_file').change( function () {
-            alert ($(this).val());
-            $('#img_preview').attr('src',window.URL.createObjectURL($(this).val()));
-        });
-    </script> -->
+    document.getElementById('image_file').addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            img.style.marginTop = '8px';
+            const preview = document.getElementById('img_preview');
+            preview.innerHTML = '';
+            preview.appendChild(img);
+        }
+    });
+    </script>
 {% else %}
     <div style="text-align: center;">
     <img src="{{file_url}}" style="max-width:100%;height:auto;" />

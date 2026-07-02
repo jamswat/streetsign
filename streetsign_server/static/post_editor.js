@@ -4,9 +4,13 @@ $('.post_type_button').click(function(e) {
 
     const container = $('#postcontentblock-type');
     container.html('<div class="skeleton skeleton-text" style="width:80%"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-sm"></div><div class="skeleton skeleton-text" style="width:40%"></div>');
-    container.load(
-        window.POST_TYPE_URL(postType)
-    );
+    $.get(window.POST_TYPE_URL(postType))
+        .done(function(html) {
+            container.html(html);
+        })
+        .fail(function() {
+            container.html('<div class="alert alert-danger">Failed to load editor. Please try again.</div>');
+        });
 
     $(this).parent('li').addClass('active').siblings().removeClass('active');
     $(this).addClass('active').closest('.nav-tabs').find('.nav-link').not(this).removeClass('active');

@@ -151,11 +151,13 @@
 		{% endif %}
 		{% block body %}{% endblock %}
 		<div class="clearfix"></div>
+		{% block page_footer %}
 		<footer>
 			StreetSign v{{ app_version }} &copy; 2013-2026 Daniel Fairhead. Forked by <a href="https://github.com/jamswat">jamswat</a>.
 			<a href="https://jamswat.github.io/streetsign/">Documentation</a> ·
 			<a href="https://github.com/jamswat/streetsign">GitHub</a>
 		</footer>
+		{% endblock %}
 	</main>
 
 	<div class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true">
@@ -181,7 +183,7 @@
 	 # Log-in Dialog
 	 ############################################}
 
-	<div id="login_box" class="modal fade">
+	<div id="login_box" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<form action="{{ url_for('login') }}" method="POST">

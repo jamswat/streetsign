@@ -67,10 +67,7 @@
 				<label class="form-label">Custom CSS:</label>
 				<textarea name="css" x-model="css" class="form-control" rows="3" placeholder="Additional CSS for this screen..."></textarea>
 			</div>
-			<span style="display:none;">
-				<label>Other Settings:</label>
-				<textarea name="settings" x-model="settings" class="form-control"></textarea>
-			</span>
+		<input type="hidden" name="settings" :value="settings" />
 		</div>
 		<div class="card-footer">
 			<input type="submit" id="save_btn" value="Save Screen" class="btn btn-primary" />
@@ -92,9 +89,9 @@
 		     :id="'zone-editor-' + idx"
 		     x-on:click="selectZone(idx)">
 			<div class="card-header py-2 d-flex justify-content-between align-items-center">
-				<input name="urlname" x-model="zone.name"
-				       placeholder="Zone name" class="form-control form-control-sm"
-				       style="max-width: 60%" />
+			<input x-model="zone.name"
+			       placeholder="Zone name" class="form-control form-control-sm"
+			       style="max-width: 60%" />
 				<button x-on:click.stop="removeZone(idx)" class="btn btn-sm btn-danger">
 					<span class="bi bi-trash"></span>
 				</button>

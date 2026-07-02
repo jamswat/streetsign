@@ -192,12 +192,18 @@ $('#show_past_posts').click(function() {
 });
 
 $('#run_housekeeping').click(function() {
+    const btn = $(this);
+    btn.prop('disabled', true);
     $.post(window.HOUSEKEEPING_URL, {}, function(data) {
         showToast(
             'Housekeeping: ' + data.archived + ' archived, ' + data.deleted + ' deleted.',
             'success'
         );
-    }, 'json');
+    }, 'json').fail(function() {
+        showToast('Housekeeping failed.', 'error');
+    }).always(function() {
+        btn.prop('disabled', false);
+    });
 });
 
 // and run any js which was inserted by a template, which needs jQuery.

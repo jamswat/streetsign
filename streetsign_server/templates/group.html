@@ -1,15 +1,16 @@
 {% extends "index.html" %}
-{% block title %} Userlist {% endblock %}
+{% block title %} Group: {{ group.name }} {% endblock %}
 
 {% block body %}
 {% if not session.display_admin_stuff %}
-<table>
+<h1>{{ group.name }}</h1>
+<div class="table-responsive">
+<table class="table table-striped">
 <thead>
 <tr>
-<td>Display Name</td>
-<td>login name</td>
-<td>Email</td>
-<td></td>
+<th scope="col">Display Name</th>
+<th scope="col">login name</th>
+<th scope="col">Email</th>
 </tr>
 </thead>
 <tbody>
@@ -18,12 +19,11 @@
     <td>{{ linkmacros.user(user) }}</td>
     <td>{{ user.loginname }}</td>
     <td>{{ user.emailaddress }}</td>
-    <td>{% if user.is_admin %}ADMIN {% endif %}
-        {% if user.is_locked_out %} Locked Out! {% endif %}
     </tr>
 {% endfor %}
 </tbody>
 </table>
+</div>
 {% else %}
 <h1>{{ group.name }}</h1>
 <form action="" method="POST" class="needs-validation" novalidate>

@@ -53,6 +53,7 @@
 						{% for post in posts %}
 							<tr class="{{ 'published' if post.published else 'unpublished' }}">
 								<td>{{ linkmacros.post(post) }}</td>
+								<td><span class="badge bg-secondary">{{ post.feed.name }}</span></td>
 								<td>
 								{% if post in posts_to_publish %}
 									<form method="post" action="{{ url_for('postpage', postid=post.id) }}">

@@ -153,8 +153,6 @@ def robots_txt():
 def not_logged_in(_err):
     ''' Not Logged In handler '''
     # TODO: nicer looking.
-    return f'''<!doctype html>
-    <body><h1>StreetSign</h1>
-    <h2>Permission Denied</h2>
-    You\'re not logged in!
-    <a href="{url_for("index")}">Return to StreetSign</a>''', 403
+    return render_template('error.html',
+                          title='Permission Denied',
+                          message="You're not logged in!"), 403

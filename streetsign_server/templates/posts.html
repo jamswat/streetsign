@@ -162,9 +162,8 @@ window.BULK_DELETE_URL = "{{ url_for('posts_bulk_delete') }}";
 			var ids = Array.from(checked).map(function(cb) { return parseInt(cb.dataset.postId); });
 			if (ids.length === 0) return;
 
-			if (!confirm('Really delete ' + ids.length + ' post(s)?')) return;
-
-			$.ajax({
+			confirmAction('Really delete ' + ids.length + ' post(s)?', function() {
+				$.ajax({
 				url: window.BULK_DELETE_URL,
 				type: 'POST',
 				contentType: 'application/json',
