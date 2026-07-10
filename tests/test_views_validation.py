@@ -64,7 +64,7 @@ class TestBasicViewValid(StreetSignTestCase):
             self.validate('/screens/')
             self.validate('/screens-edit/0', follow_redirects=True)
             self.validate('/user_files/')
-            self.validate('/user_files/thing.jpg')
+            self.validate('/user_files/thing.jpg', code=302)
             self.validate('/users_and_groups')
             self.validate('/users/' + str(u.id))
             self.validate('/group/0', follow_redirects=True)
@@ -84,7 +84,7 @@ class TestBasicViewValid(StreetSignTestCase):
         with self.ctx():
             self.validate('/screens/')
             self.validate('/user_files/')
-            self.validate('/user_files/thing.jpg')
+            self.validate('/user_files/thing.jpg', code=302)
             self.validate('/users_and_groups')
             self.validate('/users/' + str(u.id))
             self.validate('/group/0', follow_redirects=True)
