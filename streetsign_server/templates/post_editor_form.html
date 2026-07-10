@@ -147,7 +147,35 @@
 				</tbody>
 				</table>
 				</div>
-				<input type="hidden" name="time_restrictions_json" :value="serializedTimes" />
+			<input type="hidden" name="time_restrictions_json" :value="serializedTimes" />
+		</div>
+		</div>
+
+		<div class="card mt-3">
+			<div class="card-header">
+				<h2 class="card-title h5">Recurrence</h2>
+			</div>
+			<div class="card-body">
+				<div class="form-check mb-3">
+					<input class="form-check-input" type="checkbox" name="recurrence_enabled"
+					       value="1" id="recurrence-check"
+					       {{ 'checked' if post.recurrence and post.recurrence != '{"enabled":false,"days":[]}' and (post.recurrence | from_json).enabled }}>
+					<label class="form-check-label" for="recurrence-check">
+						<strong>Limit to specific days</strong> — only show on selected days of the week
+						(within the post lifetime above)
+					</label>
+				</div>
+				{% set recurrence_days = (post.recurrence | from_json).days if post.recurrence and (post.recurrence | from_json).enabled else [] %}
+				<div id="recurrence-days-group" class="d-flex flex-wrap gap-2">
+					{% for code, label in [('mon','Mon'),('tue','Tue'),('wed','Wed'),('thu','Thu'),('fri','Fri'),('sat','Sat'),('sun','Sun')] %}
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" name="recurrence_days"
+						       value="{{ code }}" id="day-{{ code }}"
+						       {{ 'checked' if code in recurrence_days }} />
+						<label class="form-check-label" for="day-{{ code }}">{{ label }}</label>
+					</div>
+					{% endfor %}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -218,6 +246,22 @@
 	if (checkbox) {
 		checkbox.addEventListener('change', update);
 		update();
+	}
+
+	// Recurrence: toggle day picker visibility
+	const recCheckbox = document.getElementById('recurrence-check'),
+		recDaysGroup = document.getElementById('recurrence-days-group');
+
+	function updateRecurrence() {
+		if (recCheckbox && recDaysGroup) {
+			recDaysGroup.style.opacity = recCheckbox.checked ? '1' : '0.4';
+			recDaysGroup.style.pointerEvents = recCheckbox.checked ? '' : 'none';
+		}
+	}
+
+	if (recCheckbox) {
+		recCheckbox.addEventListener('change', updateRecurrence);
+		updateRecurrence();
 	}
 
 	// Save & Publish button for new posts

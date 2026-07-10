@@ -165,6 +165,16 @@ def post_form_intake(post, form, editor):
         form.get('times_mode', 'do_not_show') == 'only_show'
     post.time_restrictions = form.get('time_restrictions_json', '[]')
 
+    # Recurrence (day-of-week scheduling):
+    recurrence_enabled = getbool('recurrence_enabled', False, form=form)
+    recurrence_days = form.getlist('recurrence_days') if hasattr(form, 'getlist') \
+                      else [d for d in form.get('recurrence_days', '').split(',')
+                            if d.strip()]
+    post.recurrence = json.dumps({
+        'enabled': recurrence_enabled,
+        'days': recurrence_days,
+    })
+
     if getbool('permanent', False, form=form):
         post.display_time = 0
         post.active_end = '2099-12-31 23:59:59'

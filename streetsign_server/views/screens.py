@@ -187,7 +187,8 @@ def screens_posts_from_feeds(json_feeds_list):
                      &(Post.active_end > time_now)
                      &(Post.published)
                     )
-              .order_by(Post.sort_order, Post.id)]
+              .order_by(Post.sort_order, Post.id)
+              if p.recurrence_active_now()]
     return jsonify(posts=posts)
 
 @app.route('/screens/json/<int:screenid>', defaults={'old_md5': None})

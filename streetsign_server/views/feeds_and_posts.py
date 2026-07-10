@@ -232,13 +232,15 @@ def feedsrss(ids_raw):
 
     time_now = now()
     feed_posts = list(
+                  p for p in
                   Post.select().join(Feed).where(
                       (Feed.id << ids)
         &(Post.status == 0)
                       &(Post.active_start < time_now)
                       &(Post.active_end > time_now)
                       &(Post.published)
-                      ))
+                      )
+                  if p.recurrence_active_now())
 
     feed = RSSFeed()
 

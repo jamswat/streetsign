@@ -20,7 +20,7 @@
 from os.path import dirname, join as pathjoin
 import logging
 
-from flask import Flask
+from flask import Flask, json
 from whitenoise import WhiteNoise
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,9 @@ except ImportError:
 
 app = Flask(__name__) # pylint: disable=invalid-name
 app.config.from_object(config)
+
+# Jinja filter for parsing JSON strings in templates.
+app.jinja_env.filters['from_json'] = json.loads
 
 # Configure the Flask application logger from LOG_LEVEL.
 import logging as _logging
