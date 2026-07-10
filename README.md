@@ -194,6 +194,34 @@ StreetSign loads `config.py` if present, falling back to the defaults in
 you want to change into `config.py`. Common environment variables
 (`SECRET_KEY`, `DATABASE_FILE`, `PORT`, `HOST`) are honoured directly.
 
+## Upgrading
+
+1. Back up `database.db` and `config.py` (see **Backup & Restore** below)
+2. `git pull`
+3. `make migrate`
+4. Restart the server
+
+## Backup & Restore
+
+A naïve `cp database.db` can produce a corrupt copy because SQLite in WAL mode
+also writes to `database.db-wal`. Use the built-in backup script, which uses
+the SQLite online backup API to produce a consistent snapshot while the server
+keeps running:
+
+```bash
+make backup
+# or explicitly:
+.virtualenv/bin/python scripts/backup_db.py /path/to/backup.db
+```
+
+In Docker, mount a backup volume and run it from cron:
+
+```bash
+docker exec streetsign python scripts/backup_db.py /backups/streetsign-$(date +%F).db
+```
+
+To restore, stop the server, replace `database.db` with the backup file, and
+restart.
 
 ## Requirements
 

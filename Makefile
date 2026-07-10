@@ -1,4 +1,4 @@
-.PHONY: migrate
+.PHONY: migrate backup
 
 _INSTRUCTIONS:
 	echo 'make all, or make clean.'
@@ -23,4 +23,7 @@ database.db:
 	echo 'make()' | ./.virtualenv/bin/python3 -i db.py
 
 migrate:
-	echo 'run_migrations()' | ./.virtualenv/bin/python3 -i db.py 
+	echo 'run_migrations()' | ./.virtualenv/bin/python3 -i db.py
+
+backup:
+	./.virtualenv/bin/python3 scripts/backup_db.py
