@@ -25,15 +25,19 @@ peewee ORM database models.
 
 '''
 
+import logging
+
 from .base import (DB, by_id, now, safe_json_load,
-                   eval_datetime_formula, DBModel,
-                   InvalidValue, PermissionDenied, InvalidPassword,
-                   SECRET_KEY, app)
+                    eval_datetime_formula, DBModel,
+                    InvalidValue, PermissionDenied, InvalidPassword,
+                    SECRET_KEY, app)
 from .users import User, Group, UserGroup
 from .auth import UserSession, user_login, user_logout, get_logged_in_user
 from .feeds import Feed, FeedPermission, Post, ExternalSource
 from .screens import Screen
 from .config import ConfigVar, config_var
+
+logger = logging.getLogger(__name__)
 
 ALL_MODELS = (User, UserSession, Group, UserGroup, Post, Feed,
               FeedPermission, ConfigVar, ExternalSource, Screen)
@@ -67,7 +71,7 @@ def migrations(dbfile=False):
 
     # Migration 1: add post title
     if 'title' not in post_field_names:
-        print('running migration 1 - add post title')
+        logger.info('running migration 1 - add post title')
         post_title = TextField(default='')
         migrate(
             migrator.add_column('Post', 'title', post_title)
@@ -75,7 +79,7 @@ def migrations(dbfile=False):
 
     # Migration 2: add post font size
     if 'fontsize' not in post_field_names:
-        print('running migration 2 - add post font size')
+        logger.info('running migration 2 - add post font size')
         post_fontsize = IntegerField(null=True)
         migrate(
             migrator.add_column('Post', 'fontsize', post_fontsize)
@@ -84,8 +88,8 @@ def migrations(dbfile=False):
     # Migration 3: merge 'complex' post type into 'html'
     complex_count = Post.select().where(Post.type == 'complex').count()
     if complex_count > 0:
-        print(f'running migration 3 - merge complex post type into html'
-              f' ({complex_count} posts)')
+        logger.info('running migration 3 - merge complex post type into html'
+                     ' (%s posts)', complex_count)
         Post.update(type='html').where(Post.type == 'complex').execute()
 
 

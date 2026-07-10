@@ -19,6 +19,10 @@ SECRET_KEY = environ.get('SECRET_KEY', 'dev-default-key-change-in-production')
 CSRF_ENABLED = True
 DATABASE_FILE = environ.get('DATABASE_FILE', 'database.db')
 
+# Logging level for the application. One of: DEBUG, INFO, WARNING, ERROR.
+# Override with the LOG_LEVEL environment variable.
+LOG_LEVEL = environ.get('LOG_LEVEL', 'INFO')
+
 # The known, insecure default. The app refuses to start in production mode
 # (MODE='production') if SECRET_KEY is left at this value.
 DEFAULT_INSECURE_SECRET_KEY = 'dev-default-key-change-in-production'
