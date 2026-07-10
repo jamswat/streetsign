@@ -95,7 +95,7 @@ upgrades, accessibility improvements, and new features.
 
 ### Post & Form Improvements
 - Time restrictions highlighted yellow when start ≥ end.
-- Housekeeping button: loading state and error feedback.
+- Housekeeping button: tooltip explaining what housekeeping does (posts page).
 - External source Test / Run Now: loading skeletons and error handling.
 - Login modal: `data-bs-backdrop="static"` to prevent accidental dismiss.
 - Dashboard: feed name badge on My Posts entries.
