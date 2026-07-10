@@ -178,15 +178,16 @@ def screens_posts_from_feeds(json_feeds_list):
     time_now = now()
 
     posts = [{"id": p.id,
-              "changed": p.write_date,
-              "uri": url_for('json_post', postid=p.id)} for p in \
-             Post.select().join(Feed)
-             .where((Feed.id << feeds_list)
-                    &(Post.status == 0)
-                    &(Post.active_start < time_now)
-                    &(Post.active_end > time_now)
-                    &(Post.published)
-                   )]
+               "changed": p.write_date,
+               "uri": url_for('json_post', postid=p.id)} for p in \
+              Post.select().join(Feed)
+              .where((Feed.id << feeds_list)
+                     &(Post.status == 0)
+                     &(Post.active_start < time_now)
+                     &(Post.active_end > time_now)
+                     &(Post.published)
+                    )
+              .order_by(Post.sort_order, Post.id)]
     return jsonify(posts=posts)
 
 @app.route('/screens/json/<int:screenid>', defaults={'old_md5': None})

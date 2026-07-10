@@ -185,6 +185,30 @@ def feedpage(feedid):
                           )
 
 
+@app.route('/feeds/<int:feedid>/reorder', methods=['POST'])
+@admin_only('POST')
+def feed_reorder(feedid):
+    ''' Reorder posts in a feed by updating their sort_order field.
+        Accepts a JSON body: {"post_ids": [3, 7, 1, ...]}
+        Posts are assigned sort_order = their index in the list. '''
+    try:
+        feed = Feed.get(id=feedid)
+    except Feed.DoesNotExist:
+        return jsonify({'error': 'Feed not found'}), 404
+
+    post_ids = request.json.get('post_ids', []) if request.json else []
+
+    for index, post_id in enumerate(post_ids):
+        try:
+            post = Post.get(Post.id == int(post_id), Post.feed == feed)
+            post.sort_order = index
+            post.save()
+        except (Post.DoesNotExist, ValueError):
+            continue
+
+    return jsonify({'ok': True, 'feed': feedid, 'ordered': len(post_ids)})
+
+
 @app.route('/feeds/rss/<ids_raw>')
 def feedsrss(ids_raw):
     ''' get a bunch of feeds posts as an RSS stream '''

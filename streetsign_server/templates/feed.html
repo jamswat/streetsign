@@ -4,9 +4,10 @@
 {% block body %}
 <h1>Feed: {{ feed.name }} </h1>
 <div class="table-responsive">
-<table class="table table-striped">
+<table class="table table-striped" id="feed-posts-table">
 <thead>
   <tr>
+    {% if user.is_admin %}<th scope="col" style="width:4em">Order</th>{% endif %}
     <th scope="col">Title</th>
     <th scope="col">Post</th>
     <th scope="col">Author</th>
@@ -16,9 +17,21 @@
   </tr>
 </thead>
 <tbody>
-{% for post in feed.posts|sort(attribute="active_end") %}
+{% for post in feed.posts|sort(attribute="sort_order") %}
     <tr class="item time_{{- post.active_status() }} {{ 'un' if not post.published}}published"
      data-uri="{{ url_for('postpage', postid=post.id) }}">
+        {% if user.is_admin %}
+        <td class="align-middle">
+            <div class="btn-group-vertical btn-group-sm">
+                <button class="btn btn-outline-secondary btn-sm reorder-up" data-post-id="{{ post.id }}" title="Move up">
+                    <span class="bi bi-chevron-up"></span>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm reorder-down" data-post-id="{{ post.id }}" title="Move down">
+                    <span class="bi bi-chevron-down"></span>
+                </button>
+            </div>
+        </td>
+        {% endif %}
         <td>{{ linkmacros.post_title(post) }}</td>
         <td>{{ linkmacros.post(post) }}</td>
         <td>{{ linkmacros.user(post.author) }}</td>
@@ -126,4 +139,59 @@
 
 {% block end_of_page_javascript %}
 {{ super() }}
+{% if user.is_admin %}
+<script type="text/javascript">
+(function() {
+    var table = document.getElementById('feed-posts-table');
+    if (!table) return;
+
+    function getRowOrder() {
+        return Array.from(table.querySelectorAll('tbody tr[data-uri]'))
+                    .map(function(tr) {
+                        var btn = tr.querySelector('.reorder-up');
+                        return btn ? parseInt(btn.dataset.postId) : null;
+                    })
+                    .filter(function(id) { return id !== null; });
+    }
+
+    function sendOrder() {
+        var ids = getRowOrder();
+        fetch('{{ url_for("feed_reorder", feedid=feed.id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({post_ids: ids})
+        }).then(function(r) {
+            if (!r.ok) { console.error('reorder failed', r.status); }
+        }).catch(function(e) { console.error('reorder error', e); });
+    }
+
+    function moveRow(tr, direction) {
+        var tbody = table.querySelector('tbody');
+        var rows = Array.from(tbody.querySelectorAll('tr[data-uri]'));
+        var idx = rows.indexOf(tr);
+        if (idx === -1) return;
+        var swapWith = direction === 'up' ? idx - 1 : idx + 1;
+        if (swapWith < 0 || swapWith >= rows.length) return;
+        if (direction === 'up') {
+            tbody.insertBefore(tr, rows[swapWith]);
+        } else {
+            tbody.insertBefore(tr, rows[swapWith].nextSibling);
+        }
+    }
+
+    table.addEventListener('click', function(e) {
+        var btn = e.target.closest('.reorder-up, .reorder-down');
+        if (!btn) return;
+        e.preventDefault();
+        var tr = btn.closest('tr');
+        var dir = btn.classList.contains('reorder-up') ? 'up' : 'down';
+        moveRow(tr, dir);
+        sendOrder();
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

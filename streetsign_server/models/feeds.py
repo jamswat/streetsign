@@ -328,6 +328,10 @@ class Post(DBModel):
     #: For how long should it be displayed?
     display_time = IntegerField(default=8)
 
+    #: Playlist ordering weight — lower numbers display first. Posts with
+    #: the same sort_order fall back to insertion order (id).
+    sort_order = IntegerField(default=0)
+
     def __repr__(self):
         return f'<Post:{self.type}:{self.content[0:22]}>'
 

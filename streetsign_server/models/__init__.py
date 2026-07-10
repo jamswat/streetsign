@@ -92,6 +92,14 @@ def migrations(dbfile=False):
                      ' (%s posts)', complex_count)
         Post.update(type='html').where(Post.type == 'complex').execute()
 
+    # Migration 4: add post sort_order for playlist ordering
+    if 'sort_order' not in post_field_names:
+        logger.info('running migration 4 - add post sort_order')
+        post_sort_order = IntegerField(default=0)
+        migrate(
+            migrator.add_column('Post', 'sort_order', post_sort_order)
+        )
+
 
 __all__ = ['DB', 'user_login', 'user_logout', 'get_logged_in_user',
            'User', 'Group', 'Post', 'Feed', 'FeedPermission', 'UserGroup',
