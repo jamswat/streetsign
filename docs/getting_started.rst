@@ -10,7 +10,7 @@ easy on any linux/OSX or other unixy type computer.
 System Requirements
 -------------------
 
-- Python 3.9 (or later) is required.
+- Python 3.10 (or later) is required.
 - Python development headerfiles & capable compiler:
   `yum install python3-devel` on CentOS/RPM based distros,
   `apt-get install python3-dev` on Debian/Ubuntu

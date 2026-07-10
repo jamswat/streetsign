@@ -9,7 +9,7 @@
 Point any browser at a URL and it becomes a screen
 
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](COPYING)
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-3776ab.svg)](https://www.python.org/)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776ab.svg)](https://www.python.org/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ed.svg)](Dockerfile)
 
 ![StreetSign screen designer](docs/images/screen_designer.png)
@@ -230,7 +230,7 @@ restart.
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.10+
 - ImageMagick (for image resizing and thumbnails)
 
 Debian/Ubuntu:

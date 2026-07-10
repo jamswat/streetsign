@@ -6,7 +6,7 @@ Jinja2==3.1.6
 peewee==4.1.0
 # for importing 'external data' sources:
 feedparser==6.0.12
-bleach==6.2.0
+bleach==6.4.0
 # a lot of our modules are separately pulled in later:
 #importlib
 # for passwords:

@@ -2,6 +2,9 @@
 
 ## v1.1.0 — Operational Improvements & New Features
 
+### Breaking Changes
+- Python 3.9 dropped; minimum is now Python 3.10.
+
 ### New Features
 - **Day-of-week scheduling recurrence** — posts can be limited to specific
   weekdays (e.g. "only show on Mon, Wed, Fri") within their lifetime.
@@ -26,7 +29,7 @@
   added standard proxy headers + `client_max_body_size`.
 
 ### CI
-- Added GitHub Actions workflow for tests (Python 3.9 + 3.12 matrix),
+- Added GitHub Actions workflow for tests (Python 3.10 + 3.12 matrix),
   pylint (fail-under=9.0), and pip-audit for known CVEs.
 - Added `python_requires='>=3.9'` to `setup.py`.
 
