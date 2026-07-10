@@ -18,18 +18,26 @@
 """
 
 from os.path import dirname, join as pathjoin
+import logging
 
 from flask import Flask
 from whitenoise import WhiteNoise
 
+logger = logging.getLogger(__name__)
+
 try:
     import config
 except ImportError:
-    print("Config file missing, using defaults.")
+    logger.warning("Config file missing, using defaults.")
     import config_default as config
 
 app = Flask(__name__) # pylint: disable=invalid-name
 app.config.from_object(config)
+
+# Configure the Flask application logger from LOG_LEVEL.
+import logging as _logging
+app.logger.setLevel(getattr(_logging, app.config.get('LOG_LEVEL', 'INFO'),
+                            _logging.INFO))
 
 # The known, insecure default SECRET_KEY signs session cookies, so a public
 # default lets anyone forge sessions. Warn loudly on import; the server
@@ -53,8 +61,8 @@ def assert_secret_key_is_safe():
             'python3 -c "import uuid; print(uuid.uuid4())"')
 
 if using_insecure_secret_key():
-    print('WARNING: using the insecure default SECRET_KEY. '
-          'Set SECRET_KEY before deploying!')
+    logger.warning('using the insecure default SECRET_KEY. '
+                  'Set SECRET_KEY before deploying!')
 
 def _static_security_headers(headers, _path, _url):
     ''' Add security headers to WhiteNoise-served static file responses,

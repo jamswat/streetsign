@@ -17,6 +17,7 @@
 # Configuration Options:
 
 from os import environ
+import logging
 
 __HOST__ = environ.get('HOST', '0.0.0.0')
 __PORT__ = int(environ.get('PORT', '5000'))
@@ -25,6 +26,13 @@ __THREADS__ = 8 # (for waitress, only)
 # Initialise unicode:
 
 import sys
+
+# Set up logging before loading the app so import-time messages are captured.
+logging.basicConfig(
+    level=environ.get('LOG_LEVEL', 'INFO'),
+    format='%(asctime)s %(levelname)s [%(name)s] %(message)s',
+)
+logging.getLogger('waitress').setLevel(logging.INFO)
 
 # Load the app:
 

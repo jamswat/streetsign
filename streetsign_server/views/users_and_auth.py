@@ -35,6 +35,10 @@ import peewee
 from streetsign_server import app
 from streetsign_server.models import User, Group, Post, UserGroup, InvalidPassword
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # pylint: disable=no-member,singleton-comparison
 
 @app.route('/login', methods=['POST'])
@@ -65,7 +69,7 @@ def logout():
     try:
         user_session.logout()
     except Exception as e:
-        print(f'Error Logging Out: {e}')
+        logger.exception('Error logging out: %s', e)
         flash('error logging out. That is odd')
 
     # return to dashboard
