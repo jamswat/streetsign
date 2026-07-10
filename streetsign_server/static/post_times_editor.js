@@ -23,7 +23,7 @@
 *************************************************************/
 'use strict';
 
-window.makeTimesEditor = function(initialTimes) {
+window.makeTimesEditor = function(initialTimes, initialMode) {
     const times = (initialTimes || []).map(function(t) {
         return {
             start: t.start || '00:00',
@@ -34,9 +34,15 @@ window.makeTimesEditor = function(initialTimes) {
 
     return {
         times: times,
+        mode: initialMode || 'all_day',
 
         get serializedTimes() {
+            if (this.mode === 'all_day') return '[]';
             return JSON.stringify(this.times);
+        },
+
+        get showTable() {
+            return this.mode !== 'all_day';
         },
 
         addTime() {
@@ -46,6 +52,13 @@ window.makeTimesEditor = function(initialTimes) {
         timeInvalid(idx) {
             var t = this.times[idx];
             return t.start && t.end && t.start >= t.end;
+        },
+
+        get hasInvalidTimes() {
+            for (var i = 0; i < this.times.length; i++) {
+                if (this.timeInvalid(i)) return true;
+            }
+            return false;
         },
 
         removeTime(idx) {

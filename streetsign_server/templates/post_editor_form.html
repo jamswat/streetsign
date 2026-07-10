@@ -36,79 +36,107 @@
 	</div>
 
 	<div class="tab-pane fade" id="tab-scheduling" role="tabpanel">
+
+		{# ── Visibility Summary Banner ── #}
+		<div class="alert alert-info d-flex align-items-start gap-2 mb-3" id="scheduling-summary">
+			<span class="bi bi-info-circle-fill flex-shrink-0 mt-1"></span>
+			<span id="scheduling-summary-text" class="flex-grow-1">Loading…</span>
+		</div>
+
+		{# ── Post Lifetime ── #}
 		<div class="card">
 			<div class="card-header">
-				<h2 class="card-title h5">Post Lifetime</h2>
+				<h2 class="card-title h5 mb-0">Post Lifetime</h2>
+				<p class="text-muted small mb-0 mt-1">When does this post exist? Other rules below narrow this down further.</p>
 			</div>
 			<div class="card-body">
-				<div class="form-check mb-3">
-					<input class="form-check-input" type="checkbox" name="permanent" value="1"
-					       id="permanent-check"
-					       {{ 'checked' if post.display_time == 0 }}>
-					<label class="form-check-label" for="permanent-check">
-						<strong>Show permanently</strong> — never expires, never cycles to next post
-					</label>
+				<div class="btn-group w-100 mb-3" role="group" id="lifetime-mode-group">
+					<input type="radio" class="btn-check" name="permanent" value="1" id="mode-permanent"
+					       autocomplete="off" {{ 'checked' if post.display_time == 0 }}>
+					<label class="btn btn-outline-primary" for="mode-permanent">Show permanently</label>
+
+					<input type="radio" class="btn-check" name="permanent" value="0" id="mode-range"
+					       autocomplete="off" {{ 'checked' if post.display_time != 0 }}>
+					<label class="btn btn-outline-primary" for="mode-range">Date range</label>
 				</div>
 
-				<div class="row">
-					<div class="col-md-6" id="lifetime-start-group">
-						<label>Start:</label>
-						<div class="mb-3">
-							<div class="input-group date" id="datetimestart" data-date-format="YYYY-MM-DD HH:mm:ss">
-								<input type="text" name="active_start" id="active_start"
-								       class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
-								       value="{{ post.active_start }}" />
-								<span class="input-group-text"><span class="bi bi-calendar"></span></span>
+				<div id="permanent-explanation" class="text-muted small mb-3" style="display:none;">
+					This post stays on screen indefinitely and blocks other posts in the zone from cycling.
+				</div>
+
+				<div id="lifetime-dates-group">
+					<div class="row">
+						<div class="col-md-6" id="lifetime-start-group">
+							<label class="form-label">Start:</label>
+							<div class="mb-3">
+								<div class="input-group date" id="datetimestart" data-date-format="YYYY-MM-DD HH:mm:ss">
+									<input type="text" name="active_start" id="active_start"
+									       class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
+									       value="{{ post.active_start }}" />
+									<span class="input-group-text"><span class="bi bi-calendar"></span></span>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-md-6" id="lifetime-end-group">
+							<label class="form-label">End:</label>
+							<div class="mb-3">
+								<div class="input-group date" id="datetimeend" data-date-format="YYYY-MM-DD HH:mm:ss">
+									<input type="text" name="active_end" id="active_end"
+									       class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
+									       value="{{ post.active_end }}" />
+									<span class="input-group-text"><span class="bi bi-calendar"></span></span>
+								</div>
 							</div>
 						</div>
 					</div>
-
-					<div class="col-md-6" id="lifetime-end-group">
-						<label>End:</label>
-						<div class="mb-3">
-							<div class="input-group date" id="datetimeend" data-date-format="YYYY-MM-DD HH:mm:ss">
-								<input type="text" name="active_end" id="active_end"
-								       class="form-control" {{ enabled_if(post.feed.user_can_write(user)) }}
-								       value="{{ post.active_end }}" />
-								<span class="input-group-text"><span class="bi bi-calendar"></span></span>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div id="displaytime-group">
-					<label>How many seconds to show for at one time?
-						<input type="number" name="displaytime" data-min="1" data-max="500"
-						       class="form-control" value="{{ post.display_time }}" />
-					</label>
 				</div>
 			</div>
 		</div>
 
-		<div class="card mt-3" x-data="makeTimesEditor(TIME_RESTRICTIONS)">
+		{# ── Display Duration ── #}
+		<div class="card mt-3" id="display-duration-card">
 			<div class="card-header">
-				<h2 class="card-title h5">Time Restrictions</h2>
+				<h2 class="card-title h5 mb-0">Display Duration</h2>
+				<p class="text-muted small mb-0 mt-1">How long this post stays on screen before cycling to the next one.</p>
 			</div>
 			<div class="card-body">
-				<div class="mb-3">
-					<label class="me-3">
-						<input type="radio" name="times_mode" value="do_not_show"
-						       {{ 'checked' if not post.time_restrictions_show }} />
-						Do NOT show during these times
-					</label>
-					<label>
-						<input type="radio" name="times_mode" value="only_show"
-						       {{ 'checked' if post.time_restrictions_show }} />
-						Only show during these times
-					</label>
+				<div class="input-group" style="max-width:14rem">
+					<input type="number" name="displaytime" data-min="1" data-max="500"
+					       class="form-control" value="{{ post.display_time }}" />
+					<span class="input-group-text">seconds</span>
 				</div>
+			</div>
+		</div>
 
-				<div class="table-responsive">
+		{# ── Time Restrictions ── #}
+		{% set tr_list = post.time_restrictions | from_json if post.time_restrictions else [] %}
+		{% set has_tr = tr_list | length > 0 %}
+		{% if has_tr and post.time_restrictions_show %}
+			{% set initial_times_mode = 'only_show' %}
+		{% elif has_tr %}
+			{% set initial_times_mode = 'do_not_show' %}
+		{% else %}
+			{% set initial_times_mode = 'all_day' %}
+		{% endif %}
+		<div class="card mt-3" x-data="makeTimesEditor(TIME_RESTRICTIONS, '{{ initial_times_mode }}')">
+			<div class="card-header">
+				<h2 class="card-title h5 mb-0">Time Restrictions</h2>
+				<p class="text-muted small mb-0 mt-1">Which hours of each day is this post allowed to show?</p>
+			</div>
+			<div class="card-body">
+				<select class="form-select mb-3" x-model="mode" name="times_mode" @change="updateSchedulingSummary()">
+					<option value="all_day">All day — no restrictions</option>
+					<option value="only_show">Only show during these hours</option>
+					<option value="do_not_show">Do not show during these hours</option>
+				</select>
+
+				<div class="table-responsive" x-show="showTable" x-transition>
 				<table class="table table-striped">
 				<thead>
 					<tr>
-						<th scope="col" style="width:30%">Start</th>
-						<th scope="col" style="width:30%">End</th>
+						<th scope="col" style="width:25%">Start</th>
+						<th scope="col" style="width:25%">End</th>
 						<th scope="col">Why? (optional)</th>
 						<th scope="col" style="width:4em">
 							{% if post.feed.user_can_write(user) %}
@@ -120,6 +148,13 @@
 					</tr>
 				</thead>
 				<tbody>
+				<template x-if="times.length === 0">
+					<tr>
+						<td colspan="4" class="text-muted text-center py-3">
+							No time restrictions yet. Click <span class="bi bi-plus-lg"></span> to add one.
+						</td>
+					</tr>
+				</template>
 				<template x-for="(time, idx) in times" :key="idx">
 					<tr :class="{ 'table-warning': timeInvalid(idx) }">
 						<td>
@@ -134,7 +169,12 @@
 								<span class="input-group-text"><span class="bi bi-clock"></span></span>
 							</div>
 						</td>
-						<td><input x-model="time.note" class="form-control" placeholder="e.g. Lunch break" /></td>
+						<td>
+							<input x-model="time.note" class="form-control" placeholder="e.g. Lunch break" />
+							<span class="text-danger small" x-show="timeInvalid(idx)">
+								End time must be after start time.
+							</span>
+						</td>
 						<td>
 							{% if post.feed.user_can_write(user) %}
 							<a href="#" class="btn btn-sm btn-danger" x-on:click.prevent="removeTime(idx)">
@@ -147,13 +187,19 @@
 				</tbody>
 				</table>
 				</div>
+				<div class="text-danger small mt-2" x-show="hasInvalidTimes" x-transition>
+					<span class="bi bi-exclamation-triangle"></span>
+					Some time restrictions have an end time before their start time — they will be ignored.
+				</div>
 			<input type="hidden" name="time_restrictions_json" :value="serializedTimes" />
-		</div>
+			</div>
 		</div>
 
+		{# ── Recurrence ── #}
 		<div class="card mt-3">
 			<div class="card-header">
-				<h2 class="card-title h5">Recurrence</h2>
+				<h2 class="card-title h5 mb-0">Recurrence</h2>
+				<p class="text-muted small mb-0 mt-1">Which days of the week is this post allowed to show?</p>
 			</div>
 			<div class="card-body">
 				<div class="form-check mb-3">
@@ -162,9 +208,15 @@
 					       {{ 'checked' if post.recurrence and post.recurrence != '{"enabled":false,"days":[]}' and (post.recurrence | from_json).enabled }}>
 					<label class="form-check-label" for="recurrence-check">
 						<strong>Limit to specific days</strong> — only show on selected days of the week
-						(within the post lifetime above)
 					</label>
 				</div>
+
+				<div id="recurrence-presets" class="mb-2" style="display:none;">
+					<button type="button" class="btn btn-sm btn-outline-secondary me-1" data-recurrence-preset="weekdays">Weekdays</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary me-1" data-recurrence-preset="weekends">Weekends</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary" data-recurrence-preset="everyday">Every day</button>
+				</div>
+
 				{% set recurrence_days = (post.recurrence | from_json).days if post.recurrence and (post.recurrence | from_json).enabled else [] %}
 				<div id="recurrence-days-group" class="d-flex flex-wrap gap-2">
 					{% for code, label in [('mon','Mon'),('tue','Tue'),('wed','Wed'),('thu','Thu'),('fri','Fri'),('sat','Sat'),('sun','Sun')] %}
@@ -233,38 +285,158 @@
 
 <script type="text/javascript">
 (function() {
-	const checkbox = document.getElementById('permanent-check'),
-		endGroup = document.getElementById('lifetime-end-group'),
-		displayGroup = document.getElementById('displaytime-group');
+	// === Lifetime mode selector: permanent vs date range ===
+	const permanentRadio = document.getElementById('mode-permanent'),
+	      rangeRadio = document.getElementById('mode-range'),
+	      datesGroup = document.getElementById('lifetime-dates-group'),
+	      durationCard = document.getElementById('display-duration-card'),
+	      permanentExplanation = document.getElementById('permanent-explanation');
 
-	function update() {
-		const permanent = checkbox.checked;
-		endGroup.style.display = permanent ? 'none' : '';
-		displayGroup.style.display = permanent ? 'none' : '';
+	function updateLifetimeMode() {
+		if (!permanentRadio) return;
+		const permanent = permanentRadio.checked;
+		datesGroup.style.display = permanent ? 'none' : '';
+		durationCard.style.display = permanent ? 'none' : '';
+		permanentExplanation.style.display = permanent ? '' : 'none';
+		updateSchedulingSummary();
 	}
 
-	if (checkbox) {
-		checkbox.addEventListener('change', update);
-		update();
+	if (permanentRadio) {
+		permanentRadio.addEventListener('change', updateLifetimeMode);
+		rangeRadio.addEventListener('change', updateLifetimeMode);
 	}
 
-	// Recurrence: toggle day picker visibility
+	// === Recurrence checkbox + presets ===
 	const recCheckbox = document.getElementById('recurrence-check'),
-		recDaysGroup = document.getElementById('recurrence-days-group');
+	      recDaysGroup = document.getElementById('recurrence-days-group'),
+	      recPresets = document.getElementById('recurrence-presets');
 
 	function updateRecurrence() {
-		if (recCheckbox && recDaysGroup) {
-			recDaysGroup.style.opacity = recCheckbox.checked ? '1' : '0.4';
-			recDaysGroup.style.pointerEvents = recCheckbox.checked ? '' : 'none';
-		}
+		if (!recCheckbox || !recDaysGroup) return;
+		const enabled = recCheckbox.checked;
+		recDaysGroup.style.opacity = enabled ? '1' : '0.4';
+		recDaysGroup.style.pointerEvents = enabled ? '' : 'none';
+		recPresets.style.display = enabled ? '' : 'none';
+		updateSchedulingSummary();
 	}
 
 	if (recCheckbox) {
 		recCheckbox.addEventListener('change', updateRecurrence);
-		updateRecurrence();
 	}
 
-	// Save & Publish button for new posts
+	// Day checkboxes update summary
+	document.querySelectorAll('input[name="recurrence_days"]').forEach(function(cb) {
+		cb.addEventListener('change', updateSchedulingSummary);
+	});
+
+	// Preset buttons
+	document.querySelectorAll('[data-recurrence-preset]').forEach(function(btn) {
+		btn.addEventListener('click', function() {
+			const preset = btn.dataset.recurrencePreset;
+			const daySets = {
+				weekdays: ['mon','tue','wed','thu','fri'],
+				weekends: ['sat','sun'],
+				everyday: ['mon','tue','wed','thu','fri','sat','sun']
+			};
+			const days = daySets[preset] || [];
+			document.querySelectorAll('input[name="recurrence_days"]').forEach(function(cb) {
+				cb.checked = days.indexOf(cb.value) !== -1;
+			});
+			updateSchedulingSummary();
+		});
+	});
+
+	// === Visibility Summary ===
+	function updateSchedulingSummary() {
+		const el = document.getElementById('scheduling-summary-text');
+		if (!el) return;
+
+		// Permanent mode
+		const permanentRadio = document.getElementById('mode-permanent');
+		if (permanentRadio && permanentRadio.checked) {
+			el.textContent = 'Stays on screen permanently — never cycles to other posts.';
+			return;
+		}
+
+		// Days
+		let daysText = 'every day';
+		if (recCheckbox && recCheckbox.checked) {
+			const checked = Array.from(document.querySelectorAll('input[name="recurrence_days"]:checked'))
+			                     .map(function(cb) { return cb.value; });
+			if (checked.length === 7) {
+				daysText = 'every day';
+			} else if (checked.length === 5 &&
+			           ['mon','tue','wed','thu','fri'].every(function(d) { return checked.indexOf(d) !== -1; })) {
+				daysText = 'on weekdays';
+			} else if (checked.length === 2 &&
+			           ['sat','sun'].every(function(d) { return checked.indexOf(d) !== -1; })) {
+				daysText = 'on weekends';
+			} else if (checked.length === 0) {
+				daysText = 'on no days (hidden)';
+			} else {
+				const labels = {mon:'Mon', tue:'Tue', wed:'Wed', thu:'Thu', fri:'Fri', sat:'Sat', sun:'Sun'};
+				daysText = 'on ' + checked.map(function(d) { return labels[d] || d; }).join(', ');
+			}
+		}
+
+		// Hours
+		let hoursText = 'all day';
+		const timesModeSelect = document.querySelector('select[name="times_mode"]');
+		const timesHiddenField = document.querySelector('input[name="time_restrictions_json"]');
+		if (timesModeSelect) {
+			const mode = timesModeSelect.value;
+			if (mode && mode !== 'all_day') {
+				let times = [];
+				try {
+					times = JSON.parse(timesHiddenField ? timesHiddenField.value : '[]');
+				} catch(e) {}
+				if (times.length > 0) {
+					const parts = times.map(function(t) {
+						return (t.start || '?') + '\u2013' + (t.end || '?');
+					});
+					if (mode === 'only_show') {
+						hoursText = 'only ' + parts.join(', ');
+					} else {
+						hoursText = 'except ' + parts.join(', ');
+					}
+				}
+			}
+		}
+
+		// Lifetime
+		let lifetimeText = '';
+		const startInput = document.getElementById('active_start'),
+		      endInput = document.getElementById('active_end');
+		if (startInput && startInput.value) {
+			lifetimeText = 'from ' + formatDate(startInput.value);
+			if (endInput && endInput.value) {
+				lifetimeText += ' to ' + formatDate(endInput.value);
+			}
+		}
+
+		let summary = 'Visible ' + daysText + ', ' + hoursText;
+		if (lifetimeText) {
+			summary += ', ' + lifetimeText;
+		}
+		summary += '.';
+		el.textContent = summary;
+	}
+
+	function formatDate(s) {
+		if (!s) return '';
+		const parts = s.split(' ');
+		return parts[0] || s;
+	}
+
+	// Initialise
+	updateLifetimeMode();
+	updateRecurrence();
+	updateSchedulingSummary();
+
+	// Poll for changes (catches Alpine.js updates to hidden fields)
+	setInterval(updateSchedulingSummary, 500);
+
+	// === Save & Publish buttons ===
 	const newPublishBtn = document.getElementById('save-publish-btn');
 	if (newPublishBtn) {
 		newPublishBtn.addEventListener('click', function() {
@@ -274,7 +446,6 @@
 		});
 	}
 
-	// Save & Publish button for existing posts
 	const publishBtn = document.getElementById('publish-save-btn');
 	if (publishBtn) {
 		publishBtn.addEventListener('click', function() {
