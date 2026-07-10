@@ -164,6 +164,50 @@ Key options:
 - ``MAX_FAILED_LOGINS`` — consecutive failed logins before an account is locked
   out (default: ``10``)
 - ``MAX_CONTENT_LENGTH`` — max upload size in bytes (default: 1 GB)
+- ``LOG_LEVEL`` — logging level for the application (default: ``INFO``).
+  One of ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``. Can also be set via
+  the ``LOG_LEVEL`` environment variable.
 - ``SITE_VARS`` — dict with ``site_title``, ``site_dir``, ``user_dir``,
   ``user_url`` for paths and branding
+
+Logging
+-------
+
+StreetSign uses Python's standard ``logging`` module. When started via
+``./run.py`` (or ``./run.py waitress``), ``logging.basicConfig()`` is
+called with a timestamped format at the level given by ``LOG_LEVEL``.
+All application messages go through ``streetsign_server`` loggers and
+appear on stderr — in Docker they're captured by ``docker logs``, under
+systemd by ``journalctl -u streetsign``.
+
+Backup & Restore
+----------------
+
+A naïve ``cp database.db`` can produce a corrupt copy because SQLite in
+WAL mode also writes to ``database.db-wal``. Use the built-in backup
+script, which uses the SQLite online backup API to produce a consistent
+snapshot while the server keeps running::
+
+    make backup
+    # or explicitly:
+    .virtualenv/bin/python scripts/backup_db.py /path/to/backup.db
+
+In Docker, mount a backup volume and run it from cron::
+
+    docker exec streetsign python scripts/backup_db.py /backups/streetsign-$(date +%F).db
+
+To restore, stop the server, replace ``database.db`` with the backup
+file, and restart.
+
+Health Check
+------------
+
+A lightweight ``/health`` endpoint is available for Docker
+``HEALTHCHECK``, load balancers, and monitoring systems. It runs a
+``SELECT 1`` against the database and returns JSON::
+
+    {"status": "ok", "database": "ok"}        # 200 OK
+    {"status": "error", "database": "unreachable"}  # 503
+
+No authentication is required.
 
