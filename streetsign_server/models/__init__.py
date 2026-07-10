@@ -100,6 +100,15 @@ def migrations(dbfile=False):
             migrator.add_column('Post', 'sort_order', post_sort_order)
         )
 
+    # Migration 5: add post recurrence for day-of-week scheduling
+    if 'recurrence' not in post_field_names:
+        logger.info('running migration 5 - add post recurrence')
+        post_recurrence = TextField(
+            default='{"enabled":false,"days":[]}')
+        migrate(
+            migrator.add_column('Post', 'recurrence', post_recurrence)
+        )
+
 
 __all__ = ['DB', 'user_login', 'user_logout', 'get_logged_in_user',
            'User', 'Group', 'Post', 'Feed', 'FeedPermission', 'UserGroup',

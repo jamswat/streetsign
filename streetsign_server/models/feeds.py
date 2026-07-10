@@ -332,6 +332,11 @@ class Post(DBModel):
     #: the same sort_order fall back to insertion order (id).
     sort_order = IntegerField(default=0)
 
+    #: Recurrence rules (JSON). When enabled, the post only shows on
+    #: selected days of the week within its active_start/active_end window.
+    #: Format: {"enabled": true, "days": ["mon","wed","fri"]}
+    recurrence = TextField(default='{"enabled":false,"days":[]}')
+
     def __repr__(self):
         return f'<Post:{self.type}:{self.content[0:22]}>'
 
@@ -363,6 +368,7 @@ class Post(DBModel):
              'fontsize': self.fontsize,
              'time_restrictions': safe_json_load(self.time_restrictions, []),
              'time_restrictions_show': self.time_restrictions_show,
+             'recurrence': safe_json_load(self.recurrence, {}),
              'display_time': self.display_time * 1000, # in milliseconds
              'changed': self.write_date
             })
@@ -383,6 +389,22 @@ class Post(DBModel):
         except TypeError:
             # SQLite doesn't really do types, so this can happen.
             return 'now'
+
+    #: Maps Python weekday() (0=Mon..6=Sun) to 3-letter day codes.
+    WEEKDAY_CODES = ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
+
+    def recurrence_active_now(self):
+        ''' Check if this post's recurrence rules allow it to be shown
+            today. Returns True if recurrence is disabled or today is in
+            the allowed days. '''
+        rules = safe_json_load(self.recurrence, {})
+        if not rules or not rules.get('enabled'):
+            return True
+        days = rules.get('days', [])
+        if not days:
+            return True
+        today_code = self.WEEKDAY_CODES[now().weekday()]
+        return today_code in days
 
     def publish(self, user, state=True):
         ''' set the published status, published & date of this post.
