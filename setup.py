@@ -24,6 +24,7 @@ setup(
     author_email='danthedeckie@gmail.com',
     url='https://github.com/jamswat/streetsign',
     keywords=['flask', 'signage', 'web'],
+    python_requires='>=3.9',
     classifiers=['Development Status :: 4 - Beta',
                  'Intended Audience :: Developers',
                  'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
