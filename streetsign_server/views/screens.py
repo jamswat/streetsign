@@ -44,7 +44,8 @@ from streetsign_server import app
 from streetsign_server.models import Feed, Post, Screen, ConfigVar, \
                                      config_var, now
 from streetsign_server.post_types.image import allow_filetype
-from streetsign_server.views.utils import admin_only, registered_users_only, not_found
+from streetsign_server.views.utils import admin_only, registered_users_only, \
+                                          not_found, safe_referrer
 from streetsign_server.views.user_files import user_fonts
 
 
@@ -101,7 +102,7 @@ def screenedit(screenid):
         if request.form.get('action', 'update') == 'delete':
             screen.delete_instance()
             flash('deleted')
-            return redirect(request.referrer)
+            return redirect(safe_referrer(url_for('screens')))
 
         # first check that name is OK:
         oldname = screen.urlname
@@ -117,8 +118,7 @@ def screenedit(screenid):
                 flash("Sorry! That name is already being used!")
 
         if not screen.urlname:
-            return redirect(request.referrer if request.referrer
-                            else url_for('screens'))
+            return redirect(safe_referrer(url_for('screens')))
 
         screen.background = request.form.get('background')
         screen.settings = request.form.get('settings', '')

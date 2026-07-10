@@ -39,7 +39,8 @@ from streetsign_server import post_types
 from streetsign_server.views.utils import PleaseRedirect, getint, getbool, \
                                           getstr, DATESTR, \
                                           admin_only, \
-                                          registered_users_only
+                                          registered_users_only, \
+                                          safe_referrer
 
 from streetsign_server.logic.feeds_and_posts import try_to_set_feed, \
                                       if_i_cant_write_then_i_quit, \
@@ -140,7 +141,7 @@ def feedpage(feedid):
 
         if not user.is_admin:
             flash('Sorry! Only Admins can change these details.')
-            return redirect(request.referrer)
+            return redirect(safe_referrer())
 
         action = request.form.get('action', 'none')
 
@@ -305,7 +306,7 @@ def post_new(feed_id):
 
     if not feed.user_can_write(user):
         flash("Sorry! You don't have permission to write here!")
-        return redirect(request.referrer if request.referrer else '/')
+        return redirect(safe_referrer())
 
     if request.method == 'GET':
         # send a blank form for the user:
@@ -347,11 +348,11 @@ def post_new(feed_id):
         post_type_module = post_types.load(post_type)
     except Exception:
         flash('Sorry! invalid post type.')
-        return redirect(request.referrer if request.referrer else '/')
+        return redirect(safe_referrer())
 
     if feed.post_types and post_type not in feed.post_types_as_list():
         flash('sorry! this post type is not allowed in this feed!')
-        return redirect(request.referrer if request.referrer else '/')
+        return redirect(safe_referrer())
 
     post = Post(title=post_title, type=post_type, author=user)
 
@@ -446,7 +447,7 @@ def postpage(postid):
             return jsonify({'message': 'Moved to ' + post.feed.name})
 
         if action not in ('edit', 'update'):
-            return redirect(request.referrer if request.referrer else '/')
+            return redirect(safe_referrer())
 
         # finally get around to editing the content of the post...
         try:

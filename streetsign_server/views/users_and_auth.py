@@ -28,7 +28,8 @@
 from flask import render_template, url_for, request, redirect, flash
 import streetsign_server.user_session as user_session
 from streetsign_server.views.utils import admin_only, registered_users_only, \
-                                          permission_denied, not_found
+                                          permission_denied, not_found, \
+                                          safe_referrer
 
 import peewee
 
@@ -59,7 +60,7 @@ def login():
 
     # TODO: add appropriate HTTP status codes...
 
-    return redirect(request.referrer if request.referrer else '/')
+    return redirect(safe_referrer())
 
 @app.route('/logout', methods=['POST'])
 def logout():
@@ -233,7 +234,7 @@ def group(groupid):
         thisgroup = Group.get(id=groupid)
     except Group.DoesNotExist:
         flash('Invalid group ID')
-        return redirect(request.referrer if request.referrer else '/')
+        return redirect(safe_referrer())
 
     if request.method == 'POST':
         if request.form.get('action', 'none') == 'delete':

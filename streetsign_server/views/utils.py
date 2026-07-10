@@ -25,6 +25,7 @@
 """
 from functools import wraps
 import re
+from urllib.parse import urlparse
 
 from flask import request, flash, render_template, make_response
 import streetsign_server.user_session as user_session
@@ -143,3 +144,29 @@ def not_found(message="Page Not Found", title="Not Found"):
     return make_response(render_template('error.html',
                                          title=title,
                                          message=message), 404)
+
+
+def safe_referrer(fallback='/'):
+    ''' Return request.referrer only if it is same-origin with the current
+        request, otherwise return the fallback.
+
+        Prevents open-redirect attacks where an attacker crafts a page
+        whose Referer header points to an external URL — if we blindly
+        redirect to request.referrer after login, the user is bounced to
+        an attacker-controlled site. '''
+    referrer = request.referrer
+    if not referrer:
+        return fallback
+
+    parsed = urlparse(referrer)
+
+    # Protocol-relative URLs (//evil.com) are dangerous — treat as external.
+    if not parsed.scheme:
+        return fallback
+
+    # Allow only the same host as the current request. netloc includes the
+    # port, which is what we want — different ports are different origins.
+    if parsed.netloc == request.host:
+        return referrer
+
+    return fallback
