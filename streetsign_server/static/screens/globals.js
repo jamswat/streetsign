@@ -22,7 +22,6 @@
 *************************************************************/
 'use strict';
 
-const UPDATE_ZONES_TIMER = 6000; // how often to check for new posts?
 const REFRESH_PAGE_TIMER = 3600000; // how often to reboot the page?
 
 window.post_types = {};

@@ -118,10 +118,6 @@ Zone.prototype = {
         this.posts.push(new_data);
     },
 
-    delPost(index) {
-        // no-op for now
-    },
-
     updatePost(post, newData) {
         const that = this;
 
@@ -131,7 +127,7 @@ Zone.prototype = {
         if (post.changed !== newData.changed) {
             post.content = newData.content;
 
-            if (this.current_post.id === post.id) {
+            if (this.current_post && this.current_post.id === post.id) {
                 that.el.style.opacity = 0;
                 setTimeout(() => {
                     const old_opacity = $(post.el).css('opacity');

@@ -9,6 +9,8 @@ import os
 
 sys.path.append(os.path.dirname(__file__) + '/..')
 
+from flask import json
+
 import streetsign_server.models as models
 
 from unittest_helpers import StreetSignTestCase
@@ -117,3 +119,73 @@ class TestBasicViewValid(StreetSignTestCase):
     def test_screen_json(self):
         ''' test screen_json is valid '''
         self.validate('/screens/json/0', lang='json')
+
+    def test_screenedit_non_integer_id_doesnt_500(self):
+        ''' /screens-edit/foo should redirect, not raise ValueError -> 500 '''
+
+        u = models.User(loginname='admin',
+                        emailaddress='admin@test.org',
+                        is_admin=True)
+        u.set_password('123')
+        u.save()
+
+        self.login('admin', '123')
+
+        with self.ctx():
+            resp = self.client.get('/screens-edit/notanumber')
+            self.assertIn(resp.status_code, (302, 404))
+
+    def test_screen_json_nonexistent_id_returns_valid_json(self):
+        ''' /screens/json/999999 should return valid JSON with an md5 field,
+            not crash. The endpoint should only catch Screen.DoesNotExist,
+            not swallow all exceptions. '''
+
+        resp = self.client.get('/screens/json/999999')
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertIn('md5', data)
+
+    def test_screen_save_zones_missing_returns_list(self):
+        ''' If the zones form field is missing/invalid, form_json should
+            default to an empty list, not an empty dict. '''
+
+        u = models.User(loginname='admin',
+                        emailaddress='admin@test.org',
+                        is_admin=True)
+        u.set_password('123')
+        u.save()
+
+        self.login('admin', '123')
+
+        with self.ctx():
+            resp = self.client.post('/screens-edit/-1', data={
+                'urlname': 'ZoneTestScreen',
+            }, follow_redirects=True)
+            self.assertEqual(resp.status_code, 200)
+
+            screen = models.Screen.get(models.Screen.urlname == 'ZoneTestScreen')
+            zones = json.loads(screen.zones)
+            self.assertIsInstance(zones, list)
+
+    def test_screen_save_settings_invalid_json(self):
+        ''' settings field should be validated as JSON on save. If invalid,
+            it should default to {}. '''
+
+        u = models.User(loginname='admin',
+                        emailaddress='admin@test.org',
+                        is_admin=True)
+        u.set_password('123')
+        u.save()
+
+        self.login('admin', '123')
+
+        with self.ctx():
+            self.client.post('/screens-edit/-1', data={
+                'urlname': 'SettingsTestScreen',
+                'settings': 'NOT VALID JSON {{{',
+            }, follow_redirects=True)
+
+            screen = models.Screen.get(
+                models.Screen.urlname == 'SettingsTestScreen')
+            parsed = json.loads(screen.settings)
+            self.assertIsInstance(parsed, dict)

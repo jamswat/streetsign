@@ -41,7 +41,6 @@ function post_fadein(post, fadetime, andthen) {
         console.log('...');
     }
     console.log(post.display_time);
-    andthen();
 }
 
 function post_display() {}

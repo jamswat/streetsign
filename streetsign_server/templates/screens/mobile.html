@@ -235,11 +235,14 @@
             });
 
             // Poll for new posts periodically
+            let lastPostIds = null;
             setInterval(() => {
-                // Re-fetch to get updates
                 $.getJSON(feedsUrl, (data) => {
-                    // Simple refresh: reloading the page does the job
-                    // For now, keep the existing content
+                    const ids = data.posts.map(p => p.id).join(',');
+                    if (lastPostIds !== null && ids !== lastPostIds) {
+                        document.location.reload();
+                    }
+                    lastPostIds = ids;
                 });
             }, 60000);
         }

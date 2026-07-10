@@ -176,8 +176,12 @@ function reduce_font_size_to_fit(inner, outer) {
 
     $(inner).find('img').each(function(idx, img) {
         const $img = $(img);
-        img_sizes[idx] = { 'width%': $img.attr('width') / 100,
-                           'height%': $img.attr('height') / 100 };
+        const w = $img.attr('width');
+        const h = $img.attr('height');
+        if (w && h) {
+            img_sizes[idx] = { 'width%': parseFloat(w) / 100,
+                               'height%': parseFloat(h) / 100 };
+        }
     });
 
     while (i > 1) {
@@ -194,8 +198,10 @@ function reduce_font_size_to_fit(inner, outer) {
         inner.css('font-size', percent + '%');
         inner.find('img').each(function(idx, img) {
             const $img = $(img);
-            $img.attr('width', img_sizes[idx]['width%'] * percent);
-            $img.attr('height', img_sizes[idx]['height%'] * percent);
+            if (img_sizes[idx]) {
+                $img.attr('width', img_sizes[idx]['width%'] * percent);
+                $img.attr('height', img_sizes[idx]['height%'] * percent);
+            }
         });
     }
     inner.css('font-size', parseInt(percent) + '%');

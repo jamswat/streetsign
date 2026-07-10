@@ -94,7 +94,7 @@ def screenedit(screenid):
                        glob(app.config['SITE_VARS']['user_dir']  + '*')
                        if allow_filetype(x)]
 
-    except Screen.DoesNotExist:
+    except (Screen.DoesNotExist, ValueError):
         flash('Invalid Screen ID! Screen does NOT exist!')
         return redirect(url_for('index'))
 
@@ -121,9 +121,10 @@ def screenedit(screenid):
             return redirect(safe_referrer(url_for('screens')))
 
         screen.background = request.form.get('background')
-        screen.settings = request.form.get('settings', '')
+        screen.settings = form_json('settings', {})
         screen.css = request.form.get('css', '').replace('"', "'")
-        screen.zones = form_json('zones', {})
+        screen.zones = form_json('zones', [])
+        screen.defaults = form_json('defaults', {})
         screen.save()
         flash('saved.')
 
@@ -203,7 +204,7 @@ def screen_json(screenid, old_md5):
 
     try:
         screen = Screen.get(id=int(screenid))
-    except Exception:
+    except Screen.DoesNotExist:
         screen = Screen() # pylint: disable=no-value-for-parameter
 
     screen_md5 = screen.md5()

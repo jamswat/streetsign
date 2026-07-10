@@ -4,7 +4,7 @@
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('user_fonts_css') }}" />
 {% endblock %}
-{% block title %}Edit Screen:{{ screen.id }}{% endblock %}
+{% block title %}Edit Screen: {{ screen.urlname or 'New Screen' }}{% endblock %}
 {% block body %}
 <h1>Edit Screen</h1>
 
@@ -164,7 +164,7 @@
 
 				<div class="mt-2">
 					<label class="form-label small">Additional CSS:</label>
-					<textarea name="css" x-model="zone.css" class="form-control form-control-sm" rows="2" placeholder="Custom zone CSS..."></textarea>
+					<textarea x-model="zone.css" class="form-control form-control-sm" rows="2" placeholder="Custom zone CSS..."></textarea>
 				</div>
 			</div>
 		</div>
