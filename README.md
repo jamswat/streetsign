@@ -106,8 +106,12 @@ Display clients load one of three rendering engines, selected per client alias:
   "Show permanently" (never expires, never rotates)
 - **Time-of-day restrictions** — blackout windows or exclusive windows
   (e.g. "only show between 09:00 and 17:00")
+- **Day-of-week recurrence** — limit a post to specific weekdays
+  (e.g. "only show on Mondays and Wednesdays") within its lifetime
 - **Display duration** — how many seconds each post stays visible (2–100s)
 - **Per-post font size** — override the automatic zone font scaling
+- **Playlist ordering** — admins can reorder posts within a feed via
+  up/down controls; posts cycle in sort order on display clients
 
 ### Permissions
 
@@ -244,6 +248,7 @@ runs pending migrations.
 | `PORT`           | `5000`                               | Port the server listens on inside the container  |
 | `HOST`           | `0.0.0.0`                            | Bind address inside the container                |
 | `DATABASE_FILE`  | `/data/database.db`                  | SQLite path (already volume-mounted in image)    |
+| `LOG_LEVEL`      | `INFO`                               | Logging level: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 
 Override at runtime, e.g. to serve on port 8080:
 

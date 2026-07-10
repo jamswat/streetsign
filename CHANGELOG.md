@@ -1,5 +1,39 @@
 # Changelog
 
+## v1.1.0 — Operational Improvements & New Features
+
+### New Features
+- **Day-of-week scheduling recurrence** — posts can be limited to specific
+  weekdays (e.g. "only show on Mon, Wed, Fri") within their lifetime.
+- **Playlist ordering** — admins can reorder posts within a feed via
+  up/down arrow buttons on the feed page; display clients cycle posts
+  in sort order instead of insertion order.
+- **Health endpoint** — lightweight `/health` endpoint that probes the
+  database with `SELECT 1` and returns JSON status. Docker HEALTHCHECK
+  updated to use it.
+- **Database backup script** — `scripts/backup_db.py` uses the SQLite
+  online backup API for WAL-safe snapshots while the server runs. Added
+  `make backup` target.
+- **Configurable logging** — `LOG_LEVEL` config option / env var;
+  `print()` calls replaced with `app.logger` / `logging` throughout.
+
+### Security Fixes
+- Fixed open-redirect via `request.referrer` on login and other views.
+  Added `safe_referrer()` helper that validates same-origin before
+  redirecting.
+- Fixed invalid nginx reverse-proxy config syntax
+  (`proxy_set_header $host;` → `proxy_set_header Host $host;`) and
+  added standard proxy headers + `client_max_body_size`.
+
+### CI
+- Added GitHub Actions workflow for tests (Python 3.9 + 3.12 matrix),
+  pylint (fail-under=9.0), and pip-audit for known CVEs.
+- Added `python_requires='>=3.9'` to `setup.py`.
+
+### Migrations
+- Migration 4: add `sort_order` column to Post (playlist ordering).
+- Migration 5: add `recurrence` column to Post (day-of-week scheduling).
+
 ## v1.0.0 — Initial Rewrite/Modernization
 
 This release marks the initial fork and complete modernization of the StreetSign

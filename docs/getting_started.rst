@@ -205,6 +205,24 @@ during certain times" (useful for dinner time annoucements, say) or to "Don't
 show during these specific times" (useful for frivolous/jokey slides which you
 don't want up during reflection or meditation times, say.
 
+Recurrence (Day-of-Week Scheduling)
+```````````````````````````````````
+
+In addition to time-of-day limits, you can restrict a post to specific days
+of the week. Enable "Limit to specific days" in the Scheduling tab and
+tick the days you want the post to appear (Mon–Sun). The post will only
+be shown on those days within its overall lifetime. This is useful for
+recurring content like "every Monday: staff meeting at 10am" without
+needing to create separate posts for each occurrence.
+
+Post Order in Feeds
+```````````````````
+
+By default, posts within a zone cycle in the order they were created.
+Admins can reorder posts within a feed using the up/down arrow buttons
+on the feed page. Posts with a lower sort order are displayed first;
+posts with the same sort order fall back to creation order.
+
 Permissions
 ~~~~~~~~~~~
 
