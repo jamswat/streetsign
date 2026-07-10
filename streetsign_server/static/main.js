@@ -274,3 +274,13 @@ $(() => {
         $(this).addClass('was-validated');
     });
 });
+
+///////////////////////////////////////////////
+// Initialize Bootstrap tooltips:
+
+$(() => {
+    const tooltipTriggerList = [...document.querySelectorAll('[data-bs-toggle="tooltip"]')];
+    tooltipTriggerList.map(function(trigger) {
+        return new bootstrap.Tooltip(trigger);
+    });
+});

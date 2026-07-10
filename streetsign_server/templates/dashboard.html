@@ -136,7 +136,9 @@
 							<a href="{{ url_for('screenedit', screenid=-1) }}" class="btn btn-outline-primary">New Screen</a>
 							<a href="{{ url_for('feeds') }}" class="btn btn-outline-primary">Manage Feeds</a>
 						{% endif %}
-						<button type="button" class="btn btn-outline-secondary" id="run_housekeeping">
+						<button type="button" class="btn btn-outline-secondary" id="run_housekeeping"
+							data-bs-toggle="tooltip" data-bs-placement="top"
+							title="Clean up old posts: archive posts ending >7 days ago, delete posts ending >30 days ago. Also removes unused uploaded files.">
 							<span class="bi bi-archive" aria-hidden="true"></span> Housekeeping
 						</button>
 					</div>
