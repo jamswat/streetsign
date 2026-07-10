@@ -27,7 +27,8 @@
 from uuid import uuid4
 from hmac import compare_digest
 
-from flask import render_template, g, Response, url_for, request, session
+from flask import render_template, g, Response, url_for, request, session, \
+                  jsonify
 from markupsafe import Markup
 
 ##########################
@@ -145,6 +146,22 @@ def index():
 def robots_txt():
     ''' block all well-behaved search engines. '''
     return Response('User-agent: *\nDisallow: /', mimetype='text/plain')
+
+
+@app.route('/health')
+def health():
+    ''' Lightweight liveness probe. Reports OK only if the database is
+        reachable and a trivial query succeeds.
+
+        Intended for Docker HEALTHCHECK, load-balancer probes, and
+        monitoring systems. Does not require authentication. '''
+    try:
+        DB.execute_sql('SELECT 1').fetchone()
+    except Exception as exc:  # pylint: disable=broad-except
+        app.logger.exception('health check failed: %s', exc)
+        return jsonify(status='error',
+                        database='unreachable'), 503
+    return jsonify(status='ok', database='ok')
 
 
 # Expected Error Handlers:
