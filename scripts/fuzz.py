@@ -438,9 +438,10 @@ for method, url_tmpl, param_gen in endpoints:
 # Also fuzz URL path components
 print(f'  ... path fuzzing ...')
 url_fuzz_count = 0
+path_samples = random.sample(FUZZ_STRINGS, min(8, len(FUZZ_STRINGS)))
 for base in ['/screens/posts_from_feeds/', '/screens/json/', '/client/', '/posts/', '/feeds/', '/group/', '/users/',
              '/screens/basic/', '/screens/notrans/', '/screens/mobile/']:
-    for si, bad_val in enumerate(FUZZ_STRINGS[:8]):  # subset to keep it fast
+    for bad_val in path_samples:
         encoded = urllib.parse.quote(str(bad_val), safe='')
         url = base + encoded
         try:
