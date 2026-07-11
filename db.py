@@ -1,4 +1,4 @@
-#!.virtualenv/bin/python3
+#!.venv/bin/python3
 
 '''
 A set of useful database bits and pieces for StreetSign.

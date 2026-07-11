@@ -27,10 +27,13 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Install dependencies
         run: |
-          pip install sphinx furo
-          pip install -r requirements.txt
+          uv sync --no-dev
+          uv pip install sphinx furo
 
       - name: Build docs
         run: |

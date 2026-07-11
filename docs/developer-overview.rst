@@ -139,7 +139,7 @@ Starting with the file layout:
 
 ``setup.sh`` - downloads all needed python packages, including virtualenv,
                and installs them into a local virtualenv called, very
-               creatively, .virtualenv.  Also initialises the database, if
+               creatively, .venv.  Also initialises the database, if
                it doesn't exist.  If you totally stuff up the database,
                then you can simply delete it and run this script again.
                (Now delegates to the ``Makefile``.)
@@ -181,15 +181,15 @@ Testing & CI
 Tests are written with ``pytest`` and live in the ``tests/`` directory.
 Run them with::
 
-    .virtualenv/bin/python -m pytest tests/
+    .venv/bin/python -m pytest tests/
 
 Code quality is checked with ``pylint``::
 
-    .virtualenv/bin/python -m pylint --fail-under=9.0 streetsign_server/
+    .venv/bin/python -m pylint --fail-under=9.0 streetsign_server/
 
 Dependencies are audited for known CVEs with ``pip-audit``::
 
-    pip-audit -r requirements.txt
+    uv export --no-dev -o /tmp/requirements.txt && pip-audit -r /tmp/requirements.txt
 
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~

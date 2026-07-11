@@ -18,7 +18,7 @@ want it to be, you need to run the setup script::
 
     ./setup.sh
 
-which will create a python virtualenv in ``.virtualenv``, and install all the
+which will create a python virtualenv in ``.venv``, and install all the
 libraries and other requirements into there (via the ``Makefile``).
 
 Running it.
@@ -44,8 +44,8 @@ or reverse proxy is required for static assets.
 
 If you want to run another WSGI server, remember the virtualenv that streetsign
 is using, so any scripts you write need to use the python found in there
-(``.virtualenv/bin/python``).  You can use pip from in there to install any
-pypi packages you need too (``.virtualenv/bin/pip install gunicorn``, say).
+(``.venv/bin/python``).  You can use pip from in there to install any
+pypi packages you need too (``.venv/bin/pip install gunicorn``, say).
 
 If you want to run the bare development server (not for production) you can run
 ``./run.py`` with no argument. The interactive Werkzeug debugger is **off by
@@ -190,7 +190,7 @@ snapshot while the server keeps running::
 
     make backup
     # or explicitly:
-    .virtualenv/bin/python scripts/backup_db.py /path/to/backup.db
+    .venv/bin/python scripts/backup_db.py /path/to/backup.db
 
 In Docker, mount a backup volume and run it from cron::
 

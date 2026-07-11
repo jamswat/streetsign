@@ -216,7 +216,7 @@ keeps running:
 ```bash
 make backup
 # or explicitly:
-.virtualenv/bin/python scripts/backup_db.py /path/to/backup.db
+.venv/bin/python scripts/backup_db.py /path/to/backup.db
 ```
 
 In Docker, mount a backup volume and run it from cron:
@@ -239,8 +239,8 @@ Debian/Ubuntu:
 apt-get install python3-dev python3-pip imagemagick
 ```
 
-The `setup.sh` script (which runs `make all`) creates a `.virtualenv` with all
-Python dependencies. To use the virtualenv directly: `.virtualenv/bin/python`.
+The `setup.sh` script (which runs `make all`) creates a `.venv` with all
+Python dependencies. To use the virtualenv directly: `.venv/bin/python`.
 
 ## Documentation
 

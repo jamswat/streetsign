@@ -1,5 +1,5 @@
 # Build artifacts & local state — never enter the image context:
-.virtualenv/
+.venv/
 .git/
 .gitignore
 database.db

@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "streetsign_server"
+version = "1.1.0"
+description = "A simple python/flask/web based digital signage system"
+readme = "README.md"
+license = "GPL-3.0-only"
+license-files = ["COPYING"]
+authors = [
+    { name = "Daniel Fairhead", email = "danthedeckie@gmail.com" },
+]
+requires-python = ">=3.10"
+keywords = ["flask", "signage", "web"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "flask>=3.1.3,<4",
+    "jinja2>=3.1.6,<4",
+    "peewee>=4.1.2,<5",
+    "feedparser>=6.0.12,<7",
+    "bleach[css]>=6.4.0,<7",
+    "bcrypt>=5.0.0,<6",
+    "simpleeval>=1.0.7,<2",
+    "werkzeug>=3.1.8,<4",
+    "waitress>=3.0.2,<4",
+    "whitenoise>=6.12.0,<7",
+    "markupsafe>=3.0.3,<4",
+]
+
+[project.urls]
+Homepage = "https://github.com/jamswat/streetsign"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.1.1,<10",
+    "coverage>=7.15.0,<8",
+    "pylint>=4.0.6,<5",
+    "html5lib>=1.1,<2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "streetsign_server",
+    "streetsign_server.views",
+    "streetsign_server.logic",
+    "streetsign_server.post_types",
+    "streetsign_server.external_source_types",
+]

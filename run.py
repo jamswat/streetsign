@@ -1,4 +1,4 @@
-#!.virtualenv/bin/python3
+#!.venv/bin/python3
 # -*- coding: utf-8 -*-
 '''
     Simple run script for streetsign_server.

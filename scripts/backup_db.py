@@ -10,9 +10,9 @@
 
     Usage::
 
-        .virtualenv/bin/python scripts/backup_db.py                 # writes to <database>.bak
-        .virtualenv/bin/python scripts/backup_db.py /path/to/backup.db
-        DATABASE_FILE=/data/database.db .virtualenv/bin/python scripts/backup_db.py
+        .venv/bin/python scripts/backup_db.py                 # writes to <database>.bak
+        .venv/bin/python scripts/backup_db.py /path/to/backup.db
+        DATABASE_FILE=/data/database.db .venv/bin/python scripts/backup_db.py
 
     In Docker / cron, mount a backup volume and run::
 

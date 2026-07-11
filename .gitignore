@@ -1,5 +1,5 @@
 .setup/virtualenv-1.9.1
-.virtualenv
+.venv
 *.pyc
 *.pyo
 *.swp

@@ -8,7 +8,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '.virtualenv', 'lib',
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '.venv', 'lib',
     'python' + '.'.join(str(x) for x in sys.version_info[:2]),
     'site-packages'))
 

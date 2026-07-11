@@ -3,12 +3,11 @@ FROM python:3.12-alpine AS builder
 
 RUN apk add --no-cache build-base python3-dev
 
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
 
 # ---------- final ----------
 FROM python:3.12-alpine
@@ -16,8 +15,8 @@ FROM python:3.12-alpine
 RUN apk add --no-cache imagemagick imagemagick-jpeg imagemagick-webp imagemagick-heic imagemagick-svg bash su-exec \
  && adduser -D -h /app streetsign
 
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH" \
+COPY --from=builder /app/.venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     DATABASE_FILE=/data/database.db
