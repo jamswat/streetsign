@@ -5,7 +5,7 @@
 
 services:
   app:
-    image: ghcr.io/jamswat/streetsign:1.1.1
+    image: ghcr.io/jamswat/streetsign:1.2.0
     # build: .
     ports:
       # WEB_PORT = host-side port            (default 5000)

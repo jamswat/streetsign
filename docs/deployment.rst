@@ -172,7 +172,7 @@ tagged release — no local build required:
 
 .. code-block:: bash
 
-    docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.1.1
+    docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.2.0
 
 Or with docker-compose (pulls the image automatically):
 

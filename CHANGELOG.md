@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.1 — Build System Modernization & Bug Fixes
+## v1.2.0 — Build System Modernization & CI Fixes
 
 ### Build System
 - **Migrated from `setup.py` + `requirements.txt` to `pyproject.toml` + `uv.lock`.**
@@ -21,7 +21,8 @@
   `uv sync --frozen --no-dev --no-install-project`.
 - **Makefile** updated to use `uv sync --extra dev`.
 - **CI workflows** updated to use `astral-sh/setup-uv@v6`, `uv sync`, and
-  `uv run` for all steps. pip-audit now runs against `uv export --no-dev` output.
+  `uv run` for all steps. pip-audit now runs against `uv export --no-dev
+  --no-emit-project` output.
 
 ### Bug Fixes
 - **`markupsafe`** added as an explicit dependency (was a hidden transitive
@@ -35,6 +36,15 @@
   `pyproject.toml`).
 - **Fixed broken `make .githooks` target** — `.setup/hooks/pre-commit` never
   existed. Created a pre-commit hook that runs pylint (fail-under=9.0).
+
+### CI Fixes
+- Fixed docs build: `sphinx-build` not found — now uses `uv run make` so the
+  venv is on PATH.
+- Fixed pip-audit: `uv export` included `-e .` (editable) which breaks
+  hash-based auditing. Added `--no-emit-project` to exclude it.
+- Bumped GitHub Actions to Node.js 24-compatible versions
+  (`actions/checkout@v5`, `actions/setup-python@v6`,
+  `actions/upload-pages-artifact@v4`, `actions/deploy-pages@v5`).
 
 ### Other
 - Added Python 3.14 classifier to `pyproject.toml`.
