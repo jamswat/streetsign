@@ -1,0 +1,172 @@
+<div class="clearfix mb-3"></div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header"><h6 class="card-title mb-0">Location</h6></div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label" for="weather-location">Place name</label>
+                    <input type="text" class="form-control" id="weather-location"
+                           name="location" value="{{ location or 'London' }}"
+                           placeholder="London / Tokyo / Paris / ..."
+                           required />
+                    <div class="form-text">City or place name passed to wttr.in.</div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <label class="form-label" for="weather-lat">Latitude</label>
+                        <input type="number" class="form-control" id="weather-lat"
+                               name="lat" value="{{ lat or '' }}" step="any"
+                               min="-90" max="90" placeholder="51.5074" />
+                        <div class="form-text">Optional. More reliable than geocoding.</div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="weather-lon">Longitude</label>
+                        <input type="number" class="form-control" id="weather-lon"
+                               name="lon" value="{{ lon or '' }}" step="any"
+                               min="-180" max="180" placeholder="-0.1278" />
+                        <div class="form-text">Leave both lat &amp; lon blank to use the place name.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h6 class="card-title mb-0">Units &amp; Update</h6></div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Temperature units</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="units" id="units-C"
+                               value="C" {{ 'checked' if units != 'F' else '' }} />
+                        <label class="form-check-label" for="units-C">Celsius (&deg;C)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="units" id="units-F"
+                               value="F" {{ 'checked' if units == 'F' else '' }} />
+                        <label class="form-check-label" for="units-F">Fahrenheit (&deg;F)</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="weather-interval">Update every (minutes)</label>
+                    <input type="number" class="form-control" id="weather-interval"
+                           name="update_interval_min" value="{{ update_interval_min or 45 }}"
+                           min="5" max="360" />
+                    <div class="form-text">Min 5, max 360.  Between fetches the last data stays cached.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header"><h6 class="card-title mb-0">Appearance</h6></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label" for="weather-bg">Background</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color"
+                                   id="weather-bg" name="bg_color"
+                                   value="{{ bg_color or '#0a0a0f' }}" />
+                            <input type="text" class="form-control form-control-sm"
+                                   id="weather-bg-txt" value="{{ bg_color or '#0a0a0f' }}"
+                                   readonly style="max-width:90px" />
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="weather-text">Text</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color"
+                                   id="weather-text" name="text_color"
+                                   value="{{ text_color or '#f0f0f5' }}" />
+                            <input type="text" class="form-control form-control-sm"
+                                   id="weather-text-txt" value="{{ text_color or '#f0f0f5' }}"
+                                   readonly style="max-width:90px" />
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="weather-accent">Accent / muted</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color"
+                                   id="weather-accent" name="accent_color"
+                                   value="{{ accent_color or '#c8b8ff' }}" />
+                            <input type="text" class="form-control form-control-sm"
+                                   id="weather-accent-txt" value="{{ accent_color or '#c8b8ff' }}"
+                                   readonly style="max-width:90px" />
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="weather-high">High temp</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color"
+                                   id="weather-high" name="high_color"
+                                   value="{{ high_color or '#ff8a75' }}" />
+                            <input type="text" class="form-control form-control-sm"
+                                   id="weather-high-txt" value="{{ high_color or '#ff8a75' }}"
+                                   readonly style="max-width:90px" />
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="weather-low">Low temp</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color"
+                                   id="weather-low" name="low_color"
+                                   value="{{ low_color or '#75c4f5' }}" />
+                            <input type="text" class="form-control form-control-sm"
+                                   id="weather-low-txt" value="{{ low_color or '#75c4f5' }}"
+                                   readonly style="max-width:90px" />
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="weather-rain">Rain</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color"
+                                   id="weather-rain" name="rain_color"
+                                   value="{{ rain_color or '#5bbfef' }}" />
+                            <input type="text" class="form-control form-control-sm"
+                                   id="weather-rain-txt" value="{{ rain_color or '#5bbfef' }}"
+                                   readonly style="max-width:90px" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header"><h6 class="card-title mb-0">Content</h6></div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                           id="weather-show-forecast" name="show_forecast" value="1"
+                           {{ 'checked' if show_forecast|default(True) else '' }} />
+                    <label class="form-check-label" for="weather-show-forecast">Show 2-day forecast cards</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                           id="weather-show-metrics" name="show_metrics" value="1"
+                           {{ 'checked' if show_metrics|default(True) else '' }} />
+                    <label class="form-check-label" for="weather-show-metrics">Show metrics (feels like, humidity, wind, UV)</label>
+                </div>
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                           id="weather-show-sun" name="show_sun_times" value="1"
+                           {{ 'checked' if show_sun_times|default(True) else '' }} />
+                    <label class="form-check-label" for="weather-show-sun">Show sunrise &amp; sunset</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" defer>
+$(function() {
+    // Sync color picker values with their text readouts.
+    ['bg', 'text', 'accent', 'high', 'low', 'rain'].forEach(function(name) {
+        var $color = $('#weather-' + name);
+        var $txt   = $('#weather-' + name + '-txt');
+        $color.on('input', function() { $txt.val($color.val()); });
+    });
+});
+</script>
