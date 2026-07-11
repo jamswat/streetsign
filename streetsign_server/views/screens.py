@@ -100,8 +100,11 @@ def screenedit(screenid):
 
     if request.method == 'POST':
         if request.form.get('action', 'update') == 'delete':
-            screen.delete_instance()
-            flash('deleted')
+            try:
+                screen.delete_instance()
+                flash('deleted')
+            except Exception:
+                flash('Could not delete screen.')
             return redirect(safe_referrer(url_for('screens')))
 
         # first check that name is OK:

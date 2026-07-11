@@ -248,9 +248,15 @@ def group(groupid):
 
     if request.method == 'POST':
         if request.form.get('action', 'none') == 'delete':
-            UserGroup.delete().where(UserGroup.group == thisgroup).execute()
-            thisgroup.delete_instance()
-            flash('group:'+ thisgroup.name +' deleted.')
+            try:
+                UserGroup.delete().where(UserGroup.group == thisgroup).execute()
+                thisgroup.delete_instance(recursive=True)
+                flash('group:'+ thisgroup.name +' deleted.')
+            except peewee.IntegrityError:
+                flash('Cannot delete group: it is still referenced by feeds '
+                      'or permissions.')
+            except Exception:
+                flash('Could not delete group: ' + thisgroup.name)
             return redirect(url_for('users_and_groups'))
 
         if request.form.get('action', 'none') == 'update':

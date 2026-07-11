@@ -161,8 +161,11 @@ def feedpage(feedid):
                 feed.set_author_groups(by_id(Group, inlist('author_groups')))
                 feed.set_publisher_groups(by_id(Group, inlist('publisher_groups')))
 
-                feed.save()
-                flash('Saved')
+                try:
+                    feed.save()
+                    flash('Saved')
+                except peewee.IntegrityError:
+                    flash("Sorry! A feed with that name already exists.")
         elif action == 'delete':
 
             for post in feed.posts:
