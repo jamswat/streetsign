@@ -58,6 +58,9 @@ rst_epilog = """
 .. _Bleach: https://bleach.readthedocs.io/
 .. _bcrypt: https://github.com/pyca/bcrypt/
 .. _simpleeval: https://github.com/danthedeckie/simpleeval
+.. _Jinja2: https://jinja.palletsprojects.com/
+.. _Werkzeug: https://werkzeug.palletsprojects.com/
+.. _MarkupSafe: https://markupsafe.palletsprojects.com/
 """
 
 # ---------------------------------------------

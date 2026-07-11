@@ -58,6 +58,21 @@ The simplest WSGI server ever...
 
 Safe evaluation of simple date/time expressions for post scheduling.
 
+`Jinja2`_
+---------
+
+Powerful HTML templating engine used by Flask
+
+`Werkzeug`_
+-----------
+
+WSGI utility library used by Flask
+
+`MarkupSafe`_
+-------------
+
+Safe handling of HTML and XML strings
+
 `Alpine.js`_
 ------------
 
@@ -74,8 +89,8 @@ Clean, professional admin interface styling
 
 Icon set for the admin interface
 
-`jQuery 3`_
------------
+`jQuery`_
+----------
 
 Better DOM for JavaScript in the browser
 

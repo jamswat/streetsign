@@ -3,38 +3,87 @@ and is covered by the GNU General Public Licence (GPL), which can be found in th
 file.
 
 None of this would have been possible without the amazing open source libraries that
-have been included.  The following are included in the distribution:
+have been included.
 
-jQuery (DOM manipulation and AJAX)
+Frontend Libraries (bundled in streetsign_server/static/lib/)
+--------------------------------------------------------------
+
+jQuery 4.0.0 (DOM manipulation and AJAX)
  - MIT Licence (http://jquery.org/licence)
+ - License file: streetsign_server/static/lib/jquery-LICENSE
 
-Alpine.js (lightweight MVVM for admin interface)
+Alpine.js 3.14.1 (lightweight MVVM for admin interface)
  - MIT Licence (https://github.com/alpinejs/alpine)
+ - License file: streetsign_server/static/lib/alpine-LICENSE
 
-Bootstrap 5 (CSS framework for the admin interface)
+Bootstrap 5.3.3 (CSS framework for the admin interface)
  - MIT Licence (https://github.com/twbs/bootstrap)
+ - License file: streetsign_server/static/lib/bootstrap5/LICENSE
 
-Bootstrap Icons (icon font)
+Bootstrap Icons 1.11.3 (icon font)
  - MIT Licence (https://github.com/twbs/icons)
+ - License file: streetsign_server/static/lib/bootstrap-icons/LICENSE
 
-Quill (rich text / WYSIWYG editor)
+Quill 2.0.3 (rich text / WYSIWYG editor)
  - BSD 3-Clause Licence (https://github.com/slab/quill)
+ - License file: streetsign_server/static/lib/quill/LICENSE
 
-Flatpickr (date and time picker)
+Flatpickr 4.6.13 (date and time picker)
  - MIT Licence (https://github.com/flatpickr/flatpickr)
+ - License file: streetsign_server/static/lib/flatpickr/LICENSE
 
-Choices.js (enhanced select boxes)
+Choices.js 11.2.3 (enhanced select boxes)
  - MIT Licence (https://github.com/Choices-js/Choices)
+ - License file: streetsign_server/static/lib/choices/LICENSE
 
-Day.js (date formatting for magic vars)
+Day.js 1.11.13 (date formatting for magic vars)
  - MIT Licence (https://github.com/iamkun/dayjs)
+ - License file: streetsign_server/static/lib/dayjs/LICENSE
 
-Prism.js (syntax highlighting for the raw HTML editor)
+Prism.js 1.30.0 (syntax highlighting for the raw HTML editor)
  - MIT Licence (https://github.com/PrismJS/prism)
- - Copyright (c) 2012 Lea Verou
+ - License file: streetsign_server/static/lib/prism/LICENSE
+
+
+Images
+------
 
 A few background pictures from creativity103.com
  - Creative Commons Attribution 3.0 Licence.
 
-All of these can be found in the streetsign_server/static/lib/ folder, with their
-own copyright notices, and licence information.
+
+Python Server-side Dependencies
+-------------------------------
+
+Flask (web framework)
+ - BSD-3-Clause
+
+Jinja2 (template engine)
+ - BSD-3-Clause
+
+Peewee (ORM)
+ - MIT
+
+FeedParser (RSS/Atom feed parsing)
+ - BSD-2-Clause
+
+Bleach (HTML sanitisation)
+ - Apache-2.0
+
+bcrypt (password hashing)
+ - Apache-2.0
+
+simpleeval (safe expression evaluation)
+ - MIT
+
+Werkzeug (WSGI utilities)
+ - BSD-3-Clause
+
+Waitress (WSGI server)
+ - ZPL 2.1
+
+WhiteNoise (static file serving)
+ - MIT
+
+MarkupSafe (safe HTML/XML string handling)
+ - BSD-3-Clause
