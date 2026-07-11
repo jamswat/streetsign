@@ -24,15 +24,16 @@
 
 window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
     const aliases = (initialList || []).map(function(a) {
+        const resolvedScreen = a.screen_name || 'Default';
         return {
             name: a.name || 'client-name',
             show_on_dashboard: a.show_on_dashboard || false,
-            screen_name: a.screen_name || 'Default',
+            screen_name: screenNames.includes(resolvedScreen) ? resolvedScreen : screenNames[0],
             screen_type: a.screen_type || 'basic',
-            fadetime: a.fadetime || null,
-            scrollspeed: a.scrollspeed || null,
-            forceaspect: a.forceaspect || null,
-            forcetop: a.forcetop || null
+            fadetime: a.fadetime != null ? a.fadetime : null,
+            scrollspeed: a.scrollspeed != null ? a.scrollspeed : null,
+            forceaspect: a.forceaspect != null ? a.forceaspect : null,
+            forcetop: a.forcetop != null ? a.forcetop : null
         };
     });
 

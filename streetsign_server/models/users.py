@@ -61,7 +61,7 @@ class User(DBModel):
 
     validation_regexp = {
         'loginname': r'.{1,100}',
-        'emailaddress': r'.*@.*\..*'
+        'emailaddress': r'(^$|.*@.*\..*)'
     }
 
     #: the unique name user to log in
