@@ -77,7 +77,7 @@ def receive(data):
         try:
             lat = float(raw_lat)
             lon = float(raw_lon)
-            if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+            if lat < -90 or lat > 90 or lon < -180 or lon > 180:
                 lat = None
                 lon = None
         except (ValueError, TypeError):
@@ -97,7 +97,8 @@ def receive(data):
         'show_forecast': data.get('show_forecast', '1') not in ('0', '', False),
         'show_metrics': data.get('show_metrics', '1') not in ('0', '', False),
         'show_sun_times': data.get('show_sun_times', '1') not in ('0', '', False),
-        'update_interval_min': max(5, min(360, int(data.get('update_interval_min', 45) or 45) or 45)),
+        'update_interval_min': max(5, min(360,
+            int(data.get('update_interval_min', 45) or 45) or 45)),
     }
 
 
