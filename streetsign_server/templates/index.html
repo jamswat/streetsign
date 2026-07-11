@@ -186,21 +186,21 @@
 	<div id="login_box" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<form action="{{ url_for('login') }}" method="POST">
-					<div class="modal-header">
-						<h2>Log In</h2>
-					</div>
-					<div class="modal-body" role="form">
-						<div class="row mb-3">
-							<label class="col-sm-2 col-form-label" for="username">Name:</label>
-							<div class="col-sm-10">
-								<input id="username" name="username" placeholder="Your user name..." class="form-control" />
-							</div>
+			<form action="{{ url_for('login') }}" method="POST" novalidate class="needs-validation">
+				<div class="modal-header">
+					<h2>Log In</h2>
+				</div>
+				<div class="modal-body" role="form">
+					<div class="row mb-3">
+						<label class="col-sm-2 col-form-label" for="username">Name:</label>
+						<div class="col-sm-10">
+							<input id="username" name="username" placeholder="Your user name..." class="form-control" required />
 						</div>
-						<div class="row mb-3">
-							<label class="col-sm-2 col-form-label" for="password">Password:</label>
-							<div class="col-sm-10">
-								<input id="password" name="password" type="password" placeholder="password" class="form-control" /><br />
+					</div>
+					<div class="row mb-3">
+						<label class="col-sm-2 col-form-label" for="password">Password:</label>
+						<div class="col-sm-10">
+							<input id="password" name="password" type="password" placeholder="password" class="form-control" required /><br />
 								<input type="hidden" name="from" value="{{ request.endpoint }}" />
 							</div>
 						</div>
@@ -217,7 +217,7 @@
 	<div id="new-feed-modal" class="modal fade" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<form action="{{ url_for('feeds') }}" method="POST">
+				<form action="{{ url_for('feeds') }}" method="POST" novalidate class="needs-validation">
 					<div class="modal-header">
 						<h2 class="modal-title">New Feed</h2>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -238,8 +238,8 @@
 	<div id="new-group-modal" class="modal fade" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<form action="{{ url_for('users_and_groups') }}" method="POST">
-					<input type="hidden" name="action" value="creategroup" />
+			<form action="{{ url_for('users_and_groups') }}" method="POST" novalidate class="needs-validation">
+				<input type="hidden" name="action" value="creategroup" />
 					<div class="modal-header">
 						<h2 class="modal-title">New Group</h2>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

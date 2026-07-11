@@ -201,13 +201,14 @@ def feed_reorder(feedid):
 
     post_ids = request.json.get('post_ids', []) if request.json else []
 
+    post_map = {p.id: p for p in
+                Post.select().where(Post.id << [int(pid) for pid in post_ids],
+                                     Post.feed == feed)}
     for index, post_id in enumerate(post_ids):
-        try:
-            post = Post.get(Post.id == int(post_id), Post.feed == feed)
+        post = post_map.get(int(post_id))
+        if post is not None:
             post.sort_order = index
             post.save()
-        except (Post.DoesNotExist, ValueError):
-            continue
 
     return jsonify({'ok': True, 'feed': feedid, 'ordered': len(post_ids)})
 
@@ -582,17 +583,26 @@ def posts_bulk_delete():
 
     deleted = 0
     errors = 0
+    post_ids_int = []
     for post_id in post_ids:
         try:
-            post = Post.get(Post.id == int(post_id))
-            post_type_module = post_types.load(post.type)
-            if post.feed.user_can_publish(user) or \
-               (not post.published and post.feed.user_can_write(user)):
-                delete_post_and_run_callback(post, post_type_module)
-                deleted += 1
-            else:
-                errors += 1
-        except (Post.DoesNotExist, ValueError, TypeError):
+            post_ids_int.append(int(post_id))
+        except (ValueError, TypeError):
+            errors += 1
+
+    post_map = {p.id: p for p in
+                Post.select().where(Post.id << post_ids_int)}
+    for post_id in post_ids_int:
+        post = post_map.get(post_id)
+        if post is None:
+            errors += 1
+            continue
+        post_type_module = post_types.load(post.type)
+        if post.feed.user_can_publish(user) or \
+           (not post.published and post.feed.user_can_write(user)):
+            delete_post_and_run_callback(post, post_type_module)
+            deleted += 1
+        else:
             errors += 1
 
     return jsonify({'deleted': deleted, 'errors': errors})

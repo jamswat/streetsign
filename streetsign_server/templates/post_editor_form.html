@@ -17,7 +17,7 @@
 <div class="tab-content" id="editor-tab-content">
 	<div class="tab-pane fade show active" id="tab-content" role="tabpanel">
 		<div id="postcontentblock" class="card card-body">
-			<label id="title-input">Title: <input type="text" name="post_title" value="{{post.title if post.title else ''}}" class="form-control" required></label><br>
+			<label id="title-input">Title: <input type="text" name="post_title" value="{{post.title if post.title else ''}}" class="form-control"></label><br>
 			<div id="postcontentblock-type">
 				<input type="hidden" name="post_type" value="{{ post.type }}" />
 				{{ form_content|safe }}

@@ -35,6 +35,7 @@ static analysis.
 
 
 import sqlite3
+import uuid
 from datetime import datetime, timedelta
 
 from flask import url_for
@@ -50,7 +51,7 @@ class Feed(DBModel):
         Different 'zones' on screen outputs will subscribe to these Feeds. '''
 
     #: the name of the feed.
-    name = CharField(default='New Feed', unique=True)
+    name = CharField(unique=True, default=lambda: f'feed_{uuid.uuid4().hex[:8]}')
 
     #: which types of posts are allowed in this feed (comma,separated)?
     post_types = CharField(default='')
@@ -240,42 +241,94 @@ class Feed(DBModel):
         ''' set the complete authorlist. deletes previous set '''
 
         self._clear_permission(FeedPermission.write, is_group=False)
+        existing = {p.user_id: p for p in
+                    FeedPermission.select().where(
+                        FeedPermission.feed == self,
+                        FeedPermission.user.is_null(False))}
         for a in authorlist:
             assert isinstance(a, User)
-            self.grant('Write', user=a)
+            perm = existing.get(a.id)
+            if perm:
+                perm.write = True
+                perm.save()
+            else:
+                FeedPermission.create(feed=self, user=a,
+                                      read=False, write=True, publish=False)
 
     def set_publishers(self, publisherlist):
         ''' set the complete publisherlist. deletes previous set '''
         self._clear_permission(FeedPermission.publish, is_group=False)
 
+        existing = {p.user_id: p for p in
+                    FeedPermission.select().where(
+                        FeedPermission.feed == self,
+                        FeedPermission.user.is_null(False))}
         for p in publisherlist:
             assert isinstance(p, User)
-            self.grant('Publish', user=p)
+            perm = existing.get(p.id)
+            if perm:
+                perm.publish = True
+                perm.save()
+            else:
+                FeedPermission.create(feed=self, user=p,
+                                      read=False, write=False, publish=True)
 
     def set_author_groups(self, authorlist):
         ''' set the complete author_groups list. deletes previous set '''
 
         self._clear_permission(FeedPermission.write, is_group=True)
+        existing = {p.group_id: p for p in
+                    FeedPermission.select().where(
+                        FeedPermission.feed == self,
+                        FeedPermission.group.is_null(False))}
         for a in authorlist:
             assert isinstance(a, Group)
-            self.grant('Write', group=a)
+            perm = existing.get(a.id)
+            if perm:
+                perm.write = True
+                perm.save()
+            else:
+                FeedPermission.create(feed=self, group=a,
+                                      read=False, write=True, publish=False)
+        # clean up old empty rows
+        FeedPermission.delete().where(
+            (FeedPermission.feed == self)
+            & (FeedPermission.read == False)
+            & (FeedPermission.write == False)
+            & (FeedPermission.publish == False)).execute()
 
     def set_publisher_groups(self, publisherlist):
         ''' set the complete publisher_groups list. deletes previous set '''
         self._clear_permission(FeedPermission.publish, is_group=True)
 
+        existing = {p.group_id: p for p in
+                    FeedPermission.select().where(
+                        FeedPermission.feed == self,
+                        FeedPermission.group.is_null(False))}
         for p in publisherlist:
             assert isinstance(p, Group)
-            self.grant('Publish', group=p)
+            perm = existing.get(p.id)
+            if perm:
+                perm.publish = True
+                perm.save()
+            else:
+                FeedPermission.create(feed=self, group=p,
+                                      read=False, write=False, publish=True)
+        # clean up old empty rows
+        FeedPermission.delete().where(
+            (FeedPermission.feed == self)
+            & (FeedPermission.read == False)
+            & (FeedPermission.write == False)
+            & (FeedPermission.publish == False)).execute()
 
 class FeedPermission(DBModel):
     ''' Essentially a cross-reference table, but with specified permissions. '''
 
-    feed = ForeignKeyField(Feed, backref='permissions')
+    feed = ForeignKeyField(Feed, backref='permissions', index=True)
 
-    user = ForeignKeyField(User, null=True)
+    user = ForeignKeyField(User, null=True, on_delete='SET NULL', index=True)
     # OR...
-    group = ForeignKeyField(Group, null=True)
+    group = ForeignKeyField(Group, null=True, on_delete='SET NULL')
 
     read = BooleanField(default=True)
     write = BooleanField(default=False)
@@ -293,9 +346,9 @@ class Post(DBModel):
     type = TextField() #: used to load the content-type module for this post
     content = TextField() #: JSON data sent to the content-type module
     fontsize = IntegerField(null=True)
-    feed = ForeignKeyField(Feed, backref='posts') #: which feed
+    feed = ForeignKeyField(Feed, backref='posts', index=True) #: which feed
 
-    author = ForeignKeyField(User, backref='posts') #: who wrote it?
+    author = ForeignKeyField(User, backref='posts', index=True) #: who wrote it?
 
     write_date = DateTimeField(default=now) #: when was it written?
 
@@ -453,7 +506,7 @@ class ExternalSource(DBModel):
     feed = ForeignKeyField(Feed, backref='external_sources')
 
     #: Where the actual per-type-specific settings are saved:
-    settings = CharField(default='{}')
+    settings = TextField(default='{}')
 
     #: Should new posts from this source start off published?
     publish = BooleanField(default=False)

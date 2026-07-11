@@ -34,7 +34,7 @@ from .base import DBModel
 class ConfigVar(DBModel):
     ''' place to store site-wide front-end-editable settings. '''
     id = CharField(primary_key=True)
-    value = CharField(null=True) # as JSON!
+    value = TextField(null=True)  # as JSON!
     description = CharField(default="Setting")
 
 def config_var(key, default_value):

@@ -32,10 +32,12 @@ and users at runtime without introducing module-level cycles.
 
 # pylint: disable=cyclic-import
 # pylint: disable=import-outside-toplevel
+# pylint: disable=singleton-comparison
 
 
 import base64
 import hashlib
+import uuid
 
 import bcrypt
 from peewee import * # pylint: disable=wildcard-import,unused-wildcard-import
@@ -65,7 +67,7 @@ class User(DBModel):
     }
 
     #: the unique name user to log in
-    loginname = CharField(unique=True, default='new_user')
+    loginname = CharField(unique=True, default=lambda: f'user_{uuid.uuid4().hex[:8]}')
     #: how the user would like to be displayed
     displayname = CharField(null=True, default="New User")
     #: how to contact the user:
@@ -110,19 +112,51 @@ class User(DBModel):
 
     def writeable_feeds(self):
         ''' Returns a list of all Feeds this user can write to. '''
-        from .feeds import Feed
+        from .feeds import Feed, FeedPermission
 
         if self.is_admin:
             return Feed.select()
-        return [f for f in Feed.select() if f.user_can_write(self)]
+
+        user_feeds = {
+            p.feed_id for p in
+            FeedPermission.select(FeedPermission.feed)
+            .where(FeedPermission.user == self,
+                   FeedPermission.write == True)
+        }
+        group_feeds = {
+            p.feed_id for p in
+            FeedPermission.select(FeedPermission.feed)
+            .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+            .where(UserGroup.user == self,
+                   FeedPermission.group.is_null(False),
+                   FeedPermission.write == True)
+        }
+        allowed = user_feeds | group_feeds
+        return [f for f in Feed.select() if f.id in allowed]
 
     def publishable_feeds(self):
         ''' Returns all the Feeds that this user can publish to. '''
-        from .feeds import Feed
+        from .feeds import Feed, FeedPermission
 
         if self.is_admin:
             return Feed.select()
-        return [f for f in Feed.select() if f.user_can_publish(self)]
+
+        user_feeds = {
+            p.feed_id for p in
+            FeedPermission.select(FeedPermission.feed)
+            .where(FeedPermission.user == self,
+                   FeedPermission.publish == True)
+        }
+        group_feeds = {
+            p.feed_id for p in
+            FeedPermission.select(FeedPermission.feed)
+            .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+            .where(UserGroup.user == self,
+                   FeedPermission.group.is_null(False),
+                   FeedPermission.publish == True)
+        }
+        allowed = user_feeds | group_feeds
+        return [f for f in Feed.select() if f.id in allowed]
 
     def groups(self):
         ''' Returns all the Groups that this user is part of. '''
@@ -137,11 +171,19 @@ class User(DBModel):
         # clear old groups:
         UserGroup.delete().where(UserGroup.user == self).execute()
 
-        #set new ones:
-        for gid in groupidlist:
+        group_ids = [int(gid) for gid in groupidlist]
+
+        # fetch all groups in one query:
+        groups = {g.id: g for g in
+                  Group.select().where(Group.id << group_ids)}
+
+        # set new ones:
+        for gid in group_ids:
+            group = groups.get(gid)
+            if group is None:
+                return False, 'Invalid user, or groupid'
             try:
-                UserGroup(user=self,
-                          group=Group.get(id=gid)).save()
+                UserGroup(user=self, group=group).save()
             except Exception:
                 return False, 'Invalid user, or groupid'
 
@@ -169,11 +211,19 @@ class Group(DBModel):
         # clear old groups:
         UserGroup.delete().where(UserGroup.group == self).execute()
 
-        #set new ones:
-        for uid in useridlist:
+        user_ids = [int(uid) for uid in useridlist]
+
+        # fetch all users in one query:
+        users = {u.id: u for u in
+                 User.select().where(User.id << user_ids)}
+
+        # set new ones:
+        for uid in user_ids:
+            user = users.get(uid)
+            if user is None:
+                return False, 'Invalid user'
             try:
-                UserGroup(group=self,
-                          user=User.get(id=uid)).save()
+                UserGroup(group=self, user=user).save()
             except Exception:
                 return False, 'Invalid user'
 
@@ -183,5 +233,5 @@ class Group(DBModel):
 class UserGroup(DBModel):
     ''' Cross-Reference table '''
     # XREF
-    user = ForeignKeyField(User)
-    group = ForeignKeyField(Group)
+    user = ForeignKeyField(User, index=True)
+    group = ForeignKeyField(Group, index=True)

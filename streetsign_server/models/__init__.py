@@ -119,6 +119,31 @@ def migrations(dbfile=False):
             'ON "Post" ("status", "published", "active_start", "active_end")'
         )
 
+    # Migration 7: add FK indexes for query performance
+    fk_indexes = {
+        'Post': [
+            ('post_feed_id', 'feed_id'),
+            ('post_author_id', 'author_id'),
+        ],
+        'Feedpermission': [
+            ('feedpermission_feed_id', 'feed_id'),
+            ('feedpermission_user_id', 'user_id'),
+        ],
+        'Usergroup': [
+            ('usergroup_user_id', 'user_id'),
+            ('usergroup_group_id', 'group_id'),
+        ],
+    }
+    for table, indexes in fk_indexes.items():
+        existing = {x.name for x in DB.get_indexes(table)}
+        for idx_name, col in indexes:
+            if idx_name not in existing:
+                logger.info('running migration 7 - add index %s on %s(%s)',
+                            idx_name, table, col)
+                DB.execute_sql(
+                    f'CREATE INDEX "{idx_name}" ON "{table}" ("{col}")'
+                )
+
 
 __all__ = ['DB', 'user_login', 'user_logout', 'get_logged_in_user',
            'User', 'Group', 'Post', 'Feed', 'FeedPermission', 'UserGroup',

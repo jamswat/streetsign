@@ -73,7 +73,7 @@ function Zone(container, initial_data) {
     } else {
         this.fadetime = typeof initial_data.fadetime === 'string'
                           ? parseInt(initial_data.fadetime, 10)
-                          : initial_data.fadetime || 500;
+                          : (initial_data.fadetime ?? 500);
     }
 
     this.feedsurl = url_insert(window.POSTS_URL, JSON.stringify(this.feeds));

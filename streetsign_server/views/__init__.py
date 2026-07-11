@@ -120,13 +120,9 @@ def index():
     recent_posts = Post.select().where(Post.published == True)\
                        .order_by(Post.write_date.desc()).limit(5)
 
+    screens_by_name = {s.urlname: s for s in screens}
     for alias in aliases:
-        for screen in screens:
-            if screen.urlname == alias['screen_name']:
-                alias['screen'] = screen
-                break
-        else:
-            alias['screen'] = None
+        alias['screen'] = screens_by_name.get(alias['screen_name'])
 
     return render_template('dashboard.html',
                            aliases=aliases,

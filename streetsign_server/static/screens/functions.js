@@ -38,7 +38,7 @@ function nicemap(objects, func) {
 
 function safeGetJSON(url, callback, retry_time) {
     'use strict';
-    retry_time = retry_time || 60000;
+    retry_time = retry_time ?? 60000;
 
     const xhr = new XMLHttpRequest();
     const responder = function() {
