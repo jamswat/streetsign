@@ -1,5 +1,42 @@
 # Changelog
 
+## v1.3.0 — Weather Post Type & Bug Fixes
+
+This release adds a live weather display post type powered by wttr.in, plus
+build/CI and bug fix improvements.
+
+### New Features
+- **Weather post type** — displays live current conditions, high/low temperatures
+  and rain chance, optional metrics (feels-like, humidity, wind, UV), sunrise/sunset
+  times, and a 2-day forecast. Zone-size-aware CSS-Grid layout adapts between
+  landscape, square, and portrait signage zones. Features:
+  - Place name lookup or exact latitude/longitude coordinates with a built-in
+    OpenStreetMap coordinate picker.
+  - Celsius/Fahrenheit, configurable refresh interval, customisable colours.
+  - Weather-aware atmospheric gradients and ambient condition icon (toggleable).
+  - Client-side caching (localStorage + memory) with stale-while-revalidate.
+  - Expoential backoff for fetch retries and offline detection.
+  - Server-side `/weather-proxy` route to relay wttr.in requests (avoids CORS/CSP).
+
+### Bug Fixes
+- **Weather widget resource leak** — timers, ResizeObserver, and online/offline
+  listeners were never cleaned up when the weather post was re-rendered
+  (e.g. on content update). Added `destroy()` lifecycle method and proper
+  teardown in `render()`.
+- **Weather night detection timezone mismatch** — `_isNight` now uses the
+  location's observation time (from `localObsDateTime`) instead of the
+  browser's local clock for sunrise/sunset comparison.
+- Fix `isOnline` divergence in weather widget — use tracked `this.isOnline`
+  instead of `navigator.onLine` in the fetch path.
+- **Uncaught `IntegrityError` in deletion paths** — feed, screen, and user
+  deletion now handles DB constraint violations gracefully instead of
+  returning 500 errors.
+- **Build & CI** — pinned `setup-uv` to v8.3.0 for Node 24 compatibility;
+  added license files and updated attribution docs for bundled libraries.
+
+### Changes
+- Tagged Docker image reference in `docker-compose.yml` changed to `:latest`.
+
 ## v1.2.0 — Build System Modernization & CI Fixes
 
 ### Build System

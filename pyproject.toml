@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "streetsign_server"
-version = "1.2.1"
+version = "1.3.0"
 description = "A simple python/flask/web based digital signage system"
 readme = "README.md"
 license = "GPL-3.0-only"
