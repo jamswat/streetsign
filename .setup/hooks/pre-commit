@@ -1,0 +1,9 @@
+#!/bin/sh
+# Pre-commit hook: run pylint and refuse the commit if it falls below threshold.
+
+.venv/bin/python -m pylint --fail-under=9.0 streetsign_server/ || {
+    echo ""
+    echo "Pylint check failed (score below 9.0). Fix the issues above or"
+    echo "bypass with: git commit --no-verify"
+    exit 1
+}

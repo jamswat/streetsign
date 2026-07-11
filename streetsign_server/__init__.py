@@ -102,7 +102,7 @@ import streetsign_server.views as views
 from .models import \
      User, Group, Post, Feed, FeedPermission
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 @app.context_processor
 def inject_version():

@@ -1,5 +1,46 @@
 # Changelog
 
+## v1.1.1 — Build System Modernization & Bug Fixes
+
+### Build System
+- **Migrated from `setup.py` + `requirements.txt` to `pyproject.toml` + `uv.lock`.**
+  - `pyproject.toml` (hatchling backend) is now the single source of truth for
+    project metadata and dependencies.
+  - `uv.lock` pins the entire dependency tree (including transitive deps) for
+    fully reproducible builds.
+  - `setup.py`, `requirements.txt`, `requirements_raw.txt`, and `MANIFEST.in`
+    removed.
+  - Runtime deps use compatible-release ranges (`>=X,<Y`); the lockfile pins
+    exact versions. `uv lock --upgrade` bumps everything; `uv lock --upgrade-package
+    <name>` bumps one package.
+  - Dev/test deps (`pytest`, `coverage`, `pylint`, `html5lib`) moved to
+    `[project.optional-dependencies] dev` — no longer installed in the Docker
+    production image (17 packages instead of 32).
+  - Virtualenv directory renamed from `.virtualenv` to `.venv` (uv convention).
+- **Dockerfile** updated to use `uv` from `ghcr.io/astral-sh/uv` with
+  `uv sync --frozen --no-dev --no-install-project`.
+- **Makefile** updated to use `uv sync --extra dev`.
+- **CI workflows** updated to use `astral-sh/setup-uv@v6`, `uv sync`, and
+  `uv run` for all steps. pip-audit now runs against `uv export --no-dev` output.
+
+### Bug Fixes
+- **`markupsafe`** added as an explicit dependency (was a hidden transitive
+  dependency via Flask/Jinja2/Werkzeug, but directly imported in 4 application
+  files).
+- **`bleach[css]`** — added the `[css]` extra for `tinycss2`, required by
+  `bleach.css_sanitizer.CSSSanitizer` in the HTML post type. This was a
+  pre-existing bug that would break on fresh installs.
+- **`whitenoise`** was in `requirements.txt` but missing from
+  `requirements_raw.txt` (sync issue eliminated by the single-source
+  `pyproject.toml`).
+- **Fixed broken `make .githooks` target** — `.setup/hooks/pre-commit` never
+  existed. Created a pre-commit hook that runs pylint (fail-under=9.0).
+
+### Other
+- Added Python 3.14 classifier to `pyproject.toml`.
+- Updated all `.virtualenv` → `.venv` references in shebangs, docs, README, and
+  scripts.
+
 ## v1.1.0 — Operational Improvements & New Features
 
 ### Breaking Changes
@@ -31,39 +72,11 @@
 ### CI
 - Added GitHub Actions workflow for tests (Python 3.10 + 3.12 matrix),
   pylint (fail-under=9.0), and pip-audit for known CVEs.
-- Added `python_requires='>=3.9'` to `setup.py`.
+- Added `python_requires='>=3.10'` to project metadata.
 
 ### Migrations
 - Migration 4: add `sort_order` column to Post (playlist ordering).
 - Migration 5: add `recurrence` column to Post (day-of-week scheduling).
-
-## v1.0.0 — Initial Rewrite/Modernization
-
-This release marks the initial fork and modernization of StreetSign.
-Many, many changes including:
-- Bootstrap 3 -> 5
-- Move from Knockout.js -> Alpine.js
-- Various library updates
-- Many bug fixes and security improvements
-- UI improvements
-- Move to Quill WYSIWYG for rich text
-- Add Video post type
-- Add raw html post type
-- Remove Twitter & Advanced html post types 
-
-## v1.0.1 — UI Fixes, Deployment Improvements, and Branding
-
-- Added brand logos (favicon, sidebar, mobile header, landing page).
-- Fixed multiple UI validation issues across forms.
-- Improved docker-compose.yml: configurable port, SECRET_KEY safety, clearer docs.
-- Updated documentation to reference ghcr.io pre-built Docker images.
-- Pinned and bumped GitHub Actions to latest versions.
-- Pylint cleanup and logo integration.
-- Robustness improvements across post and feed views.
-
-## v1.0.2 — Docker Build Fix
-
-- Fixed Docker build by removing obsolete imagemagick sub-packages.
 
 ## v1.0.3 — UI/UX Overhaul
 
@@ -118,3 +131,31 @@ Many, many changes including:
 ### Accessibility
 - Alias checkbox wrapped in `<label>`.
 - Error page footer hidden.
+
+## v1.0.2 — Docker Build Fix
+
+- Fixed Docker build by removing obsolete imagemagick sub-packages.
+
+## v1.0.1 — UI Fixes, Deployment Improvements, and Branding
+
+- Added brand logos (favicon, sidebar, mobile header, landing page).
+- Fixed multiple UI validation issues across forms.
+- Improved docker-compose.yml: configurable port, SECRET_KEY safety, clearer docs.
+- Updated documentation to reference ghcr.io pre-built Docker images.
+- Pinned and bumped GitHub Actions to latest versions.
+- Pylint cleanup and logo integration.
+- Robustness improvements across post and feed views.
+
+## v1.0.0 — Initial Rewrite/Modernization
+
+This release marks the initial fork and modernization of StreetSign.
+Many, many changes including:
+- Bootstrap 3 -> 5
+- Move from Knockout.js -> Alpine.js
+- Various library updates
+- Many bug fixes and security improvements
+- UI improvements
+- Move to Quill WYSIWYG for rich text
+- Add Video post type
+- Add raw html post type
+- Remove Twitter & Advanced html post types
