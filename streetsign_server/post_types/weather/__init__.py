@@ -51,6 +51,8 @@ show_metrics : bool (default True)
     Show the feels-like / humidity / wind / UV / sunrise / sunset row.
 show_sun_times : bool (default True)
     Include sunrise and sunset in the metrics row (requires show_metrics).
+show_atmosphere : bool (default True)
+    Use weather-aware gradients and the large ambient condition icon.
 
 update_interval_min : int (default 45)
     How often (in minutes) to fetch fresh data from wttr.in.
@@ -80,8 +82,18 @@ def receive(data):
             if lat < -90 or lat > 90 or lon < -180 or lon > 180:
                 lat = None
                 lon = None
+            elif (lat != lat) or (lon != lon):  # NaN guard
+                lat = None
+                lon = None
         except (ValueError, TypeError):
             pass
+
+    def safe_int(val, default=45, lo=5, hi=360):
+        try:
+            v = int(str(val or '').strip() or default)
+        except (ValueError, TypeError):
+            v = default
+        return max(lo, min(hi, v))
 
     return {
         'location': (data.get('location', '') or 'London').strip() or 'London',
@@ -94,11 +106,11 @@ def receive(data):
         'high_color': data.get('high_color', '#ff8a75') or '#ff8a75',
         'low_color': data.get('low_color', '#75c4f5') or '#75c4f5',
         'rain_color': data.get('rain_color', '#5bbfef') or '#5bbfef',
-        'show_forecast': data.get('show_forecast', '1') not in ('0', '', False),
-        'show_metrics': data.get('show_metrics', '1') not in ('0', '', False),
-        'show_sun_times': data.get('show_sun_times', '1') not in ('0', '', False),
-        'update_interval_min': max(5, min(360,
-            int(data.get('update_interval_min', 45) or 45) or 45)),
+        'show_forecast': 'show_forecast' in data,
+        'show_metrics': 'show_metrics' in data,
+        'show_sun_times': 'show_sun_times' in data,
+        'show_atmosphere': 'show_atmosphere' in data,
+        'update_interval_min': safe_int(data.get('update_interval_min')),
     }
 
 

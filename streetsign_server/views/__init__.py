@@ -28,8 +28,12 @@ from uuid import uuid4
 from hmac import compare_digest
 
 from flask import render_template, g, Response, url_for, request, session, \
-                  jsonify
+                   jsonify
 from markupsafe import Markup
+
+from urllib.parse import quote as url_quote
+import urllib.request
+import urllib.error
 
 ##########################
 # views submodules:
@@ -162,6 +166,23 @@ def health():
         return jsonify(status='error',
                         database='unreachable'), 503
     return jsonify(status='ok', database='ok')
+
+
+@app.route('/weather-proxy/<path:query>')
+def weather_proxy(query):
+    ''' Proxy requests to wttr.in to avoid CORS/CSP issues. '''
+    url = f'https://wttr.in/{url_quote(query)}?format=j1'
+    try:
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (compatible; StreetSign/2.0)'
+        })
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = resp.read()
+        return Response(data, mimetype='application/json')
+    except urllib.error.HTTPError as e:
+        return jsonify(error=f'wttr.in returned HTTP {e.code}'), 502
+    except Exception as e:
+        return jsonify(error=f'Failed to fetch weather: {e}'), 502
 
 
 # Expected Error Handlers:

@@ -1,35 +1,19 @@
-{
-    render(zone, data) {
-        var cfg = data.content || {};
-        var $container = $(
-            '<div class="post_weather"></div>'
-        ).prependTo(zone);
-
-        new _WeatherWidget($container[0], zone, cfg);
-
-        return $container;
-    }
-}
+(function () { 'use strict';
 
 /* ================================================================
    WeatherWidget — self-contained, zone-size-aware, resilient.
-   ================================================================
 
-   Lifecycle
-   ---------
-   The widget renders immediately into a container element.  It
-   checks localStorage for a previous cache; if one exists and is
-   within the 24 h cap it paints instantly.  In the background it
-   fetches wttr.in and updates the display.
+   Design
+   ------
+   The widget builds a CSS-Grid layout whose template changes with
+   the zone's aspect ratio (landscape / portrait / square) so the
+   available space is used efficiently regardless of dimensions.
 
-   Zone-size adaptation
-   --------------------
-   A ResizeObserver watches the zone element.  Based on available
-   height and width the widget picks one of three layouts:
-
-      compact   height < 180 px  or  width < 250 px
-      medium    180 ≤ height < 350 px
-      full      height ≥ 350 px
+   A single base font-size on the container drives every internal
+   dimension (all sizes are in `em`).  A binary search finds the
+   largest font-size at which the content fits within the zone
+   without vertical or horizontal overflow — the search only
+   adjusts font-size (no DOM rebuild), so it is cheap.
 
    Resilience
    ----------
@@ -62,16 +46,18 @@ function _WeatherWidget(container, zone, cfg) {
     this.errCount  = 0;
     this.isOnline  = navigator.onLine;
 
-    this._renderShell();
+    this._build();
     this._startResizeObserver();
+    this._startOnlineListeners();
 
-    if (this.cachedData) this._paint();
+    if (this.cachedData) this._fill();
+
     this._fetch();
 
-    // Keep-alive: if we already had data, redraw periodically
-    // so live-time placeholders stay current even without a fetch.
+    // Keep-alive: refresh the "updated X ago" status text once a
+    // minute so it stays current between fetches.
     this._clockTimer = setInterval(
-        this._paint.bind(this),
+        this._updateStatus.bind(this),
         60 * 1000
     );
 
@@ -80,7 +66,7 @@ function _WeatherWidget(container, zone, cfg) {
 
 _WeatherWidget.prototype = {
 
-    // ---- cache key ----
+    /* ---- cache key ---- */
 
     _setupCacheKey: function () {
         var loc = this.location.replace(/[^a-z0-9]/gi, '_');
@@ -88,12 +74,16 @@ _WeatherWidget.prototype = {
         this.CACHE_KEY_TS   = 'ss-weather-' + loc + '-' + this.units + '-ts';
     },
 
-    // ---- helpers ----
+    /* ---- helpers ---- */
 
     _esc: function (s) {
         var d = document.createElement('div');
         d.textContent = String(s || '');
         return d.innerHTML;
+    },
+
+    _cap: function (s) {
+        return String(s || '').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
     },
 
     _testStorage: function () {
@@ -108,18 +98,73 @@ _WeatherWidget.prototype = {
 
     _emoji: function (code) {
         var map = {
-            113:'☀️',116:'⛅',119:'☁️',122:'☁️',143:'🌫️',
-            176:'🌦️',179:'🌨️',182:'🌧️',185:'🌧️',200:'⛈️',
-            227:'🌨️',230:'❄️',248:'🌫️',260:'🌫️',263:'🌦️',
-            266:'🌧️',281:'🌧️',284:'🌧️',293:'🌦️',296:'🌧️',
-            299:'🌧️',302:'🌧️',305:'🌧️',308:'🌧️',311:'🌧️',
-            314:'🌧️',317:'🌧️',320:'🌧️',323:'🌨️',326:'🌨️',
-            329:'🌨️',332:'❄️',335:'🌨️',338:'❄️',350:'🌧️',
-            353:'🌦️',356:'🌧️',359:'🌧️',362:'🌧️',365:'🌧️',
-            368:'🌨️',371:'❄️',374:'🌧️',377:'🌧️',386:'⛈️',
-            389:'⛈️',392:'⛈️',395:'⛈️'
+            113:'\u2600\uFE0F',116:'\u26C5',119:'\u2601\uFE0F',122:'\u2601\uFE0F',143:'\u{1F32B}\uFE0F',
+            176:'\u{1F326}\uFE0F',179:'\u{1F328}\uFE0F',182:'\u{1F327}\uFE0F',185:'\u{1F327}\uFE0F',200:'\u26C8\uFE0F',
+            227:'\u{1F328}\uFE0F',230:'\u2744\uFE0F',248:'\u{1F32B}\uFE0F',260:'\u{1F32B}\uFE0F',263:'\u{1F326}\uFE0F',
+            266:'\u{1F327}\uFE0F',281:'\u{1F327}\uFE0F',284:'\u{1F327}\uFE0F',293:'\u{1F326}\uFE0F',296:'\u{1F327}\uFE0F',
+            299:'\u{1F327}\uFE0F',302:'\u{1F327}\uFE0F',305:'\u{1F327}\uFE0F',308:'\u{1F327}\uFE0F',311:'\u{1F327}\uFE0F',
+            314:'\u{1F327}\uFE0F',317:'\u{1F327}\uFE0F',320:'\u{1F327}\uFE0F',323:'\u{1F328}\uFE0F',326:'\u{1F328}\uFE0F',
+            329:'\u{1F328}\uFE0F',332:'\u2744\uFE0F',335:'\u{1F328}\uFE0F',338:'\u2744\uFE0F',350:'\u{1F327}\uFE0F',
+            353:'\u{1F326}\uFE0F',356:'\u{1F327}\uFE0F',359:'\u{1F327}\uFE0F',362:'\u{1F327}\uFE0F',365:'\u{1F327}\uFE0F',
+            368:'\u{1F328}\uFE0F',371:'\u2744\uFE0F',374:'\u{1F327}\uFE0F',377:'\u{1F327}\uFE0F',386:'\u26C8\uFE0F',
+            389:'\u26C8\uFE0F',392:'\u26C8\uFE0F',395:'\u26C8\uFE0F'
         };
-        return map[code] || '🌤️';
+        return map[code] || '\u{1F324}\uFE0F';
+    },
+
+    _conditionClass: function (code) {
+        if ([200, 386, 389, 392, 395].indexOf(code) !== -1) return 'storm';
+        if ([179, 227, 230, 323, 326, 329, 332, 335, 338, 368, 371].indexOf(code) !== -1) return 'snow';
+        if ([176, 182, 185, 263, 266, 281, 284, 293, 296, 299, 302, 305, 308, 311, 314, 317, 320, 350, 353, 356, 359, 362, 365, 374, 377].indexOf(code) !== -1) return 'rain';
+        if ([143, 248, 260].indexOf(code) !== -1) return 'fog';
+        if ([116, 119, 122].indexOf(code) !== -1) return 'cloud';
+        if (code === 113) return 'clear';
+        return 'cloud';
+    },
+
+    _parseClock: function (value) {
+        var m = String(value || '').trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+        if (!m) return null;
+        var h = parseInt(m[1], 10);
+        var min = parseInt(m[2], 10);
+        var ap = m[3] ? m[3].toUpperCase() : '';
+        if (ap === 'PM' && h < 12) h += 12;
+        if (ap === 'AM' && h === 12) h = 0;
+        if (h > 23 || min > 59) return null;
+        return h * 60 + min;
+    },
+
+    _isNight: function (astro, cur) {
+        if (!astro) return false;
+        var sunrise = this._parseClock(astro.sunrise);
+        var sunset = this._parseClock(astro.sunset);
+        if (sunrise == null || sunset == null) return false;
+        /* wttr.in reports sunrise/sunset in the *location's* local
+           time, so compare against the location's local observation
+           time (cur.localObsDateTime) rather than the browser's
+           clock, which may be in a different time zone. */
+        var minutes = null;
+        if (cur && cur.localObsDateTime) {
+            var parts = cur.localObsDateTime.split(' ');
+            var t = parts.length >= 2 ? parts[1] : '';
+            var parsed = this._parseClock(t);
+            if (parsed != null) minutes = parsed;
+        }
+        if (minutes == null) {
+            var now = new Date();
+            minutes = now.getHours() * 60 + now.getMinutes();
+        }
+        return minutes < sunrise || minutes >= sunset;
+    },
+
+    _applyCondition: function (code, astro, cur) {
+        var cls = this._conditionClass(code);
+        this.container.classList.remove(
+            'ww-cond-clear', 'ww-cond-cloud', 'ww-cond-rain',
+            'ww-cond-snow', 'ww-cond-storm', 'ww-cond-fog', 'ww-night'
+        );
+        this.container.classList.add('ww-cond-' + cls);
+        if (this._isNight(astro, cur)) this.container.classList.add('ww-night');
     },
 
     _normalise: function (raw) {
@@ -134,7 +179,7 @@ _WeatherWidget.prototype = {
         return { current_condition: [cur], weather: src.weather, nearest_area: [area] };
     },
 
-    // ---- localStorage + memory cache ----
+    /* ---- localStorage + memory cache ---- */
 
     _loadCache: function () {
         var MAX_AGE = 24 * 60 * 60 * 1000;
@@ -209,7 +254,7 @@ _WeatherWidget.prototype = {
         return this._memTs;
     },
 
-    // ---- colours ----
+    /* ---- colours ---- */
 
     _applyColors: function () {
         var s = this.container.style;
@@ -219,66 +264,124 @@ _WeatherWidget.prototype = {
         s.setProperty('--ww-high',   this.cfg.high_color   || '#ff8a75');
         s.setProperty('--ww-low',    this.cfg.low_color     || '#75c4f5');
         s.setProperty('--ww-rain',   this.cfg.rain_color    || '#5bbfef');
-        s.setProperty('--ww-surface','rgba(255,255,255,0.05)');
-        s.setProperty('--ww-border', 'rgba(255,255,255,0.08)');
+        s.setProperty('--ww-surface','rgba(255,255,255,0.06)');
+        s.setProperty('--ww-border', 'rgba(255,255,255,0.10)');
     },
 
-    // ---- render shell (empty structure, filled by _paint) ----
+    /* ---- build the static DOM shell (once) ---- */
 
-    _renderShell: function () {
+    _build: function () {
         this.container.innerHTML =
             '<div class="weather-root">' +
-                '<div class="weather-inner">...</div>' +
-                '<div class="weather-status"></div>' +
+                '<div class="ww-atmosphere"></div>' +
+                '<div class="ww-header">' +
+                    '<div class="ww-location"></div>' +
+                    '<div class="ww-desc"></div>' +
+                '</div>' +
+                '<div class="ww-hero"></div>' +
+                '<div class="ww-metrics"></div>' +
+                '<div class="ww-forecast"></div>' +
+                '<div class="ww-status"></div>' +
             '</div>';
-        this.$root  = $(this.container).find('.weather-root');
-        this.$inner = this.$root.find('.weather-inner');
-        this.$status = this.$root.find('.weather-status');
+        this.$root    = $(this.container).find('.weather-root');
+        this.$atmos   = this.$root.find('.ww-atmosphere');
+        this.$location = this.$root.find('.ww-location');
+        this.$desc     = this.$root.find('.ww-desc');
+        this.$hero     = this.$root.find('.ww-hero');
+        this.$metrics  = this.$root.find('.ww-metrics');
+        this.$forecast = this.$root.find('.ww-forecast');
+        this.$status   = this.$root.find('.ww-status');
     },
 
-    // ---- ResizeObserver → layout mode ----
+    /* ---- orientation + fit ---- */
+
+    _orient: function () {
+        var w = this.zone.clientWidth;
+        var h = this.zone.clientHeight;
+        if (!w || !h) return;
+        var aspect = w / h;
+        this.container.classList.remove(
+            'ww-orient-landscape', 'ww-orient-portrait', 'ww-orient-square'
+        );
+        if (aspect > 1.25)      this.container.classList.add('ww-orient-landscape');
+        else if (aspect < 0.8)  this.container.classList.add('ww-orient-portrait');
+        else                    this.container.classList.add('ww-orient-square');
+    },
 
     _startResizeObserver: function () {
         var self = this;
-        if (typeof ResizeObserver === 'undefined') {
-            self._layoutMode = self._chooseLayout(
-                self.zone.offsetHeight, self.zone.offsetWidth
-            );
-            return;
+        var raf = null;
+        var update = function () {
+            raf = null;
+            self._orient();
+            self._fit();
+        };
+        if (typeof ResizeObserver !== 'undefined') {
+            this._ro = new ResizeObserver(function () {
+                if (raf) cancelAnimationFrame(raf);
+                raf = requestAnimationFrame(update);
+            });
+            this._ro.observe(this.zone);
         }
-        this._ro = new ResizeObserver(function () {
-            var h = self.zone.offsetHeight;
-            var w = self.zone.offsetWidth;
-            var mode = self._chooseLayout(h, w);
-            if (mode !== self._layoutMode) {
-                self._layoutMode = mode;
-                if (self.cachedData) self._paint();
-            }
-        });
-        this._ro.observe(this.zone);
-        this._layoutMode = this._chooseLayout(
-            this.zone.offsetHeight, this.zone.offsetWidth
-        );
+        update();
     },
 
-    _chooseLayout: function (h, w) {
-        if (h < 180 || w < 250) return 'compact';
-        if (h < 350) return 'medium';
-        return 'full';
+    _startOnlineListeners: function () {
+        var self = this;
+        this._onOnline  = function () { self.isOnline = true;  self._fetch(); self._updateStatus(); };
+        this._onOffline = function () { self.isOnline = false; self._updateStatus(); };
+        window.addEventListener('online',  this._onOnline);
+        window.addEventListener('offline', this._onOffline);
     },
 
-    // ---- data helpers ----
+    destroy: function () {
+        clearTimeout(this._fetchTimer);
+        clearInterval(this._clockTimer);
+        clearInterval(this._countdownTimer);
+        if (this._ro && typeof this._ro.disconnect === 'function') {
+            this._ro.disconnect();
+        }
+        if (this._onOnline)  window.removeEventListener('online',  this._onOnline);
+        if (this._onOffline) window.removeEventListener('offline', this._onOffline);
+        var idx = _weatherInstances.indexOf(this);
+        if (idx !== -1) _weatherInstances.splice(idx, 1);
+    },
+
+    /**
+     * Binary-search the largest container font-size at which the
+     * root content fits inside the zone without overflow.  Only the
+     * font-size CSS property is mutated — no DOM rebuild — so each
+     * iteration is a cheap reflow.
+     */
+    _fit: function () {
+        var root = this.$root[0];
+        if (!root) return;
+        var zh = this.zone.clientHeight;
+        var zw = this.zone.clientWidth;
+        if (!zh || !zw) return;
+
+        var lo = 18, hi = 320, best = lo;
+        for (var i = 0; i < 18; i++) {
+            var mid = (lo + hi) / 2;
+            this.container.style.fontSize = mid + 'px';
+            var fitsV = root.scrollHeight <= zh + 1;
+            var fitsH = root.scrollWidth  <= zw + 1;
+            if (fitsV && fitsH) { best = mid; lo = mid; }
+            else { hi = mid; }
+            if (hi - lo < 0.15) break;
+        }
+        this.container.style.fontSize = best + 'px';
+    },
+
+    /* ---- data helpers ---- */
 
     _rainChanceForDay: function (day) {
         if (!day || !day.hourly || !day.hourly.length) return 0;
-        var vals = [];
-        for (var i = 0; i < day.hourly.length; i++) {
-            var r = parseInt(day.hourly[i].chanceofrain, 10) || 0;
-            vals.push(r);
-        }
         var sum = 0;
-        for (var j = 0; j < vals.length; j++) sum += vals[j];
-        return Math.round(sum / vals.length);
+        for (var i = 0; i < day.hourly.length; i++) {
+            sum += parseInt(day.hourly[i].chanceofrain, 10) || 0;
+        }
+        return Math.round(sum / day.hourly.length);
     },
 
     _currentRain: function () {
@@ -313,110 +416,83 @@ _WeatherWidget.prototype = {
         return new Date(dateStr).toLocaleDateString('en-US', {weekday: 'short'});
     },
 
-    // ---- main paint ----
+    _windLabel: function (cur) {
+        if (this.units === 'F') {
+            return this._esc(cur.windspeedMiles) + ' mph';
+        }
+        return this._esc(cur.windspeedKmph) + ' km/h';
+    },
 
-    _paint: function () {
+    /* ---- fill content into the existing shell ---- */
+
+    _fill: function () {
         if (!this.cachedData) return;
         var cur   = this.cachedData.current_condition[0];
         var today = this.cachedData.weather[0];
         var fc    = this.cachedData.weather.slice(1, 3);
-        var area  = this.cachedData.nearest_area[0];
         var astro = today.astronomy && today.astronomy[0];
 
-        var locName = this.location;
+        var tf   = this.units === 'F' ? 'F' : 'C';
+        var desc = (cur.weatherDesc && cur.weatherDesc[0] && cur.weatherDesc[0].value) || '';
+
         var curEmoji = this._emoji(parseInt(cur.weatherCode, 10));
         var rainNow  = this._currentRain();
-        var ts       = this._cachedTs();
-        var age      = ts ? Date.now() - ts : 0;
-        var isStale  = age > 2 * 60 * 60 * 1000;
-        var ageText  = '';
-        if (ts) {
-            ageText = age < 3600000
-                ? Math.round(age / 60000) + 'm ago'
-                : Math.round(age / 3600000) + 'h ago';
+        var code = parseInt(cur.weatherCode, 10);
+
+        this._applyCondition(code, astro, cur);
+        this.$atmos.text(curEmoji);
+
+        this.$location.text(this._cap(this.location));
+        this.$desc.text(desc);
+
+        var hero =
+            '<div class="ww-emoji">' + curEmoji + '</div>' +
+            '<div class="ww-hero-info">' +
+                '<div class="ww-temp">' +
+                    this._esc(cur['temp_' + tf]) + '\u00B0' + this.units +
+                '</div>' +
+                '<div class="ww-condition">' + this._esc(desc) + '</div>' +
+                '<div class="ww-hilo">' +
+                    '<span class="ww-hi">\u2191' + this._esc(today['maxtemp' + tf]) + '\u00B0</span>' +
+                    '<span class="ww-lo">\u2193' + this._esc(today['mintemp' + tf]) + '\u00B0</span>' +
+                    '<span class="ww-rain ' + (rainNow === 0 ? 'zero' : '') + '">' +
+                        '\u{1F4A7} ' + rainNow + '%' +
+                    '</span>' +
+                '</div>' +
+            '</div>';
+        this.$hero.html(hero);
+
+        /* metrics */
+        var m = '';
+        m += this._metric('Feels',  this._esc(cur['FeelsLike' + tf]) + '\u00B0' + this.units);
+        m += this._metric('Humidity', this._esc(cur.humidity) + '%');
+        m += this._metric('Wind',   this._windLabel(cur));
+        m += this._metric('UV',     this._esc(cur.uvIndex));
+        if (astro) {
+            m += this._metric('Sunrise', this._esc(astro.sunrise), 'sun');
+            m += this._metric('Sunset',  this._esc(astro.sunset),  'sun');
         }
-        var statusClass = '';
-        var statusMsg   = 'Updated ' + new Date().toLocaleTimeString();
-        if (isStale)  statusClass += 'stale';
-        if (!this.isOnline) {
-            statusClass += ' offline';
-            statusMsg = ageText ? 'Cached ' + ageText + ' · offline' : 'Cached · offline';
-        } else if (ageText) {
-            statusMsg = 'Updated ' + ageText;
+        this.$metrics.html(m);
+
+        /* forecast */
+        var f = '';
+        for (var i = 0; i < fc.length; i++) {
+            f += this._renderDay(fc[i], i + 1, tf);
         }
-        var obsTxt = this._obsTime(cur);
-        if (obsTxt) statusMsg += ' · Obs ' + obsTxt;
-        if (statusClass) statusClass = ' ' + statusClass.trim();
+        this.$forecast.html(f);
 
-        var showFc  = this.cfg.show_forecast;
-        var showMet = this.cfg.show_metrics;
-        var showSun = this.cfg.show_sun_times && showMet;
-        var mode    = this._layoutMode || 'full';
-
-        var html = '';
-
-        html += '<div class="ww-location">' + this._esc(locName) + '</div>';
-
-        // ---- current row (all modes) ----
-        html += '<div class="ww-current-row">';
-        html += '<span class="ww-emoji">' + curEmoji + '</span>';
-        html += '<span class="ww-temp">' + this._esc(cur.temp_C) + '°' + this.units + '</span>';
-        if (mode !== 'compact') {
-            html += '<span class="ww-desc">' + this._esc(cur.weatherDesc[0].value) + '</span>';
-        }
-        html += '</div>';
-
-        // ---- hi / lo / rain (all modes) ----
-        html += '<div class="ww-hilo-row">';
-        html += '<span class="ww-hi">↑' + this._esc(today.maxtempC) + '°</span>';
-        html += '<span class="ww-hi-lo-sep">/</span>';
-        html += '<span class="ww-lo">↓' + this._esc(today.mintempC) + '°</span>';
-        html += '<span class="ww-rain-pill ' + (rainNow === 0 ? 'no-rain' : '') + '">💧 ' + rainNow + '%</span>';
-        html += '</div>';
-
-        // ---- metrics (medium + full) ----
-        if (mode !== 'compact' && showMet) {
-            html += '<div class="ww-metrics">';
-            html += this._metric('Feels Like', this._esc(cur.FeelsLikeC) + '°' + this.units);
-            html += this._metric('Humidity',  this._esc(cur.humidity) + '%');
-            html += this._metric('Wind',      this._esc(cur.windspeedKmph) + ' km/h');
-            html += this._metric('UV',        this._esc(cur.uvIndex));
-            if (showSun && astro) {
-                html += this._metric('Sunrise', this._esc(astro.sunrise));
-                html += this._metric('Sunset',  this._esc(astro.sunset));
-            }
-            html += '</div>';
-        }
-
-        // ---- forecast (full only) ----
-        if (mode === 'full' && showFc) {
-            html += '<div class="ww-forecast"><div class="ww-fc-label">Forecast</div>';
-            html += '<div class="ww-fc-days">';
-            for (var i = 0; i < fc.length; i++) {
-                html += this._renderDay(fc[i], i + 1);
-            }
-            html += '</div></div>';
-        }
-
-        this.$inner.html(html);
-
-        // ---- status bar ----
-        this.$status.html(
-            '<span class="ww-stat-msg">' + this._esc(statusMsg) + '</span>' +
-            '<span class="ww-stat-dot">·</span>' +
-            '<span class="ww-stat-cd" id="ww-stat-cd"></span>'
-        );
-        if (statusClass) this.$status.attr('class', 'weather-status' + statusClass);
+        this._updateStatus();
+        this._fit();
     },
 
-    _metric: function (label, value) {
-        return '<div class="ww-metric">' +
+    _metric: function (label, value, cls) {
+        return '<div class="ww-metric' + (cls ? ' ww-metric-' + cls : '') + '">' +
             '<span class="ww-metric-label">' + this._esc(label) + '</span>' +
             '<span class="ww-metric-value">' + value + '</span>' +
             '</div>';
     },
 
-    _renderDay: function (day, n) {
+    _renderDay: function (day, n, tf) {
         var rain = this._rainChanceForDay(day);
         var code = parseInt(
             (day.hourly && day.hourly[4] && day.hourly[4].weatherCode) ||
@@ -425,31 +501,74 @@ _WeatherWidget.prototype = {
         return '<div class="ww-fc-day">' +
             '<div class="ww-fc-date">' + this._esc(this._formatDay(day.date, n)) + '</div>' +
             '<div class="ww-fc-emoji">' + this._emoji(code) + '</div>' +
-            '<div class="ww-fc-temp">' +
-                '<span class="ww-fc-hi">' + this._esc(day.maxtempC) + '°</span>' +
+            '<div class="ww-fc-temps">' +
+                '<span class="ww-fc-hi">' + this._esc(day['maxtemp' + tf]) + '\u00B0</span>' +
                 '<span class="ww-fc-sep">/</span>' +
-                '<span class="ww-fc-lo">' + this._esc(day.mintempC) + '°</span>' +
+                '<span class="ww-fc-lo">' + this._esc(day['mintemp' + tf]) + '\u00B0</span>' +
             '</div>' +
-            '<div class="ww-fc-rain ' + (rain === 0 ? 'no-rain' : '') + '">💧 ' + rain + '%</div>' +
+            '<div class="ww-fc-rain ' + (rain === 0 ? 'zero' : '') + '">' +
+                '<span>\u{1F4A7} ' + rain + '%</span>' +
+                '<span class="ww-fc-rain-track"><span style="width:' + rain + '%"></span></span>' +
+            '</div>' +
             '</div>';
     },
 
+    /* ---- status bar ---- */
+
+    _updateStatus: function () {
+        if (!this.$status || !this.$status.length) return;
+
+        var ts      = this._cachedTs();
+        var age     = ts ? Date.now() - ts : 0;
+        var isStale = age > 2 * 60 * 60 * 1000;
+        var ageText = '';
+        if (ts) {
+            ageText = age < 3600000
+                ? Math.round(age / 60000) + 'm ago'
+                : Math.round(age / 3600000) + 'h ago';
+        }
+
+        var cls = 'ww-status';
+        var msg;
+        if (!this.isOnline) {
+            cls += ' offline';
+            msg = ageText ? 'Cached ' + ageText + ' \u00B7 offline' : 'Cached \u00B7 offline';
+        } else if (isStale) {
+            cls += ' stale';
+            msg = ageText ? 'Stale \u00B7 ' + ageText : 'Stale';
+        } else if (ageText) {
+            msg = 'Updated ' + ageText;
+        } else {
+            msg = 'Live';
+        }
+
+        this.$status.attr('class', cls);
+        this.$status.html(
+            '<span class="ww-stat-msg">' + this._esc(msg) + '</span>' +
+            '<span class="ww-stat-dot">\u00B7</span>' +
+            '<span class="ww-stat-cd"></span>'
+        );
+    },
+
     _renderError: function (reason) {
-        this.$inner.html(
+        this.$hero.html(
             '<div class="ww-error">' +
                 '<div class="ww-error-title">Unable to load weather</div>' +
                 '<div class="ww-error-reason">' + this._esc(reason || '') + '</div>' +
             '</div>'
         );
+        this.$metrics.empty();
+        this.$forecast.empty();
+        this.$status.attr('class', 'ww-status offline');
         this.$status.html(
-            '<span>Last attempt: ' + this._esc(new Date().toLocaleTimeString()) + '</span>' +
-            '<span class="ww-stat-dot">·</span>' +
-            '<span>Retrying…</span>'
+            '<span>Last attempt ' + this._esc(new Date().toLocaleTimeString()) + '</span>' +
+            '<span class="ww-stat-dot">\u00B7</span>' +
+            '<span>Retrying\u2026</span>'
         );
-        this.$status.attr('class', 'weather-status offline');
+        this._fit();
     },
 
-    // ---- fetch + retry ----
+    /* ---- fetch + retry ---- */
 
     _fetch: function () {
         var self = this;
@@ -458,8 +577,8 @@ _WeatherWidget.prototype = {
         var MAX_AGE = 24 * 60 * 60 * 1000;
         if (this.cachedData && !this._cacheIsValid()) this._purgeCache();
 
-        if (!navigator.onLine) {
-            if (this.cachedData) this._paint();
+        if (!this.isOnline) {
+            if (this.cachedData) this._fill();
             else this._renderError('Offline');
             this._schedule(this.retryMs);
             return;
@@ -471,8 +590,7 @@ _WeatherWidget.prototype = {
         } else {
             query = encodeURIComponent(this.location);
         }
-        var url = 'https://wttr.in/' + query + '?format=j1&u=' + this.units +
-                  '&nonce=' + Date.now();
+        var url = '/weather-proxy/' + query + '?nonce=' + Date.now();
 
         var ctrl = new AbortController();
         var tid  = setTimeout(function () { ctrl.abort(); }, 30 * 1000);
@@ -490,7 +608,7 @@ _WeatherWidget.prototype = {
                 self._saveCache();
                 self.errCount = 0;
                 self.retryMs  = 30 * 1000;
-                self._paint();
+                self._fill();
 
                 var intervalMin = Math.max(5, Math.min(360,
                     self.cfg.update_interval_min || 45
@@ -504,7 +622,7 @@ _WeatherWidget.prototype = {
                     ? 'Request timed out'
                     : (e.message || 'Unknown error');
 
-                if (self.cachedData) self._paint();
+                if (self.cachedData) self._fill();
                 else self._renderError(msg);
 
                 self.retryMs = Math.min(
@@ -526,156 +644,472 @@ _WeatherWidget.prototype = {
 
         var due = Date.now() + ms;
         this._countdownTimer = setInterval(function () {
-            var el = document.getElementById('ww-stat-cd');
+            var el = self.$status ? self.$status.find('.ww-stat-cd')[0] : null;
             if (!el) return;
             var rem = Math.max(0, due - Date.now());
             if (rem === 0) {
-                el.textContent = 'Updating…';
+                el.textContent = 'Updating\u2026';
                 clearInterval(self._countdownTimer);
             } else {
-                var m = Math.floor(rem / 60000);
-                var s = Math.floor((rem % 60000) / 1000);
-                el.textContent = m + 'm ' + String(s).padStart(2, '0') + 's';
+                var mm = Math.floor(rem / 60000);
+                var ss = Math.floor((rem % 60000) / 1000);
+                el.textContent = 'refresh in ' + mm + 'm ' + String(ss).padStart(2, '0') + 's';
             }
         }, 1000);
     }
 };
 
-// ---- inject CSS exactly once ----
+/* ---- inject CSS exactly once ---- */
 
 (function injectWeatherCSS() {
     if (document.getElementById('ss-weather-css')) return;
     var style = document.createElement('style');
     style.id = 'ss-weather-css';
-    style.textContent =
-        '.post_weather { ' +
-            'width:100%; height:100%; display:flex; flex-direction:column; ' +
-            'background:var(--ww-bg, #0a0a0f); overflow:hidden; ' +
-        '} ' +
-        '.weather-root { ' +
-            'flex:1; display:flex; flex-direction:column; ' +
-            'justify-content:center; align-items:center; text-align:center; ' +
-            'padding:2% 3%; ' +
-        '} ' +
-        '.weather-inner { width:100%; } ' +
+    style.textContent = `
+.post_weather {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--ww-bg, #0a0a0f);
+    color: var(--ww-text, #f0f0f5);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1;
+}
+.post_weather *, .post_weather *::before, .post_weather *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        /* Location */
-        '.ww-location { ' +
-            'color:var(--ww-text); font-weight:800; ' +
-            'text-transform:uppercase; letter-spacing:0.04em; ' +
-            'font-size:clamp(18px, 10cqh, 80px); line-height:1.1; ' +
-        '} ' +
+/* ---- grid shell ---- */
 
-        /* Current row */
-        '.ww-current-row { ' +
-            'display:flex; align-items:center; justify-content:center; ' +
-            'gap:clamp(4px, 2%, 20px); margin:clamp(2px, 0.8cqh, 10px) 0; ' +
-        '} ' +
-        '.ww-emoji { font-size:clamp(22px, 13cqh, 100px); line-height:1; flex-shrink:0; } ' +
-        '.ww-temp { ' +
-            'color:var(--ww-text); font-weight:800; ' +
-            'font-size:clamp(28px, 18cqh, 140px); line-height:0.9; ' +
-            'letter-spacing:-0.02em; ' +
-        '} ' +
-        '.ww-desc { ' +
-            'color:var(--ww-accent); font-weight:500; ' +
-            'font-size:clamp(11px, 4cqh, 32px); text-transform:capitalize; ' +
-        '} ' +
+.weather-root {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    gap: 0.50em;
+    padding: 0.65em 0.75em 0.55em;
+    grid-template-areas: "header" "hero" "metrics" "forecast";
+    grid-template-rows: auto 1fr 1fr 1fr;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 18% 18%, rgba(255,255,255,0.20), transparent 24%),
+        radial-gradient(circle at 82% 82%, rgba(255,255,255,0.12), transparent 28%),
+        linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0));
+}
+.weather-root::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -3;
+    background:
+        linear-gradient(135deg, rgba(15,23,42,0.18), rgba(15,23,42,0.04)),
+        var(--ww-bg, #0a0a0f);
+}
+.weather-root::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    opacity: 0.72;
+    background:
+        radial-gradient(circle at 25% 30%, var(--ww-glow-a, rgba(200,184,255,0.22)), transparent 30%),
+        radial-gradient(circle at 75% 55%, var(--ww-glow-b, rgba(91,191,239,0.18)), transparent 32%);
+    filter: blur(0.18em);
+}
+.ww-atmosphere {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    font-size: 3.2em;
+    line-height: 1;
+    opacity: 0.16;
+    filter: blur(0.01em) saturate(1.35);
+    transform: rotate(-8deg);
+    pointer-events: none;
+}
+.ww-cond-clear { --ww-glow-a: rgba(255,214,128,0.34); --ww-glow-b: rgba(67,149,255,0.24); }
+.ww-cond-cloud { --ww-glow-a: rgba(203,213,225,0.26); --ww-glow-b: rgba(125,147,179,0.22); }
+.ww-cond-rain  { --ww-glow-a: rgba(91,191,239,0.32); --ww-glow-b: rgba(56,91,146,0.34); }
+.ww-cond-snow  { --ww-glow-a: rgba(241,245,249,0.34); --ww-glow-b: rgba(147,197,253,0.30); }
+.ww-cond-storm { --ww-glow-a: rgba(250,204,21,0.28); --ww-glow-b: rgba(139,92,246,0.36); }
+.ww-cond-fog   { --ww-glow-a: rgba(226,232,240,0.28); --ww-glow-b: rgba(148,163,184,0.26); }
+.ww-night      { --ww-glow-a: rgba(129,140,248,0.22); --ww-glow-b: rgba(30,64,175,0.34); }
+.ww-no-atmosphere .weather-root {
+    background: transparent;
+}
+.ww-no-atmosphere .weather-root::before {
+    background: var(--ww-bg, #0a0a0f);
+}
+.ww-no-atmosphere .weather-root::after {
+    display: none;
+}
+.ww-no-atmosphere .ww-atmosphere {
+    visibility: hidden;
+}
 
-        /* Hi / Lo / Rain */
-        '.ww-hilo-row { ' +
-            'display:flex; align-items:center; justify-content:center; ' +
-            'gap:clamp(8px, 2%, 24px); ' +
-        '} ' +
-        '.ww-hi { color:var(--ww-high); font-weight:700; ' +
-            'font-size:clamp(14px, 5cqh, 44px); } ' +
-        '.ww-hi-lo-sep { color:var(--ww-accent); opacity:0.5; ' +
-            'font-size:clamp(14px, 5cqh, 44px); } ' +
-        '.ww-lo { color:var(--ww-low); font-weight:700; ' +
-            'font-size:clamp(14px, 5cqh, 44px); } ' +
-        '.ww-rain-pill { font-weight:700; font-size:clamp(14px, 5cqh, 44px); ' +
-            'color:var(--ww-rain); transition:opacity 0.3s; } ' +
-        '.ww-rain-pill.no-rain { opacity:0.25; color:var(--ww-accent); } ' +
+/* Landscape: hero on the left, metrics + forecast stacked on the right. */
+.ww-orient-landscape .weather-root {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.82fr);
+    grid-template-areas:
+        "header   header"
+        "hero     metrics"
+        "hero     forecast";
+    grid-template-rows: auto 1fr 1fr;
+}
+.ww-orient-landscape.ww-no-metrics .weather-root {
+    grid-template-areas:
+        "header   header"
+        "hero     forecast";
+}
+.ww-orient-landscape.ww-no-forecast .weather-root {
+    grid-template-areas:
+        "header   header"
+        "hero     metrics";
+}
+.ww-orient-landscape.ww-no-forecast.ww-no-metrics .weather-root {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+        "header"
+        "hero";
+}
 
-        /* Metrics */
-        '.ww-metrics { ' +
-            'display:flex; gap:clamp(8px, 3%, 40px); flex-wrap:wrap; ' +
-            'justify-content:center; margin:clamp(4px, 1.5cqh, 16px) 0; ' +
-        '} ' +
-        '.ww-metric { display:flex; flex-direction:column; align-items:center; gap:1px; } ' +
-        '.ww-metric-label { ' +
-            'font-size:clamp(8px, 2cqh, 18px); font-weight:700; ' +
-            'text-transform:uppercase; letter-spacing:0.1em; ' +
-            'color:var(--ww-accent); opacity:0.65; ' +
-        '} ' +
-        '.ww-metric-value { ' +
-            'font-size:clamp(14px, 5cqh, 44px); font-weight:700; ' +
-            'color:var(--ww-text); letter-spacing:-0.02em; ' +
-        '} ' +
+/* Square: hero spans full width, metrics + forecast side by side below. */
+.ww-orient-square .weather-root {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+        "header   header"
+        "hero     hero"
+        "metrics  forecast";
+    grid-template-rows: auto 1fr 1fr;
+}
+.ww-orient-square.ww-no-metrics .weather-root {
+    grid-template-areas:
+        "header   header"
+        "hero     hero"
+        "forecast forecast";
+}
+.ww-orient-square.ww-no-forecast .weather-root {
+    grid-template-areas:
+        "header   header"
+        "hero     hero"
+        "metrics  metrics";
+}
+.ww-orient-square.ww-no-forecast.ww-no-metrics .weather-root {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+        "header"
+        "hero";
+}
 
-        /* Forecast */
-        '.ww-forecast { width:100%; margin-top:clamp(6px, 1.5cqh, 18px); } ' +
-        '.ww-fc-label { ' +
-            'font-size:clamp(9px, 2cqh, 18px); font-weight:700; ' +
-            'text-transform:uppercase; letter-spacing:0.1em; ' +
-            'color:var(--ww-accent); opacity:0.65; margin-bottom:clamp(3px, 0.6cqh, 8px); ' +
-        '} ' +
-        '.ww-fc-days { ' +
-            'display:flex; gap:clamp(6px, 2%, 20px); justify-content:center; ' +
-            'flex-wrap:wrap; ' +
-        '} ' +
-        '.ww-fc-day { ' +
-            'flex:1; min-width:80px; max-width:200px; ' +
-            'background:var(--ww-surface); border:1px solid var(--ww-border); ' +
-            'border-radius:clamp(6px, 1.5%, 14px); ' +
-            'padding:clamp(6px, 1.2%, 16px) clamp(8px, 2%, 20px); ' +
-            'display:flex; flex-direction:column; align-items:center; gap:2px; ' +
-        '} ' +
-        '.ww-fc-date { ' +
-            'font-size:clamp(9px, 2.2cqh, 20px); font-weight:700; ' +
-            'text-transform:uppercase; letter-spacing:0.08em; ' +
-            'color:var(--ww-accent); opacity:0.7; ' +
-        '} ' +
-        '.ww-fc-emoji { font-size:clamp(16px, 6cqh, 56px); line-height:1.2; } ' +
-        '.ww-fc-temp { ' +
-            'font-size:clamp(12px, 3.5cqh, 32px); font-weight:700; ' +
-            'letter-spacing:-0.02em; ' +
-        '} ' +
-        '.ww-fc-hi { color:var(--ww-high); } ' +
-        '.ww-fc-sep { color:var(--ww-accent); opacity:0.5; margin:0 0.15em; } ' +
-        '.ww-fc-lo { color:var(--ww-low); } ' +
-        '.ww-fc-rain { font-size:clamp(10px, 2.5cqh, 24px); font-weight:600; ' +
-            'color:var(--ww-rain); } ' +
-        '.ww-fc-rain.no-rain { opacity:0.25; color:var(--ww-accent); } ' +
+/* Portrait: single column, vertically stacked (default template). */
+.ww-orient-portrait.ww-no-forecast.ww-no-metrics .weather-root {
+    grid-template-areas: "header" "hero";
+}
 
-        /* Status bar */
-        '.weather-status { ' +
-            'font-size:clamp(7px, 1.6cqh, 16px); ' +
-            'color:var(--ww-accent); opacity:0.5; ' +
-            'display:flex; gap:0.5em; justify-content:center; padding:1% 0; ' +
-        '} ' +
-        '.weather-status.stale { color:#ffb347; opacity:0.8; } ' +
-        '.weather-status.offline { color:#ff6b6b; opacity:0.8; } ' +
-        '.ww-stat-dot { opacity:0.4; } ' +
+/* ---- header ---- */
 
-        /* Error */
-        '.ww-error { text-align:center; } ' +
-        '.ww-error-title { ' +
-            'font-size:clamp(14px, 5cqh, 48px); font-weight:700; ' +
-            'color:#ff6b6b; ' +
-        '} ' +
-        '.ww-error-reason { ' +
-            'font-size:clamp(10px, 3cqh, 28px); ' +
-            'color:var(--ww-accent); opacity:0.6; margin-top:4px; ' +
-        '} ' +
+.ww-header {
+    grid-area: header;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.50em;
+    min-width: 0;
+}
+.ww-location {
+    font-weight: 800;
+    font-size: 1.50em;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 0 1 auto;
+}
+.ww-desc {
+    color: var(--ww-accent);
+    font-size: 0.95em;
+    font-weight: 800;
+    padding: 0.38em 0.6em;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+    flex: 1 1 auto;
+    min-width: 0;
+}
 
-        /* Container queries for zone-awareness */
-        '.post_weather { container-type:size; } ' +
+/* ---- hero (current conditions) ---- */
 
-        /* Very small — hide secondary in compact */
-        '@container (max-height: 120px) { ' +
-            '.ww-desc { display:none; } ' +
-        '} ';
+.ww-hero {
+    grid-area: hero;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.30em;
+    min-width: 0;
+    min-height: 0;
+}
+.ww-emoji {
+    font-size: 2.0em;
+    line-height: 1;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0.1em 0.22em rgba(0,0,0,0.30));
+}
+.ww-hero-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.12em;
+    min-width: 0;
+}
+.ww-temp {
+    font-weight: 800;
+    font-size: 2.8em;
+    line-height: 0.82;
+    letter-spacing: -0.06em;
+    white-space: nowrap;
+    text-shadow: 0 0.05em 0.18em rgba(0,0,0,0.26);
+}
+.ww-condition {
+    max-width: 12em;
+    color: var(--ww-accent);
+    font-size: 0.85em;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ww-hilo {
+    display: flex;
+    align-items: baseline;
+    gap: 0.18em;
+    font-size: 0.82em;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.ww-hilo span {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2em 0.38em;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.16);
+    border: 1px solid rgba(255,255,255,0.10);
+}
+.ww-hi  { color: var(--ww-high); }
+.ww-lo  { color: var(--ww-low); }
+.ww-rain { color: var(--ww-rain); }
+.ww-rain.zero { opacity: 0.3; }
 
+/* ---- metrics ---- */
+
+.ww-metrics {
+    grid-area: metrics;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    gap: 0.35em;
+    min-width: 0;
+}
+.ww-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1 1 calc(33.333% - 0.35em);
+    min-width: 0;
+    gap: 0.10em;
+    padding: 0.45em 0.60em;
+    border: 0.035em solid rgba(255,255,255,0.13);
+    border-radius: 0.38em;
+    background: rgba(255,255,255,0.085);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0.16em 0.45em rgba(0,0,0,0.12);
+    backdrop-filter: blur(0.2em);
+}
+.ww-metric-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.65em;
+    font-weight: 700;
+    color: var(--ww-accent);
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+.ww-metric-value {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1.05em;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+/* ---- forecast ---- */
+
+.ww-forecast {
+    grid-area: forecast;
+    display: flex;
+    gap: 0.35em;
+    justify-content: center;
+    align-content: center;
+    min-width: 0;
+}
+.ww-fc-day {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.12em;
+    padding: 0.45em 0.60em;
+    background: linear-gradient(160deg, rgba(255,255,255,0.13), rgba(255,255,255,0.055));
+    border: 0.035em solid rgba(255,255,255,0.14);
+    border-radius: 0.45em;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0.18em 0.55em rgba(0,0,0,0.16);
+    backdrop-filter: blur(0.2em);
+}
+.ww-fc-date {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.65em;
+    font-weight: 700;
+    color: var(--ww-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+.ww-fc-emoji { font-size: 1.50em; line-height: 1; }
+.ww-fc-temps {
+    font-size: 1.05em;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+.ww-fc-hi  { color: var(--ww-high); }
+.ww-fc-lo  { color: var(--ww-low); }
+.ww-fc-sep { color: var(--ww-accent); opacity: 0.45; margin: 0 0.15em; }
+.ww-fc-rain {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.14em;
+    font-size: 0.60em;
+    font-weight: 600;
+    color: var(--ww-rain);
+    white-space: nowrap;
+}
+.ww-fc-rain-track {
+    display: block;
+    height: 0.48em;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.14);
+}
+.ww-fc-rain-track span {
+    display: block;
+    height: 100%;
+    min-width: 0.18em;
+    border-radius: inherit;
+    background: var(--ww-rain);
+    box-shadow: 0 0 0.4em var(--ww-rain);
+}
+.ww-fc-rain.zero { opacity: 0.3; }
+.ww-fc-rain.zero .ww-fc-rain-track span { min-width: 0; }
+
+/* ---- status bar ---- */
+
+.ww-status {
+    position: absolute;
+    right: 0.52em;
+    bottom: 0.34em;
+    z-index: 2;
+    font-size: 0.58em;
+    color: var(--ww-text);
+    opacity: 0.62;
+    display: flex;
+    gap: 0.36em;
+    justify-content: center;
+    align-items: center;
+    max-width: calc(100% - 1.44em);
+    padding: 0.42em 0.7em;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px;
+    background: rgba(0,0,0,0.20);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    white-space: nowrap;
+    overflow: hidden;
+}
+.ww-status.stale   { color: #ffb347; opacity: 0.85; }
+.ww-status.offline { color: #ff6b6b; opacity: 0.85; }
+.ww-stat-dot { opacity: 0.4; }
+
+/* ---- error ---- */
+
+.ww-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25em;
+    text-align: center;
+}
+.ww-error-title  { font-size: 2.2em; font-weight: 700; color: #ff6b6b; }
+.ww-error-reason { font-size: 1.0em; color: var(--ww-accent); opacity: 0.6; }
+
+/* ---- user visibility toggles ---- */
+
+.ww-no-forecast .ww-forecast { display: none; }
+.ww-no-metrics  .ww-metrics  { display: none; }
+.ww-no-sun .ww-metric-sun    { display: none; }
+    `;
     document.head.appendChild(style);
 })();
+
+/* ---- public API ---- */
+
+return {
+    render: function (zone, data) {
+        var cfg = data.content || {};
+
+        $(zone).children('.post_weather').each(function () {
+            var old = $(this).data('weather-widget');
+            if (old && typeof old.destroy === 'function') old.destroy();
+        }).remove();
+
+        var $container = $('<div class="post_weather"></div>').prependTo(zone);
+
+        var visClasses = [];
+        if (cfg.show_forecast === false)   visClasses.push('ww-no-forecast');
+        if (cfg.show_metrics === false)    visClasses.push('ww-no-metrics');
+        if (cfg.show_sun_times === false)  visClasses.push('ww-no-sun');
+        if (cfg.show_atmosphere === false) visClasses.push('ww-no-atmosphere');
+        if (visClasses.length) $container.addClass(visClasses.join(' '));
+
+        var widget = new _WeatherWidget($container[0], zone, cfg);
+        $container.data('weather-widget', widget);
+
+        return $container;
+    }
+};
+
+})()

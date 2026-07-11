@@ -29,6 +29,27 @@
                         <div class="form-text">Leave both lat &amp; lon blank to use the place name.</div>
                     </div>
                 </div>
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                        <label class="form-label mb-0" for="weather-map-picker">Coordinate picker</label>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Weather map controls">
+                            <button type="button" class="btn btn-outline-secondary" id="weather-map-zoom-out" title="Zoom out">-</button>
+                            <button type="button" class="btn btn-outline-secondary" id="weather-map-zoom-in" title="Zoom in">+</button>
+                            <button type="button" class="btn btn-outline-secondary" id="weather-map-locate" title="Use this browser's location">Use my location</button>
+                            <button type="button" class="btn btn-outline-secondary" id="weather-map-clear" title="Use the place name instead">Clear</button>
+                        </div>
+                    </div>
+                    <div class="weather-map-picker" id="weather-map-picker" role="application" aria-label="Click map to choose weather coordinates">
+                        <div class="weather-map-tiles" id="weather-map-tiles"></div>
+                        <div class="weather-map-marker" id="weather-map-marker" aria-hidden="true"></div>
+                        <div class="weather-map-help">Click the map to pin exact coordinates</div>
+                        <div class="weather-map-attribution">
+                            &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>
+                            &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>
+                        </div>
+                    </div>
+                    <div class="form-text">Coordinates override the place name and are useful when wttr.in geocoding picks the wrong location.</div>
+                </div>
             </div>
         </div>
 
@@ -149,18 +170,81 @@
                            {{ 'checked' if show_metrics|default(True) else '' }} />
                     <label class="form-check-label" for="weather-show-metrics">Show metrics (feels like, humidity, wind, UV)</label>
                 </div>
-                <div class="form-check form-switch mb-0">
+                <div class="form-check form-switch mb-2">
                     <input class="form-check-input" type="checkbox" role="switch"
                            id="weather-show-sun" name="show_sun_times" value="1"
                            {{ 'checked' if show_sun_times|default(True) else '' }} />
                     <label class="form-check-label" for="weather-show-sun">Show sunrise &amp; sunset</label>
+                </div>
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                           id="weather-show-atmosphere" name="show_atmosphere" value="1"
+                           {{ 'checked' if show_atmosphere|default(True) else '' }} />
+                    <label class="form-check-label" for="weather-show-atmosphere">Use atmospheric weather background</label>
+                    <div class="form-text">Adds weather-aware gradients and the large ambient condition icon.</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script type="text/javascript" defer>
+<style>
+.weather-map-picker {
+    position: relative;
+    height: 260px;
+    overflow: hidden;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    background: #dbeafe;
+    cursor: crosshair;
+    user-select: none;
+}
+.weather-map-tiles {
+    position: absolute;
+    inset: 0;
+}
+.weather-map-tiles img {
+    position: absolute;
+    width: 256px;
+    height: 256px;
+    max-width: none;
+}
+.weather-map-marker {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    margin: -18px 0 0 -9px;
+    border: 3px solid #dc3545;
+    border-radius: 50% 50% 50% 0;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    transform: rotate(-45deg);
+    display: none;
+    pointer-events: none;
+}
+.weather-map-marker::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: #dc3545;
+}
+.weather-map-help,
+.weather-map-attribution {
+    position: absolute;
+    z-index: 2;
+    padding: 0.25rem 0.45rem;
+    border-radius: 0.35rem;
+    background: rgba(255,255,255,0.88);
+    color: #212529;
+    font-size: 0.75rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+}
+.weather-map-help { left: 0.5rem; top: 0.5rem; }
+.weather-map-attribution { right: 0.5rem; bottom: 0.5rem; }
+</style>
+
+<script type="text/javascript">
 $(function() {
     // Sync color picker values with their text readouts.
     ['bg', 'text', 'accent', 'high', 'low', 'rain'].forEach(function(name) {
@@ -168,5 +252,164 @@ $(function() {
         var $txt   = $('#weather-' + name + '-txt');
         $color.on('input', function() { $txt.val($color.val()); });
     });
+
+    var map = document.getElementById('weather-map-picker');
+    var tiles = document.getElementById('weather-map-tiles');
+    var marker = document.getElementById('weather-map-marker');
+    var $lat = $('#weather-lat');
+    var $lon = $('#weather-lon');
+    var tileSize = 256;
+    var zoom = hasCoords() ? 8 : 3;
+    var center = readCoords() || {lat: 51.5074, lon: -0.1278};
+
+    function hasCoords() {
+        return $lat.val() !== '' && $lon.val() !== '' && readCoords() !== null;
+    }
+
+    function readCoords() {
+        var lat = parseFloat($lat.val());
+        var lon = parseFloat($lon.val());
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+        if (lat < -85 || lat > 85 || lon < -180 || lon > 180) return null;
+        return {lat: lat, lon: lon};
+    }
+
+    function lonToX(lon, z) {
+        return (lon + 180) / 360 * tileSize * Math.pow(2, z);
+    }
+
+    function latToY(lat, z) {
+        var s = Math.sin(lat * Math.PI / 180);
+        return (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * tileSize * Math.pow(2, z);
+    }
+
+    function xToLon(x, z) {
+        return x / (tileSize * Math.pow(2, z)) * 360 - 180;
+    }
+
+    function yToLat(y, z) {
+        var n = Math.PI - 2 * Math.PI * y / (tileSize * Math.pow(2, z));
+        return Math.atan(Math.sinh(n)) * 180 / Math.PI;
+    }
+
+    function setCoords(lat, lon) {
+        lat = Math.max(-85, Math.min(85, lat));
+        lon = Math.max(-180, Math.min(180, lon));
+        $lat.val(lat.toFixed(5));
+        $lon.val(lon.toFixed(5));
+        center = {lat: lat, lon: lon};
+        renderMap();
+    }
+
+    function renderMap() {
+        if (!map || !tiles || !marker) return;
+        var rect = map.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        tiles.innerHTML = '';
+        var scaleTiles = Math.pow(2, zoom);
+        var centerX = lonToX(center.lon, zoom);
+        var centerY = latToY(center.lat, zoom);
+        var startX = Math.floor((centerX - rect.width / 2) / tileSize);
+        var endX = Math.floor((centerX + rect.width / 2) / tileSize);
+        var startY = Math.floor((centerY - rect.height / 2) / tileSize);
+        var endY = Math.floor((centerY + rect.height / 2) / tileSize);
+
+        for (var x = startX; x <= endX; x++) {
+            for (var y = startY; y <= endY; y++) {
+                if (y < 0 || y >= scaleTiles) continue;
+                var wrappedX = ((x % scaleTiles) + scaleTiles) % scaleTiles;
+                var img = document.createElement('img');
+                img.alt = '';
+                img.decoding = 'async';
+                img.src = 'https://a.basemaps.cartocdn.com/rastertiles/voyager/' + zoom + '/' + wrappedX + '/' + y + '.png';
+                img.style.left = Math.round(x * tileSize - centerX + rect.width / 2) + 'px';
+                img.style.top = Math.round(y * tileSize - centerY + rect.height / 2) + 'px';
+                tiles.appendChild(img);
+            }
+        }
+
+        var coords = readCoords();
+        if (coords) {
+            marker.style.left = Math.round(lonToX(coords.lon, zoom) - centerX + rect.width / 2) + 'px';
+            marker.style.top = Math.round(latToY(coords.lat, zoom) - centerY + rect.height / 2) + 'px';
+            marker.style.display = 'block';
+        } else {
+            marker.style.display = 'none';
+        }
+    }
+
+    $('#weather-map-zoom-in').on('click', function() {
+        zoom = Math.min(15, zoom + 1);
+        renderMap();
+    });
+    $('#weather-map-zoom-out').on('click', function() {
+        zoom = Math.max(2, zoom - 1);
+        renderMap();
+    });
+
+    /* ---- drag panning (mouse + touch) ---- */
+    var dragging = false;
+    var dragLastX = 0, dragLastY = 0;
+
+    function startDrag(e) {
+        if (e.target.closest && (e.target.closest('button') || e.target.closest('a'))) return;
+        e.preventDefault();
+        dragging = true;
+        var pt = e.touches ? e.touches[0] : e;
+        dragLastX = pt.clientX;
+        dragLastY = pt.clientY;
+        map.style.cursor = 'grabbing';
+    }
+    function moveDrag(e) {
+        if (!dragging) return;
+        var pt = e.touches ? e.touches[0] : e;
+        var dx = pt.clientX - dragLastX;
+        var dy = pt.clientY - dragLastY;
+        dragLastX = pt.clientX;
+        dragLastY = pt.clientY;
+        var pixelsPerDegree = tileSize * Math.pow(2, zoom) / 360;
+        center.lon -= dx / pixelsPerDegree;
+        center.lat += dy / pixelsPerDegree;
+        center.lat = Math.max(-85, Math.min(85, center.lat));
+        renderMap();
+    }
+    function stopDrag() {
+        if (!dragging) return;
+        dragging = false;
+        map.style.cursor = 'crosshair';
+    }
+    $(map).on('mousedown touchstart', startDrag);
+    $(document).on('mousemove touchmove', moveDrag);
+    $(document).on('mouseup touchend', stopDrag);
+    $('#weather-map-clear').on('click', function() {
+        $lat.val('');
+        $lon.val('');
+        marker.style.display = 'none';
+        renderMap();
+    });
+    $('#weather-map-locate').on('click', function() {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            zoom = Math.max(zoom, 11);
+            setCoords(pos.coords.latitude, pos.coords.longitude);
+        });
+    });
+    $(map).on('click', function(e) {
+        if (e.target.closest && e.target.closest('a')) return;
+        var rect = map.getBoundingClientRect();
+        var centerX = lonToX(center.lon, zoom);
+        var centerY = latToY(center.lat, zoom);
+        var x = centerX + e.clientX - rect.left - rect.width / 2;
+        var y = centerY + e.clientY - rect.top - rect.height / 2;
+        setCoords(yToLat(y, zoom), xToLon(x, zoom));
+    });
+    $lat.add($lon).on('change input', function() {
+        var coords = readCoords();
+        if (coords) center = coords;
+        renderMap();
+    });
+    $(window).on('resize', renderMap);
+    renderMap();
 });
 </script>
