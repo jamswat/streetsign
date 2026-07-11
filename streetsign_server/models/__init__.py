@@ -109,6 +109,16 @@ def migrations(dbfile=False):
             migrator.add_column('Post', 'recurrence', post_recurrence)
         )
 
+    # Migration 6: add index for post polling query performance
+    post_indexes = DB.get_indexes('Post')
+    post_index_names = [x.name for x in post_indexes]
+    if 'post_poll_status_published_active' not in post_index_names:
+        logger.info('running migration 6 - add post polling index')
+        DB.execute_sql(
+            'CREATE INDEX "post_poll_status_published_active" '
+            'ON "Post" ("status", "published", "active_start", "active_end")'
+        )
+
 
 __all__ = ['DB', 'user_login', 'user_logout', 'get_logged_in_user',
            'User', 'Group', 'Post', 'Feed', 'FeedPermission', 'UserGroup',

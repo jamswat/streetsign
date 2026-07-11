@@ -191,6 +191,8 @@ You may wish to set up bind mounts for these instead, or also configure for exte
 | `HOST`           | `0.0.0.0`                            | Bind address inside the container                |
 | `DATABASE_FILE`  | `/data/database.db`                  | SQLite path (already volume-mounted in image)    |
 | `LOG_LEVEL`      | `INFO`                               | Logging level: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+| `WAITRESS_THREADS` | `8`                                 | Number of Waitress worker threads                |
+| `WAITRESS_CHANNEL_TIMEOUT` | `30`                               | Seconds before an idle client connection is dropped |
 
 
 ## Configuration

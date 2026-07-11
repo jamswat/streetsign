@@ -21,7 +21,8 @@ import logging
 
 __HOST__ = environ.get('HOST', '0.0.0.0')
 __PORT__ = int(environ.get('PORT', '5000'))
-__THREADS__ = 8 # (for waitress, only)
+__THREADS__ = int(environ.get('WAITRESS_THREADS', '8'))
+__CHANNEL_TIMEOUT__ = int(environ.get('WAITRESS_CHANNEL_TIMEOUT', '30'))
 
 # Initialise unicode:
 
@@ -32,7 +33,7 @@ logging.basicConfig(
     level=environ.get('LOG_LEVEL', 'INFO'),
     format='%(asctime)s %(levelname)s [%(name)s] %(message)s',
 )
-logging.getLogger('waitress').setLevel(logging.INFO)
+logging.getLogger('waitress').setLevel(logging.WARNING)
 
 # Load the app:
 
@@ -52,7 +53,8 @@ if __name__ == '__main__':
             print("'Production' Server with Waitress.")
             print("Press <Ctrl-C> to stop")
             from waitress import serve
-            serve(app, host=__HOST__, port=__PORT__, threads=__THREADS__)
+            serve(app, host=__HOST__, port=__PORT__, threads=__THREADS__,
+                  channel_timeout=__CHANNEL_TIMEOUT__)
         elif sys.argv[1] == 'profiler':
             print("Loading dev server with profiling on.")
             print("Press <Ctrl-C> to stop")

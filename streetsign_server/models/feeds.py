@@ -340,6 +340,11 @@ class Post(DBModel):
     #: Format: {"enabled": true, "days": ["mon","wed","fri"]}
     recurrence = TextField(default='{"enabled":false,"days":[]}')
 
+    class Meta:
+        indexes = (
+            (('status', 'published', 'active_start', 'active_end'), False),
+        )
+
     def __repr__(self):
         return f'<Post:{self.type}:{self.content[0:22]}>'
 
