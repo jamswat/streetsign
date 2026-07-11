@@ -12,11 +12,11 @@ and git for downloading streetsign itself.
 
 On Debian/Ubuntu Server, this will be::
 
-    sudo apt-get install python-pip python-dev imagemagick git
+    sudo apt-get install python3-pip python3-dev imagemagick git
 
-On CentOS 6.7, its::
+On CentOS/RHEL 8+, this is::
 
-    sudo yum install python-devel python-pip ImageMagick git
+    sudo yum install python3-devel python3-pip ImageMagick git
 
 User/Group
 ----------
@@ -88,20 +88,19 @@ And then you can ``exit`` from the streetsign user.
 Configure streetsign to start on system-boot
 --------------------------------------------
 
-Unfortunately, this is different on practically every linux distribution, and even different
-between Ubuntu 14 and Ubuntu 15, for instance.
+Unfortunately, this is different on practically every linux distribution.
 
 There are startup files in the streetsign source, in the ``deployment`` folder.
 
-systemd systems (Ubuntu 15.x, CentOS 7, Debian Jessie, etc)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+systemd systems (Ubuntu 16.04+, CentOS/RHEL 7+, Debian 8+, etc)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you're on a systemd based linux (Such as Ubuntu 15.x),
-then copy the ``deployment/systemd/streetsign.service`` file to ``/var/systemd/system``,
+On a systemd-based Linux distribution,
+copy the ``deployment/systemd/streetsign.service`` file to ``/etc/systemd/system``,
 edit it to make sure it's all correct for your system (which it should be, if you've followed
 the above instructions)::
 
-    sudo cp /srv/streetsign/deployment/systemd/streetsign.service /var/systemd/system/
+    sudo cp /srv/streetsign/deployment/systemd/streetsign.service /etc/systemd/system/
 
 And then tell enable the service::
 
@@ -124,8 +123,11 @@ Getting Streetsign on to Port 80
 If streetsign is going to be 'public facing', and so you want it to be running on the regular
 HTTP port 80, or over HTTPS, then it's best to run a 'reverse proxy' in front of it.
 
-Static assets are served in-process by WhiteNoise_, so nginx or Apache is only
-needed for SSL termination and URL routing — not for static file serving.
+In-process static file serving via WhiteNoise_ means nginx is not required
+for serving static assets — requests for static files should simply be
+proxied to the app alongside everything else. However, if you do serve
+static files directly through nginx, ensure the ``expires`` and ``alias``
+directives match your deployment paths.
 
 nginx
 ~~~~~
@@ -159,7 +161,7 @@ the default welcome page, turn that off::
 
 And of course, restart nginx::
 
-    sudo service nginx restart
+    sudo systemctl restart nginx
 
 Docker
 ~~~~~~
@@ -170,7 +172,7 @@ tagged release — no local build required:
 
 .. code-block:: bash
 
-    docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.0.2
+    docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.1.0
 
 Or with docker-compose (pulls the image automatically):
 

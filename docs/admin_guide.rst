@@ -7,7 +7,7 @@ deployment (for real live production usage) check the :doc:`deployment` page.
 Installation
 ------------
 
-StreetSign requires python 3.9+, imagemagick (to generate thumbnails).  If you
+StreetSign requires python 3.10+, imagemagick (to generate thumbnails).  If you
 are installing on a fresh server, you may need to install ``python3-headers``
 or ``python3-dev`` or whatever your distribution calls it.
 
@@ -129,7 +129,7 @@ automatically do this once a minute, but you can also trigger it manually
 - ``HTTP POST`` to ``/external_data_sources/``
 
 If you are on a public network, and worry about DOS issues, then realistically,
-you should be running behind a revese proxy such as nginx.  With nginx you can
+you should be running behind a reverse proxy such as nginx.  With nginx you can
 add restrictions on what URLS are accessble by any IP address, so you can limit
 these addresses to only be accessed by the machine with cron, for instance.
 

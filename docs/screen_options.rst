@@ -6,7 +6,7 @@ Screen Design
 A "Screen" output is actually a URL on the streetsign server which you can point
 a browser on client machines at.
 
-Three rendering engines are available, selected per client alias:
+Four rendering engines are available, selected per client alias:
 
 - **basic** (``/screens/basic/...``) — CSS3 opacity/translateX transitions for
   modern browsers
@@ -14,6 +14,8 @@ Three rendering engines are available, selected per client alias:
   scroll for low-powered devices (Raspberry Pi, etc.)
 - **mobile** (``/screens/mobile/...``) — lightweight vanilla CSS for phones and
   tablets
+- **overview** (``/screens/overview/...``) — compact static summary of all
+  active posts, useful for dashboard monitors and admin overview displays
 
 Backgrounds
 -----------

@@ -2,7 +2,7 @@ Welcome to StreetSign's documentation!
 ======================================
 
 `StreetSign <https://github.com/jamswat/streetsign>`_ is a Digital
-Signage System, build using `Python`_, `Flask`_, and a bunch of :doc:`wonderful libraries<external_libs>`,
+Signage System, built using `Python`_, `Flask`_, and a bunch of :doc:`wonderful libraries<external_libs>`,
 designed to be as simple and friendly as possible.
 
 .. image:: images/screen_designer.png

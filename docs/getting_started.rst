@@ -144,12 +144,13 @@ and a 4:3 point of sales screen) you will want to design different layouts.
 You can set up specific screens for certain areas, say a dining room screen,
 a lounge area screen, a welcome desk one, and so on.
 
-Three rendering engines are available, selected per client alias:
+Four rendering engines are available, selected per client alias:
 
 - **basic** — CSS3 transitions for modern browsers
 - **notrans** — JavaScript ``requestAnimationFrame`` scroll for low-powered
   devices (Raspberry Pi, etc.)
 - **mobile** — lightweight vanilla CSS for phones and tablets
+- **overview** — compact static summary of all active posts
 
 
 Screen Zones
@@ -180,8 +181,8 @@ shows the drinks ones, say.
 Timing things
 ~~~~~~~~~~~~~
 
-It's often convinent, especially at conferences, to have announcments which
-appear only at certain times of day, such as "what's on next", or "which band
+It's often convenient, especially at conferences, to have announcements
+which appear only at certain times of day, such as "what's on next", or "which band
 is playing in which venue this evening".
 
 Post Lifetime
@@ -201,7 +202,7 @@ kids!" message, which lasts the whole length of the conference, but is only
 displayed between 12:30 and 1:30.
 
 You can set the time limits for each post to be either "only show this post
-during certain times" (useful for dinner time annoucements, say) or to "Don't
+during certain times" (useful for dinner time announcements, say) or to "Don't
 show during these specific times" (useful for frivolous/jokey slides which you
 don't want up during reflection or meditation times, say.
 
@@ -266,14 +267,14 @@ on a closed network without internet access,
 then you'll also need to set up some kind of NTP server too.*
 
 You can customize how the DATE or TIME is formatted using standard
-strftime `style formatting tags <https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior>`_ after the word DATE or TIME Eg:
+strftime `style formatting tags <https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior>`_ after the word DATE or TIME Eg:
 
 ``The month is: %%DATE%B%%`` (will show "July" only)
 
 ``<h1>%%DATE%B</br>%Y%%</h1>`` (will show "July" and then "2015" on the next line)
 
 It's not recommended to put the current second, as due to the current
-design, that will only get updated infreqently, and has no way of guarenteing being right.
+design, that will only get updated infrequently, and has no way of guaranteeing being right.
 
 Post Sizing/Scaling
 ~~~~~~~~~~~~~~~~~~~

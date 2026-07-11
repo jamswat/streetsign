@@ -1,7 +1,7 @@
 StreetSign Developer Documentation
 ==================================
 
-This will contain the documentation for developers, either working
+This contains the documentation for developers, either working
 *on* StreetSign, or making plugins/other software to work with it.
 
 It's assumed that you're reasonably familiar with StreetSign the end user web
@@ -128,9 +128,14 @@ Other files in the root directory
 Starting with the file layout:
 
 ``run.py`` - run the basic development web server, Waitress stand alone
-             WSGI server, or with Werkzeug profiler. The development server's
-             interactive debugger is off by default (opt in with
-             ``FLASK_DEBUG=1``, which also restricts the bind to 127.0.0.1).
+              WSGI server, or with Werkzeug profiler. The development server's
+              interactive debugger is off by default (opt in with
+              ``FLASK_DEBUG=1``, which also restricts the bind to 127.0.0.1).
+              Usage::
+
+                  ./run.py              # development server (no debugger)
+                  ./run.py waitress     # production server
+                  ./run.py profiler     # dev server with Werkzeug profiling
 
 ``setup.sh`` - downloads all needed python packages, including virtualenv,
                and installs them into a local virtualenv called, very
@@ -169,3 +174,33 @@ How Different Libraries are used
 --------------------------------
 
 Full Reference: :doc:`external_libs`
+
+Testing & CI
+------------
+
+Tests are written with ``pytest`` and live in the ``tests/`` directory.
+Run them with::
+
+    .virtualenv/bin/python -m pytest tests/
+
+Code quality is checked with ``pylint``::
+
+    .virtualenv/bin/python -m pylint --fail-under=9.0 streetsign_server/
+
+Dependencies are audited for known CVEs with ``pip-audit``::
+
+    pip-audit -r requirements.txt
+
+Continuous Integration
+~~~~~~~~~~~~~~~~~~~~~~
+
+A GitHub Actions workflow (``.github/workflows/tests.yml``) runs these
+checks automatically on every push and pull request to ``master``:
+
+- **test** — ``pytest`` on Python 3.10 and 3.12 (matrix)
+- **lint** — ``pylint --fail-under=9.0`` on Python 3.12
+- **audit** — ``pip-audit`` for known vulnerabilities
+
+A separate workflow (``.github/workflows/docker-publish.yml``) builds
+and publishes a Docker image to ``ghcr.io/jamswat/streetsign`` whenever
+a tag matching ``v*`` is pushed.

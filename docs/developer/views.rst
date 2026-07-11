@@ -6,8 +6,8 @@ The views (HTTP end points) of the web interface, and the Screen Displays.
 .. automodule:: streetsign_server.views
    :members:
 
-Utilites
---------
+Utilities
+---------
 
 .. automodule:: streetsign_server.views.utils
    :members:

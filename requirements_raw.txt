@@ -13,7 +13,7 @@ bleach
 #importlib
 
 # for passwords:
-bcrypt<5
+bcrypt
 
 # for parsing date-related formulae:
 simpleeval
