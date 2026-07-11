@@ -163,7 +163,17 @@ def post_form_intake(post, form, editor):
 
     post.time_restrictions_show = \
         form.get('times_mode', 'do_not_show') == 'only_show'
-    post.time_restrictions = form.get('time_restrictions_json', '[]')
+
+    # Validate time_restrictions as JSON before storing so the field can
+    # never hold an arbitrary attacker-supplied string that later gets
+    # rendered into a <script> block in the post editor. A round-trip
+    # through json.loads/json.dumps guarantees the stored value is valid
+    # JSON; the template re-encodes it with |tojson when emitting.
+    raw_restrictions = form.get('time_restrictions_json', '[]')
+    try:
+        post.time_restrictions = json.dumps(json.loads(raw_restrictions))
+    except (ValueError, TypeError):
+        post.time_restrictions = '[]'
 
     # Recurrence (day-of-week scheduling):
     recurrence_enabled = getbool('recurrence_enabled', False, form=form)

@@ -130,7 +130,7 @@ def feedpage(feedid):
         user = user_session.get_user()
     except user_session.NotLoggedIn:
         user = User()
-    except Exception:
+    except Feed.DoesNotExist:
         flash('invalid feed id! (' + str(feedid) + ')')
         return redirect(url_for('feeds'))
 
@@ -422,6 +422,13 @@ def postpage(postid):
         flash(f'Sorry! Post id:{postid} not found!')
         return redirect(url_for('posts'))
 
+    # Enforce feed-level read permission so a logged-in user with no
+    # permission on this feed cannot view or edit posts in it. (POST is
+    # additionally guarded by if_i_cant_write_then_i_quit below.)
+    if not (post.feed.user_can_read(user) or post.feed.user_can_write(user)):
+        flash("Sorry! You don't have permission to view this post!")
+        return redirect(url_for('posts'))
+
     if request.method == 'POST':
         try:
             # check for write permission, and if the post is
@@ -563,7 +570,12 @@ def posts_housekeeping():
 def posts_bulk_delete():
     ''' delete multiple posts at once via AJAX '''
     user = user_session.get_user()
-    post_ids = request.json.get('post_ids', [])
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify({'error': 'Expected JSON object with post_ids list.'}), 400
+    post_ids = body.get('post_ids', [])
+    if not isinstance(post_ids, list):
+        return jsonify({'error': 'post_ids must be a list.'}), 400
 
     deleted = 0
     errors = 0
@@ -577,7 +589,7 @@ def posts_bulk_delete():
                 deleted += 1
             else:
                 errors += 1
-        except Post.DoesNotExist:
+        except (Post.DoesNotExist, ValueError, TypeError):
             errors += 1
 
     return jsonify({'deleted': deleted, 'errors': errors})

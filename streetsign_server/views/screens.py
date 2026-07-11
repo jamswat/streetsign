@@ -144,11 +144,21 @@ def screenedit(screenid):
                                         (screen.urlname or 'New Screen', None)])
 
 
+# Screen layout templates that may be selected via the URL. Keeps the
+# <template> segment in /screens/<template>/<screenname> from pointing at an
+# arbitrary template (which would at best 500, at worst render an admin-only
+# template in a public context).
+VALID_SCREEN_TEMPLATES = frozenset(('basic', 'mobile', 'notrans', 'overview'))
+
+
 @app.route('/screens/<template>/<screenname>')
 def screendisplay(template, screenname):
     '''
         The actual output screen view.
     '''
+    if template not in VALID_SCREEN_TEMPLATES:
+        return not_found(title="Invalid Screen Layout",
+                         message=f"Unknown screen layout '{template}'.")
     try:
         screen = Screen.get(urlname=screenname)
     except Screen.DoesNotExist:
@@ -174,7 +184,12 @@ def screens_posts_from_feeds(json_feeds_list):
         send JSON list of the posts in whichever feeds you request
         (as a JS array [id,id,id] type list)
     '''
-    feeds_list = json.loads(json_feeds_list)
+    try:
+        feeds_list = json.loads(json_feeds_list)
+    except (ValueError, TypeError):
+        return jsonify(posts=[])
+    if not isinstance(feeds_list, list):
+        return jsonify(posts=[])
 
     time_now = now()
 

@@ -175,24 +175,28 @@ def user_files_list(dir_name=""):
             else:
                 flash('Sorry. Invalid Filetype')
         elif request.form.get('action') == 'delete':
-            filename = secure_filename(request.form.get('filename'))
-            full_filename = pathjoin(full_path, filename)
-            if isfile(full_filename):
-                remove(full_filename)
-                try:
-                    thumb_path = pathjoin(g.site_vars['user_dir'],
-                                       '.thumbnails', dir_name,
-                                       splitext(filename)[0] + '.png')
-                    thumb_base = realpath(pathjoin(g.site_vars['user_dir'],
-                                                   '.thumbnails'))
-                    if realpath(thumb_path).startswith(thumb_base + ossep) \
-                            and isfile(thumb_path):
-                        remove(thumb_path)
-                except OSError:
-                    pass
-                flash('Deleted ' + filename)
+            raw_filename = request.form.get('filename')
+            if not raw_filename:
+                flash('No filename supplied for deletion.')
             else:
-                flash('Cannot delete directory: ' + filename)
+                filename = secure_filename(raw_filename)
+                full_filename = pathjoin(full_path, filename)
+                if isfile(full_filename):
+                    remove(full_filename)
+                    try:
+                        thumb_path = pathjoin(g.site_vars['user_dir'],
+                                           '.thumbnails', dir_name,
+                                           splitext(filename)[0] + '.png')
+                        thumb_base = realpath(pathjoin(g.site_vars['user_dir'],
+                                                       '.thumbnails'))
+                        if realpath(thumb_path).startswith(thumb_base + ossep) \
+                                and isfile(thumb_path):
+                            remove(thumb_path)
+                    except OSError:
+                        pass
+                    flash('Deleted ' + filename)
+                else:
+                    flash('Cannot delete directory: ' + filename)
         elif request.form.get('action') == 'delete_selected':
             filenames = request.form.getlist('filenames[]')
             deleted = 0
