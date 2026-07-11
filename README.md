@@ -91,25 +91,6 @@ control:
 
 New post types can be added via the plugin system (`streetsign_server/post_types/`).
 
-### Weather Posts
-
-The Weather post type displays live current conditions, high/low temperatures,
-rain chance, optional metrics, sunrise/sunset times, and a 2-day forecast. It is
-zone-size-aware, so it adapts between landscape, square, and portrait signage
-zones while keeping the temperature and current condition readable at distance.
-
-Weather posts can be configured with:
-
-- Place name lookup via wttr.in, or exact latitude/longitude coordinates.
-- A built-in map coordinate picker, using OpenStreetMap data, for pinning the forecast location.
-- Celsius or Fahrenheit units and a configurable refresh interval.
-- Custom background, text, accent, high-temperature, low-temperature, and rain colours.
-- Toggles for forecast cards, metrics, sunrise/sunset, and atmospheric weather styling.
-
-Atmospheric styling adds weather-aware gradients and a large ambient condition
-icon behind the content. Disable it in the Weather post settings if you prefer a
-flatter, brand-colour-only presentation.
-
 
 ### Scheduling
 
