@@ -45,9 +45,9 @@ app.logger.setLevel(getattr(_logging, app.config.get('LOG_LEVEL', 'INFO'),
 # The known, insecure default SECRET_KEY signs session cookies, so a public
 # default lets anyone forge sessions. Warn loudly on import; the server
 # entrypoints (run.py) call assert_secret_key_is_safe() to hard-fail before
-# actually serving requests in production.
-_INSECURE_KEY = app.config.get('DEFAULT_INSECURE_SECRET_KEY',
-                               'dev-default-key-change-in-production')
+# actually serving requests in production. The string is hardcoded so it
+# can never drift apart from a separately-configurable DEFAULT_INSECURE_KEY.
+_INSECURE_KEY = 'dev-default-key-change-in-production'
 
 def using_insecure_secret_key():
     ''' True if SECRET_KEY is still the public, insecure default. '''
@@ -102,7 +102,7 @@ import streetsign_server.views as views
 from .models import \
      User, Group, Post, Feed, FeedPermission
 
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 
 @app.context_processor
 def inject_version():

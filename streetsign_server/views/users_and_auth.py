@@ -183,6 +183,16 @@ def user_edit(userid=-1):
 
         update_user(user, request.form, current_user)
 
+        if userid == -1 and not user.passwordhash:
+            flash("You must set a password for the new user.")
+            return render_template('user.html',
+                                   allgroups=Group.select(),
+                                   user=user,
+                                   breadcrumbs=[('Dashboard', url_for('index')),
+                                                 ('Users & Groups',
+                                                  url_for('users_and_groups')),
+                                                 ('New User', None)])
+
         # save:
 
         try:

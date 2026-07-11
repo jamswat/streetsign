@@ -37,7 +37,6 @@ from streetsign_server.views.utils import PleaseRedirect, \
                                           getstr, getint, getbool, \
                                           DATESTR
 from streetsign_server.models import Feed, Post, now
-
 def try_to_set_feed(post, new_feed_id, user):
     ''' Is this user actually allowed to set the feed of this post to what
         the form is saying they want to?  If so, cool. Return that feed. '''
@@ -133,7 +132,7 @@ def post_form_intake(post, form, editor):
     if user_provided_title:
         post.title = user_provided_title
     elif not post.title:
-        post.title = None
+        post.title = ''
 
     existing = post.content
     try:
@@ -285,3 +284,43 @@ def cleanup_orphaned_media_files():
                     pass
 
     return {'removed_files': removed_files, 'removed_thumbs': removed_thumbs}
+
+
+def import_source_posts(source):
+    ''' Import new posts from an ExternalSource. Returns the number of
+        new posts created. The caller is responsible for calling
+        source.save() if needed. '''
+
+    from streetsign_server import external_source_types
+    from streetsign_server import post_types
+
+    module = external_source_types.load(source.type)
+    settings_data = json.loads(source.settings)
+    new_posts = module.get_new(settings_data)
+
+    imported = 0
+    if new_posts:
+        for fresh_data in new_posts:
+            post_type = fresh_data.get('type', 'html')
+            post = Post(type=post_type, author=source.post_as_user)
+            post_type_module = post_types.load(post_type)
+
+            post.feed = source.feed
+
+            fresh_data['active_start'] = source.current_lifetime_start()
+            fresh_data['active_end'] = source.current_lifetime_end()
+
+            post_form_intake(post, fresh_data, post_type_module)
+            post.display_time = source.display_time
+
+            if source.publish:
+                post.publisher = source.post_as_user
+                post.publish_date = now()
+                post.published = True
+            post.save()
+            imported += 1
+
+    source.settings = json.dumps(settings_data)
+    source.last_checked = now()
+
+    return imported

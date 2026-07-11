@@ -271,8 +271,7 @@ class CreatingUsersTestCase(BasicUsersTestCase):
         resp = self.post_create_request(currpass=ADMINPASS,
                                         newpass='',
                                         conf_newpass='')
-        self.assertIn(b"Cannot Save", resp.data)
-        self.assertIn(b"passwordhash", resp.data)
+        self.assertIn(b"You must set a password for the new user.", resp.data)
 
         with self.assertRaises(User.DoesNotExist):
             User.get(loginname="user2")

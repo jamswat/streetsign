@@ -25,8 +25,6 @@ ConfigVar ORM model and config_var accessor function.
 
 '''
 
-import sqlite3
-
 from flask import json
 from peewee import * # pylint: disable=wildcard-import,unused-wildcard-import
 
@@ -40,15 +38,12 @@ class ConfigVar(DBModel):
     description = CharField(default="Setting")
 
 def config_var(key, default_value):
-    ''' a 'get_or_create' type function for retrieving database ConfigVar
-        values, or the default value it it hasn't been set.
-        NOTE: returns the *value*, and NOT the database record!
+    ''' Retrieve a ConfigVar from the database, creating it with
+        `default_value` if it hasn't been set yet. Returns the *value*,
+        not the database record.
         '''
-    try:
-        return json.loads(ConfigVar.get(ConfigVar.id == key).value)
-    except ConfigVar.DoesNotExist:
-        try:
-            return default_value
-        except sqlite3.IntegrityError:
-            # ha! we have a race! and you lose...
-            return json.loads(ConfigVar.get(ConfigVar.id == key).value)
+    result, _created = ConfigVar.get_or_create(
+        id=key,
+        defaults={'value': json.dumps(default_value)},
+    )
+    return json.loads(result.value)

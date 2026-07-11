@@ -94,6 +94,9 @@ class Feed(DBModel):
 
     def user_can_read(self, user):
         ''' Checks read permission for a feed.  Not really used, as yet. '''
+        if not user or user.id is None:
+            return False
+
         if user.is_admin:
             return True
 
@@ -118,7 +121,7 @@ class Feed(DBModel):
 
     def user_can_write(self, user):
         ''' Checks write permission.  (Admins get automatically) '''
-        if not user:
+        if not user or user.id is None:
             return False
 
         if user.is_admin:
@@ -145,7 +148,7 @@ class Feed(DBModel):
 
     def user_can_publish(self, user):
         ''' Checks publish permission. (Admins get automatically) '''
-        if not user:
+        if not user or user.id is None:
             return False
 
         if user.is_admin:

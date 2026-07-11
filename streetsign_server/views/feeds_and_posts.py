@@ -740,42 +740,28 @@ def external_source_run(source_id):
                 return (f"Nothing to do. Last: {source.last_checked}, "
                         f"Next: {next_check}, Now: {time_now}")
 
-    module = external_source_types.load(source.type)
-
-    settings_data = json.loads(source.settings)
-    new_posts = module.get_new(settings_data)
-
-    if new_posts:
-        for fresh_data in new_posts:
-            post = Post(type=fresh_data.get('type', 'html'), \
-                        author=source.post_as_user)
-            post_type_module = post_types.load(fresh_data.get('type', 'html'))
-
-            post.feed = source.feed
-
-            fresh_data['active_start'] = source.current_lifetime_start()
-            fresh_data['active_end'] = source.current_lifetime_end()
-
-            post_form_intake(post, fresh_data, post_type_module)
-            post.display_time = source.display_time
-
-            if source.publish:
-                post.publisher = source.post_as_user
-                post.publish_date = now()
-                post.published = True
-            post.save()
-    # else, no new posts! oh well!
-
-    source.settings = json.dumps(settings_data)
-    source.last_checked = now()
+    from streetsign_server.logic.feeds_and_posts import import_source_posts
+    imported = import_source_posts(source)
     source.save()
 
-    return 'Done!'
+    return f'Done! ({imported} new post{"s" if imported != 1 else ""})'
 
 
 @app.route('/external_data_sources/', methods=['POST'])
 @admin_only('POST')
 def external_data_sources_update_all():
     ''' update all external data sources. '''
-    sources = [x[0] for x in ExternalSource.select(ExternalSource.id).tuples()]
-    return json.dumps([(external_source_run(s), s) for s in sources])
+    from streetsign_server.logic.feeds_and_posts import import_source_posts
+
+    sources = ExternalSource.select()
+    results = []
+    for source in sources:
+        try:
+            imported = import_source_posts(source)
+            source.save()
+            results.append({'id': source.id, 'name': source.name,
+                            'imported': imported})
+        except Exception as exc:
+            results.append({'id': source.id, 'name': source.name,
+                            'imported': 0, 'error': str(exc)})
+    return jsonify(results=results)
