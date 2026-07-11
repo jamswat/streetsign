@@ -201,11 +201,18 @@ def feed_reorder(feedid):
 
     post_ids = request.json.get('post_ids', []) if request.json else []
 
+    int_ids = []
+    for pid in post_ids:
+        try:
+            int_ids.append(int(pid))
+        except (ValueError, TypeError):
+            continue
+
     post_map = {p.id: p for p in
-                Post.select().where(Post.id << [int(pid) for pid in post_ids],
+                Post.select().where(Post.id << int_ids,
                                      Post.feed == feed)}
-    for index, post_id in enumerate(post_ids):
-        post = post_map.get(int(post_id))
+    for index, pid in enumerate(int_ids):
+        post = post_map.get(pid)
         if post is not None:
             post.sort_order = index
             post.save()

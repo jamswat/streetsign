@@ -171,7 +171,15 @@ class User(DBModel):
         # clear old groups:
         UserGroup.delete().where(UserGroup.user == self).execute()
 
-        group_ids = [int(gid) for gid in groupidlist]
+        group_ids = []
+        for gid in groupidlist:
+            try:
+                group_ids.append(int(gid))
+            except (ValueError, TypeError):
+                continue
+
+        if not group_ids:
+            return True, self.groups()
 
         # fetch all groups in one query:
         groups = {g.id: g for g in
@@ -211,7 +219,15 @@ class Group(DBModel):
         # clear old groups:
         UserGroup.delete().where(UserGroup.group == self).execute()
 
-        user_ids = [int(uid) for uid in useridlist]
+        user_ids = []
+        for uid in useridlist:
+            try:
+                user_ids.append(int(uid))
+            except (ValueError, TypeError):
+                continue
+
+        if not user_ids:
+            return True, self.users()
 
         # fetch all users in one query:
         users = {u.id: u for u in

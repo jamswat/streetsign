@@ -122,7 +122,7 @@ def index():
 
     screens_by_name = {s.urlname: s for s in screens}
     for alias in aliases:
-        alias['screen'] = screens_by_name.get(alias['screen_name'])
+        alias['screen'] = screens_by_name.get(alias.get('screen_name'))
 
     return render_template('dashboard.html',
                            aliases=aliases,
