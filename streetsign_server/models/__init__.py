@@ -121,15 +121,15 @@ def migrations(dbfile=False):
 
     # Migration 7: add FK indexes for query performance
     fk_indexes = {
-        'Post': [
+        'post': [
             ('post_feed_id', 'feed_id'),
             ('post_author_id', 'author_id'),
         ],
-        'Feedpermission': [
+        'feedpermission': [
             ('feedpermission_feed_id', 'feed_id'),
             ('feedpermission_user_id', 'user_id'),
         ],
-        'Usergroup': [
+        'usergroup': [
             ('usergroup_user_id', 'user_id'),
             ('usergroup_group_id', 'group_id'),
         ],
