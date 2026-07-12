@@ -28,6 +28,7 @@
 #pylint: disable=no-value-for-parameter,unexpected-keyword-arg,not-an-iterable,singleton-comparison
 
 from datetime import timedelta
+from os.path import basename, splitext
 
 from flask import render_template, url_for, request, redirect, \
                   flash, json, jsonify, make_response
@@ -185,7 +186,111 @@ def feedpage(feedid):
                            breadcrumbs=[('Dashboard', url_for('index')),
                                         ('Feeds', url_for('feeds')),
                                         (feed.name, None)]
-                          )
+                           )
+
+
+def _auto_title_from_filename(filename):
+    '''Generate a human-readable post title from an image filename.'''
+    name = basename(filename)
+    name = splitext(name)[0]
+    name = name.replace('_', ' ').replace('-', ' ')
+    return name.strip().title() or 'Image'
+
+
+@app.route('/feeds/<int:feedid>/bulk_upload', methods=['GET', 'POST'])
+@registered_users_only('GET', 'POST')
+def bulk_upload(feedid):
+    ''' Bulk image upload: multiple files, shared scheduling options. '''
+    try:
+        feed = Feed.get(id=feedid)
+        user = user_session.get_user()
+    except user_session.NotLoggedIn:
+        flash("You're not logged in!")
+        return redirect(url_for('feeds'))
+    except Feed.DoesNotExist:
+        flash('invalid feed id!')
+        return redirect(url_for('feeds'))
+
+    if not feed.user_can_write(user):
+        flash("Sorry! You don't have permission to write here!")
+        return redirect(url_for('feeds'))
+
+    if request.method == 'GET':
+        return render_template('bulk_upload.html',
+                               feed=feed,
+                               user=user,
+                               default_active_start=now().strftime('%Y-%m-%d %H:%M:%S'),
+                               default_active_end=(now() + timedelta(weeks=1)).strftime('%Y-%m-%d %H:%M:%S'),
+                               breadcrumbs=[
+                                   ('Dashboard', url_for('index')),
+                                   ('Feeds', url_for('feeds')),
+                                   (feed.name, url_for('feedpage', feedid=feed.id)),
+                                   ('Bulk Upload', None)])
+
+    # POST — process each uploaded file
+    from streetsign_server.post_types.image import _save_uploaded_image
+
+    files = request.files.getlist('image_files')
+    if not files or all(not f.filename for f in files):
+        flash('No files selected.')
+        return redirect(url_for('bulk_upload', feedid=feedid))
+
+    image_module = post_types.load('image')
+    publish = request.form.get('publish_after') and feed.user_can_publish(user)
+
+    # Build the shared scheduling form dict (file-independent fields)
+    scheduling = {}
+    for key in ('permanent', 'active_start', 'active_end', 'displaytime',
+                'times_mode', 'time_restrictions_json'):
+        scheduling[key] = request.form.get(key, '')
+    scheduling['recurrence_days'] = request.form.getlist('recurrence_days')
+    scheduling['recurrence_enabled'] = request.form.get('recurrence_enabled', '')
+
+    created = 0
+    errors = []
+    for idx, f in enumerate(files):
+        if not f.filename:
+            continue
+        try:
+            saved_filename = _save_uploaded_image(f)
+        except IOError as exc:
+            errors.append({'file': f.filename, 'error': str(exc)})
+            continue
+
+        title = request.form.get(f'title_{idx}', '').strip() or \
+                _auto_title_from_filename(f.filename)
+        p = Post(title=title, type='image', author=user, feed=feed)
+
+        # Build a per-file form dict that includes the file info plus
+        # the shared scheduling fields.  The image module's receive()
+        # will validate the filename (already saved via the helper).
+        form_dict = dict(scheduling)
+        form_dict.update({
+            'filename': saved_filename,
+            'post_title': title,
+        })
+        try:
+            post_form_intake(p, form_dict, image_module)
+        except PleaseRedirect as exc:
+            errors.append({'file': f.filename, 'error': str(exc.msg)})
+            continue
+
+        p.save()
+        created += 1
+        if publish:
+            try:
+                p.publish(user)
+            except PermissionDenied:
+                pass
+
+    flash(f'{created} image(s) uploaded successfully'
+          + (f', {len(errors)} skipped' if errors else '') + '.')
+    if errors:
+        for e in errors:
+            flash(f'Skipped {e["file"]}: {e["error"]}', 'warning')
+    if publish:
+        flash('All posts published.')
+    return redirect(url_for('feedpage', feedid=feedid))
 
 
 @app.route('/feeds/<int:feedid>/reorder', methods=['POST'])

@@ -177,8 +177,9 @@ def post_form_intake(post, form, editor):
     # Recurrence (day-of-week scheduling):
     recurrence_enabled = getbool('recurrence_enabled', False, form=form)
     recurrence_days = form.getlist('recurrence_days') if hasattr(form, 'getlist') \
-                      else [d for d in form.get('recurrence_days', '').split(',')
-                            if d.strip()]
+                      else (form.get('recurrence_days') if isinstance(form.get('recurrence_days'), list)
+                            else [d for d in form.get('recurrence_days', '').split(',')
+                                  if d.strip()])
     post.recurrence = json.dumps({
         'enabled': recurrence_enabled,
         'days': recurrence_days,

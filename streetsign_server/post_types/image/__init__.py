@@ -76,6 +76,19 @@ def allow_filetype(filename):
         ['.png','.jpg','.jpeg','.gif','.bmp','.svg','.webp','.avif']
 
 
+def _save_uploaded_image(file_obj):
+    ''' Save an uploaded file to post_images/, resize it, and return the
+        UUID-prefixed filename.  Used by both the single-post receive() path
+        and the bulk-upload endpoint. '''
+    if not file_obj or not allow_filetype(file_obj.filename):
+        raise IOError('Invalid file. Sorry')
+    filename = secure_filename(str(uuid4()) + basename(file_obj.filename))
+    full_path = pathjoin(image_path(), filename)
+    file_obj.save(full_path)
+    resize_image(full_path)
+    return filename
+
+
 ########################################################################
 #
 # Now the actual post_type required functions:
@@ -91,18 +104,7 @@ def receive(data):
         where it should be, and return all the image data we need. '''
 
     if 'upload' in data:
-        # An image has been uploaded
-
-        f = request.files['image_file']
-        if f and allow_filetype(f.filename):
-            filename = secure_filename(str(uuid4()) + basename(f.filename))
-
-            full_path = pathjoin(image_path(), filename)
-            f.save(full_path)
-            resize_image(full_path)
-
-        else:
-            raise IOError('Invalid file. Sorry')
+        filename = _save_uploaded_image(request.files['image_file'])
     elif 'url' in data:
         # Download an image file from an external URL.
 

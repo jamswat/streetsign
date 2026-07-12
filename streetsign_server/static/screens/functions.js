@@ -208,13 +208,6 @@ function reduce_font_size_to_fit(inner, outer) {
     console.log('reducing font size to ' + parseInt(percent) + '%');
 }
 
-function get_servertime(url) {
-    const xhr = new XMLHttpRequest();
-    url = url || document.location;
-    xhr.open('GET', url, false);
-    xhr.send(null);
-    return new Date(xhr.getResponseHeader('Date'));
-}
 
 setInterval(reload_page, REFRESH_PAGE_TIMER);
 magic_time();

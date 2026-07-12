@@ -1,0 +1,385 @@
+{% extends "index.html" %}
+{%- import "link-macros.html" as linkmacros -%}
+{% block title %}Bulk Image Upload · {{ feed.name }}{% endblock %}
+
+{% block htmlhead %}
+{{ super() }}
+{{ linkmacros.static_css('lib/flatpickr/flatpickr.min.css') }}
+{% endblock %}
+
+{% block body %}
+<h1>Bulk Image Upload</h1>
+<p class="text-muted">Feed: <strong>{{ feed.name }}</strong></p>
+
+<form action="{{ url_for('bulk_upload', feedid=feed.id) }}" method="POST"
+      enctype="multipart/form-data" id="bulk-upload-form" novalidate>
+
+  {# ── Scheduling — same fields as post_editor_form.html Scheduling tab ── #}
+  <div class="card mb-4 border-primary">
+    <div class="card-header bg-primary-subtle">
+      <h2 class="card-title h5 mb-0">Scheduling <small class="text-muted fw-normal">— applies to ALL images</small></h2>
+    </div>
+    <div class="card-body">
+
+      {# ── Post Lifetime ── #}
+      <div class="mb-3">
+        <strong>Post Lifetime</strong>
+        <div class="btn-group w-100 mt-2" role="group">
+          <input type="radio" class="btn-check" name="permanent" value="1" id="mode-permanent" autocomplete="off">
+          <label class="btn btn-outline-primary" for="mode-permanent">Show permanently</label>
+          <input type="radio" class="btn-check" name="permanent" value="0" id="mode-range" autocomplete="off" checked>
+          <label class="btn btn-outline-primary" for="mode-range">Date range</label>
+        </div>
+        <div id="permanent-explanation" class="text-muted small mt-2" style="display:none;">
+          Each image stays on screen indefinitely and blocks other posts from cycling.
+        </div>
+        <div id="lifetime-dates-group" class="row mt-2">
+          <div class="col-md-6">
+            <label class="form-label">Start:</label>
+            <div class="input-group date" id="datetimestart" data-date-format="YYYY-MM-DD HH:mm:ss">
+              <input type="text" name="active_start" id="active_start" class="form-control"
+                     value="{{ default_active_start }}" />
+              <span class="input-group-text"><span class="bi bi-calendar"></span></span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">End:</label>
+            <div class="input-group date" id="datetimeend" data-date-format="YYYY-MM-DD HH:mm:ss">
+              <input type="text" name="active_end" id="active_end" class="form-control"
+                     value="{{ default_active_end }}" />
+              <span class="input-group-text"><span class="bi bi-calendar"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# ── Display Duration ── #}
+      <div class="mb-3" id="display-duration-card">
+        <strong>Display Duration</strong>
+        <p class="text-muted small mb-1">How long each image stays on screen before cycling.</p>
+        <div class="input-group" style="max-width:14rem">
+          <input type="number" name="displaytime" class="form-control"
+                 value="8" min="2" max="500" />
+          <span class="input-group-text">seconds</span>
+        </div>
+      </div>
+
+      {# ── Time Restrictions ── #}
+      <div class="mb-3" x-data="makeTimesEditor([], 'all_day')">
+        <strong>Time Restrictions</strong>
+        <p class="text-muted small mb-1">Which hours of each day should these images show?</p>
+        <select class="form-select mb-2" x-model="mode" name="times_mode" style="max-width:20rem">
+          <option value="all_day">All day — no restrictions</option>
+          <option value="only_show">Only show during these hours</option>
+          <option value="do_not_show">Do not show during these hours</option>
+        </select>
+        <div class="table-responsive" x-show="showTable" x-transition>
+          <table class="table table-striped">
+            <thead><tr>
+              <th style="width:25%">Start</th><th style="width:25%">End</th>
+              <th>Why? (optional)</th><th style="width:4em">
+                <button type="button" class="btn btn-sm btn-outline-primary" x-on:click.prevent="addTime">
+                  <span class="bi bi-plus-lg"></span>
+                </button>
+              </th>
+            </tr></thead>
+            <tbody>
+              <template x-if="times.length === 0">
+                <tr><td colspan="4" class="text-muted text-center py-3">
+                  No time restrictions yet. Click <span class="bi bi-plus-lg"></span> to add one.
+                </td></tr>
+              </template>
+              <template x-for="(time, idx) in times" :key="idx">
+                <tr :class="{ 'table-warning': timeInvalid(idx) }">
+                  <td><div class="input-group">
+                    <input type="time" x-model="time.start" class="form-control" />
+                    <span class="input-group-text"><span class="bi bi-clock"></span></span>
+                  </div></td>
+                  <td><div class="input-group">
+                    <input type="time" x-model="time.end" class="form-control" />
+                    <span class="input-group-text"><span class="bi bi-clock"></span></span>
+                  </div></td>
+                  <td>
+                    <input x-model="time.note" class="form-control" placeholder="e.g. Lunch break" />
+                    <span class="text-danger small" x-show="timeInvalid(idx)">End must be after start.</span>
+                  </td>
+                  <td><a href="#" class="btn btn-sm btn-danger" x-on:click.prevent="removeTime(idx)">
+                    <span class="bi bi-trash"></span>
+                  </a></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <input type="hidden" name="time_restrictions_json" :value="serializedTimes" />
+      </div>
+
+      {# ── Recurrence ── #}
+      <div class="mb-3">
+        <strong>Recurrence</strong>
+        <p class="text-muted small mb-1">Which days of the week should these images show?</p>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="recurrence_enabled" value="1" id="recurrence-check">
+          <label class="form-check-label" for="recurrence-check">
+            <strong>Limit to specific days</strong>
+          </label>
+        </div>
+        <div id="recurrence-presets" class="mb-2" style="display:none;">
+          <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-recurrence-preset="weekdays">Weekdays</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-recurrence-preset="weekends">Weekends</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-recurrence-preset="everyday">Every day</button>
+        </div>
+        <div id="recurrence-days-group" class="d-flex flex-wrap gap-2" style="opacity:0.4;pointer-events:none">
+          {% for code, label in [('mon','Mon'),('tue','Tue'),('wed','Wed'),('thu','Thu'),('fri','Fri'),('sat','Sat'),('sun','Sun')] %}
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="recurrence_days"
+                   value="{{ code }}" id="day-{{ code }}" />
+            <label class="form-check-label" for="day-{{ code }}">{{ label }}</label>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Images grid ── #}
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2 class="card-title h5 mb-0">Images</h2>
+      <label class="btn btn-outline-primary btn-sm mb-0" id="add-more-btn">
+        <span class="bi bi-plus-lg"></span> Add more
+      </label>
+    </div>
+    <div class="card-body">
+      <div id="preview-grid" class="row g-3">
+        <div class="col-12 text-muted text-center py-5" id="drop-placeholder">
+          <span class="bi bi-cloud-upload" style="font-size:3rem"></span>
+          <p class="mt-2">Click "Add more" or drag and drop images here.</p>
+          <p class="small">Supported: PNG, JPG, GIF, BMP, SVG, WebP, AVIF</p>
+        </div>
+      </div>
+      <input type="file" name="image_files" id="image-files-input"
+             accept="image/png,image/jpeg,image/gif,image/bmp,image/svg+xml,image/webp,image/avif"
+             multiple style="display:none" />
+      <div class="d-flex justify-content-between align-items-center mt-3" id="upload-actions" style="display:none">
+        <span class="text-muted" id="upload-count"></span>
+        <button type="button" class="btn btn-outline-danger btn-sm" id="clear-all-btn">
+          <span class="bi bi-trash"></span> Clear all
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary" id="save-draft-btn">
+      <span class="bi bi-upload"></span> Save all as Draft
+    </button>
+    {% if feed.user_can_publish(user) %}
+    <button type="button" class="btn btn-success" id="save-publish-btn">
+      <span class="bi bi-send"></span> Save &amp; Publish all
+    </button>
+    {% endif %}
+    <input type="hidden" name="publish_after" value="0" id="publish-after-flag" />
+  </div>
+</form>
+{% endblock %}
+
+{% block end_of_page_javascript %}
+{{ super() }}
+{{ linkmacros.static_js('lib/flatpickr/flatpickr.min.js') }}
+{{ linkmacros.static_js('post_times_editor.js') }}
+<script type="text/javascript">
+(function() {
+  const input = document.getElementById('image-files-input');
+  const grid = document.getElementById('preview-grid');
+  const placeholder = document.getElementById('drop-placeholder');
+  const uploadCount = document.getElementById('upload-count');
+  const uploadActions = document.getElementById('upload-actions');
+  const clearAllBtn = document.getElementById('clear-all-btn');
+  const addMoreBtn = document.getElementById('add-more-btn');
+
+  let fileList = [];
+
+  function updateUI() {
+    placeholder.style.display = fileList.length ? 'none' : '';
+    uploadActions.style.display = fileList.length ? '' : 'none';
+    uploadCount.textContent = fileList.length + ' image' + (fileList.length !== 1 ? 's' : '');
+  }
+
+  function renderGrid() {
+    grid.querySelectorAll('.preview-card').forEach(function(c) { c.remove(); });
+    fileList.forEach(function(file, idx) {
+      const col = document.createElement('div');
+      col.className = 'col-6 col-md-4 col-lg-3 preview-card';
+
+      const card = document.createElement('div');
+      card.className = 'card h-100';
+
+      const img = document.createElement('img');
+      img.className = 'card-img-top';
+      img.style.height = '120px';
+      img.style.objectFit = 'cover';
+
+      const body = document.createElement('div');
+      body.className = 'card-body p-2';
+
+      const title = document.createElement('p');
+      title.className = 'card-text small mb-1 text-truncate';
+      const name = file.name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ');
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.className = 'form-control form-control-sm mt-1';
+      nameInput.value = name.split(' ').map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+
+      const size = document.createElement('small');
+      size.className = 'text-muted';
+      size.textContent = (file.size / 1024).toFixed(0) + ' KB';
+
+      title.textContent = nameInput.value;
+      body.appendChild(title);
+      body.appendChild(nameInput);
+      body.appendChild(size);
+
+      const footer = document.createElement('div');
+      footer.className = 'card-footer p-1 text-end';
+      const rmBtn = document.createElement('button');
+      rmBtn.type = 'button';
+      rmBtn.className = 'btn btn-sm btn-outline-danger';
+      rmBtn.innerHTML = '<span class="bi bi-x-lg"></span>';
+      rmBtn.onclick = function() { removeFile(idx); };
+      footer.appendChild(rmBtn);
+
+      card.appendChild(img);
+      card.appendChild(body);
+      card.appendChild(footer);
+      col.appendChild(card);
+      grid.appendChild(col);
+
+      nameInput.addEventListener('input', function() {
+        title.textContent = this.value || '(untitled)';
+      });
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) { img.src = e.target.result; };
+        reader.readAsDataURL(file);
+      } else {
+        img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23ddd" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23999" font-size="14">No preview</text></svg>';
+      }
+    });
+    updateUI();
+  }
+
+  function addFiles(newFiles) {
+    Array.from(newFiles).forEach(function(f) { fileList.push(f); });
+    renderGrid();
+  }
+
+  function removeFile(idx) {
+    fileList.splice(idx, 1);
+    renderGrid();
+  }
+
+  input.addEventListener('change', function() {
+    addFiles(input.files);
+    input.value = '';
+  });
+
+  clearAllBtn.addEventListener('click', function() {
+    fileList = [];
+    renderGrid();
+  });
+
+  addMoreBtn.addEventListener('click', function() { input.click(); });
+
+  // Submit: inject per-file title fields
+  const form = document.getElementById('bulk-upload-form');
+  form.addEventListener('submit', function() {
+    // Update the DataTransfer so the files are actually sent
+    const dt = new DataTransfer();
+    fileList.forEach(function(f) { dt.items.add(f); });
+    input.files = dt.files;
+
+    // Remove any previously injected title inputs
+    form.querySelectorAll('input[name^="title_"]').forEach(function(el) { el.remove(); });
+
+    // Inject hidden inputs for custom titles
+    const nameInputs = grid.querySelectorAll('.preview-card input[type="text"]');
+    nameInputs.forEach(function(inp, idx) {
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'title_' + idx;
+      hidden.value = inp.value.trim();
+      form.appendChild(hidden);
+    });
+  });
+
+  // Drag and drop support
+  const dropZone = grid.closest('.card-body');
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  });
+
+  // Lifetime mode toggle
+  const permanentRadio = document.getElementById('mode-permanent');
+  const rangeRadio = document.getElementById('mode-range');
+  const datesGroup = document.getElementById('lifetime-dates-group');
+  const durationCard = document.getElementById('display-duration-card');
+  const permExpl = document.getElementById('permanent-explanation');
+  function updateLifetimeMode() {
+    const permanent = permanentRadio && permanentRadio.checked;
+    if (datesGroup) datesGroup.style.display = permanent ? 'none' : '';
+    if (durationCard) durationCard.style.display = permanent ? 'none' : '';
+    if (permExpl) permExpl.style.display = permanent ? '' : 'none';
+  }
+  if (permanentRadio) {
+    permanentRadio.addEventListener('change', updateLifetimeMode);
+    rangeRadio.addEventListener('change', updateLifetimeMode);
+  }
+
+  // Recurrence
+  const recCheck = document.getElementById('recurrence-check');
+  const recDays = document.getElementById('recurrence-days-group');
+  const recPresets = document.getElementById('recurrence-presets');
+  function updateRecurrence() {
+    if (!recCheck || !recDays) return;
+    const on = recCheck.checked;
+    recDays.style.opacity = on ? '1' : '0.4';
+    recDays.style.pointerEvents = on ? '' : 'none';
+    recPresets.style.display = on ? '' : 'none';
+  }
+  if (recCheck) recCheck.addEventListener('change', updateRecurrence);
+  document.querySelectorAll('[data-recurrence-preset]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var sets = { weekdays: ['mon','tue','wed','thu','fri'], weekends: ['sat','sun'], everyday: ['mon','tue','wed','thu','fri','sat','sun'] };
+      var days = sets[btn.dataset.recurrencePreset] || [];
+      document.querySelectorAll('input[name="recurrence_days"]').forEach(function(cb) {
+        cb.checked = days.indexOf(cb.value) !== -1;
+      });
+    });
+  });
+
+  // Save & Publish
+  const publishBtn = document.getElementById('save-publish-btn');
+  if (publishBtn) {
+    publishBtn.addEventListener('click', function() {
+      document.getElementById('publish-after-flag').value = '1';
+      form.requestSubmit();
+    });
+  }
+
+  // Flatpickr date pickers
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof flatpickr !== 'undefined') {
+      flatpickr('#active_start', { enableTime: true, dateFormat: 'Y-m-d H:i:S' });
+      flatpickr('#active_end', { enableTime: true, dateFormat: 'Y-m-d H:i:S' });
+    }
+  });
+  updateLifetimeMode();
+  updateRecurrence();
+})();
+</script>
+{% endblock %}

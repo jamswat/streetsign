@@ -30,7 +30,6 @@
     window.LOCALOPTS = {{ request.args | tojson|safe }};
     window.SCREEN_DATA = {{screen.to_dict() | tojson|safe }};
     window.POSTS_URL = "{{ url_for('screens_posts_from_feeds', json_feeds_list='-1') }}";
-    window.SERVER_TIME = get_servertime();
 
     SCREEN_DATA.md5 = "{{screen.md5()}}";
 

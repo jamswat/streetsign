@@ -36,6 +36,7 @@ div.zone {
     justify-content: center;
     opacity: 0;
     transition: var(--zone-transition);
+    will-change: opacity;
 }
 
 .post.faded_in {

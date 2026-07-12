@@ -92,6 +92,12 @@ const zone_types = {
                 post.el.style.animation = '';
                 post.el.style.opacity = 0;
                 post.zone.el.style.opacity = 1;
+                // Discard the <style> sheet injected during start() so
+                // stale @keyframes don't accumulate in <head> forever.
+                if (post.scroll_stylesheet && post.scroll_stylesheet.parentNode) {
+                    post.scroll_stylesheet.parentNode.removeChild(post.scroll_stylesheet);
+                }
+                post.scroll_stylesheet = null;
                 cb && cb();
             }, 1001);
         }
