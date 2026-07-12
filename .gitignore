@@ -5,6 +5,8 @@
 *.swp
 /config.py
 database.db
+database.db-shm
+database.db-wal
 streetsign_server/static/user_files
 *.bak
 .env

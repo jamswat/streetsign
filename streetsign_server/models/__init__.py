@@ -115,7 +115,7 @@ def migrations(dbfile=False):
     if 'post_poll_status_published_active' not in post_index_names:
         logger.info('running migration 6 - add post polling index')
         DB.execute_sql(
-            'CREATE INDEX "post_poll_status_published_active" '
+            'CREATE INDEX IF NOT EXISTS "post_poll_status_published_active" '
             'ON "Post" ("status", "published", "active_start", "active_end")'
         )
 
@@ -141,7 +141,7 @@ def migrations(dbfile=False):
                 logger.info('running migration 7 - add index %s on %s(%s)',
                             idx_name, table, col)
                 DB.execute_sql(
-                    f'CREATE INDEX "{idx_name}" ON "{table}" ("{col}")'
+                    f'CREATE INDEX IF NOT EXISTS "{idx_name}" ON "{table}" ("{col}")'
                 )
 
 
