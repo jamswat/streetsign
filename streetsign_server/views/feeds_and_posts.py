@@ -526,12 +526,9 @@ def post_new(feed_id):
     return redirect(url_for('feedpage', feedid=post.feed.id))
 
 @app.route('/posts/<int:postid>', methods=['GET', 'POST'])
+@registered_users_only('GET', 'POST')
 def postpage(postid):
     ''' Edit a post. '''
-
-    if not user_session.logged_in():
-        flash("You're not logged in!")
-        return redirect(url_for('posts'))
 
     try:
         post = Post.get(Post.id == postid)

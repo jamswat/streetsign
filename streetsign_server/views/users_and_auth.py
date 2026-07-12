@@ -141,17 +141,12 @@ def update_user(user=None, form=None, current_user=None):
 
 @app.route('/users/<int:userid>', methods=['GET', 'POST', 'DELETE'])
 @app.route('/users/-1', methods=['GET', 'POST', 'DELETE'])
-@registered_users_only('GET')
+@registered_users_only('GET', 'POST', 'DELETE')
 def user_edit(userid=-1):
     ''' edit one user.  Admins can edit any user, but other users
         can only edit themselves. if userid is -1, create a new user. '''
 
-
-    try:
-        current_user = user_session.get_user()
-    except user_session.NotLoggedIn:
-        flash("Sorry, you're not logged in!")
-        return permission_denied("You're not logged in!")
+    current_user = user_session.get_user()
 
     userid = int(userid)
 

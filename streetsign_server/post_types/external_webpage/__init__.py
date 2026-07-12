@@ -17,7 +17,7 @@
 #
 """
 ---------------------------------
-streetsign_server.post_types.html
+streetsign_server.post_types.external_webpage
 ---------------------------------
 
 Display an External Web Page embedded in a screen.

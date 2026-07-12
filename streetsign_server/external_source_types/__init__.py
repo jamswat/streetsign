@@ -82,8 +82,4 @@ def load(type_name):
     _EDITORS[type_name] = e
     return e
 
-def receive(posttype, form):
-    ''' hand a form object from a request on to the appropriate handler '''
 
-    editor = load(posttype)
-    return editor.receive(form)

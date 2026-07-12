@@ -85,18 +85,6 @@ def load(type_name):
     _EDITORS[type_name] = e
     return e
 
-def receive(posttype, form):
-    ''' hand a form object from a request on to the appropriate handler '''
-
-    editor = load(posttype)
-    return editor.receive(form)
-
-def renderer_js(posttype):
-    ''' return the javascript for rendering a module's data '''
-
-    editor = load(posttype)
-    return editor.renderer_js()
-
 def renderers():
     ''' return the javascript for ALL post_types to be rendered. (as a list
         - you still need to combine it as you like... '''
