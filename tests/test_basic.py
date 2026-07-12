@@ -27,7 +27,7 @@ class TestSetup(StreetSignTestCase):
         assert b'Dashboard' in request.data # it is the front page
         assert b'Login' in request.data # not logged in
 
-        u = models.User.create(name='test user',
+        u = models.User.create(displayname='test user',
                                loginname='test',
                                emailaddress='test@example.com',
                                passwordhash='')
@@ -36,8 +36,7 @@ class TestSetup(StreetSignTestCase):
 
         self.login('test', 'test pass')
 
-        with self.ctx():
-            request = self.client.get('/posts/')
+        request = self.client.get('/posts/')
 
         assert b'<span class="post_count">No Posts at all!' in request.data
 
@@ -51,7 +50,7 @@ class TestDB(StreetSignTestCase):
         f = models.Feed.create(name='first feed')
         self.assertEqual(models.Feed.select().count(), 1)
 
-        u = models.User.create(name='test user',
+        u = models.User.create(displayname='test user',
                                loginname='test',
                                emailaddress='test@example.com',
                                passwordhash='')

@@ -7,9 +7,17 @@
 import sys
 import os
 import unittest
+import warnings
 import html5lib
 from peewee import SqliteDatabase, Model
 from flask import json
+
+# Peewee's _ConnectionLocal finalizer may emit a ResourceWarning during
+# interpreter shutdown even though every connection was explicitly closed.
+# Suppress it so the test suite runs clean under -W error.
+warnings.filterwarnings('ignore',
+                        message=r'.*unclosed database.*',
+                        category=ResourceWarning)
 
 sys.path.append(os.path.dirname(__file__) + '/..')
 
@@ -56,6 +64,11 @@ class StreetSignTestCase(unittest.TestCase):
         streetsign_server.app.config['DATABASE_FILE'] = ':memory:'
 
         streetsign_server.app.config['TESTING'] = True
+
+        # Close the database connection set up by models.init() at import
+        # time before replacing the global DB handle with an in-memory one.
+        if not models.DB.is_closed():
+            models.DB.close()
 
         models.DB = SqliteDatabase(None)
         models.DB.init(streetsign_server.app.config['DATABASE_FILE'])

@@ -27,7 +27,7 @@ class TestRecurrence(StreetSignTestCase):
     def setUp(self):
         super().setUp()
         self.feed = models.Feed.create(name='recurrence feed')
-        self.user = models.User.create(name='test user', loginname=USERNAME,
+        self.user = models.User.create(displayname='test user', loginname=USERNAME,
                                        emailaddress='test@example.com',
                                        passwordhash='', is_admin=True)
         self.user.set_password(USERPASS)

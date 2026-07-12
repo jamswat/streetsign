@@ -25,7 +25,7 @@ class TestPlaylistOrdering(StreetSignTestCase):
     def setUp(self):
         super().setUp()
         self.feed = models.Feed.create(name='ordering feed')
-        self.user = models.User.create(name='test user', loginname=USERNAME,
+        self.user = models.User.create(displayname='test user', loginname=USERNAME,
                                        emailaddress='test@example.com',
                                        passwordhash='', is_admin=True)
         self.user.set_password(USERPASS)
@@ -87,7 +87,7 @@ class TestPlaylistOrdering(StreetSignTestCase):
         p1 = self.create_post(sort_order=0)
 
         # Create a non-admin user with write access.
-        non_admin = models.User.create(name='editor', loginname='editor',
+        non_admin = models.User.create(displayname='editor', loginname='editor',
                                        emailaddress='e@x', passwordhash='')
         non_admin.set_password('pass')
         non_admin.save()

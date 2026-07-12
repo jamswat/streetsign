@@ -32,7 +32,7 @@ class TestLifetimes(StreetSignTestCase):
         self.feed = models.Feed.create(name='first feed')
         self.feed.save()
 
-        self.user = models.User.create(name='test user', loginname=USERNAME,
+        self.user = models.User.create(displayname='test user', loginname=USERNAME,
                                        emailaddress='test@example.com',
                                        passwordhash='')
         self.user.set_password(USERPASS)
