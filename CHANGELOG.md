@@ -1,5 +1,57 @@
 # Changelog
 
+## v1.3.1 — Weather Overhaul, Bulk Upload & Scheduling Fix
+
+### Weather Post Type Overhaul
+- **Text auto-scaling rewritten** — the binary-search fit function now correctly
+  measures content height by temporarily relaxing grid constraints (height:auto,
+  cell overflow:visible, atmosphere hidden). Previously grid cells with
+  `overflow:hidden` collapsed to 0px height, making content invisible and
+  `scrollHeight` report no overflow. Font sizes now scale properly from ~20px
+  to ~100px depending on content and zone dimensions.
+- **Per-metric toggles** — 10 individual metric checkboxes (feels-like, humidity,
+  wind speed, wind direction, UV, cloud cover, pressure, visibility,
+  precipitation, sun times) replacing the old single show_metrics master switch.
+- **Appearance controls** — font sizing mode (auto-fit/manual), layout mode
+  (auto/landscape/portrait/square), metrics style (cards/inline pills), and
+  refresh status position (header/corner/hidden) with configurable colors.
+- **Live preview** — new preview panel in the editor with drag resize, aspect
+  ratio buttons, and real-time form-change reflection.
+- **Metric card fixes** — cards widened (50% flex-basis), font sizes reduced
+  (label 0.55em, value 0.90em), `overflow:hidden` added to contain text within
+  card boundaries.
+
+### Bug Fixes
+- **Post scheduling silently broken** — flatpickr's `s` format token produced
+  seconds without leading zeros (`12:30:0` instead of `12:30:00`), causing the
+  DATESTR regex to reject every calendar-picked date. `getstr()` fell back to
+  the one-week default. Fixed by using flatpickr's `S` token (2-digit-padded
+  seconds). Added client-side validation that blocks submission on malformed
+  dates and shows Bootstrap `is-invalid` feedback.
+- **Appearance controls had no effect on preview** — HTML IDs used hyphens
+  (`weather-layout-mode`) while `readFormConfig` built lookups with underscores
+  (`weather-layout_mode`). `getElementById` returned null for all five
+  appearance controls. Changed all IDs to use underscores matching config keys.
+- **Metric All/None toggles didn't update preview** — jQuery `.prop()` doesn't
+  fire DOM events, so the delegated change handler never saw the update. Added
+  `.trigger('change')`.
+- **Dead code removed** — orphaned `receive()` and `renderer_js()` wrapper
+  functions in `post_types/__init__.py` and `external_source_types/__init__.py`.
+- Fixed `external_webpage` module docstring referencing wrong module name.
+
+### New Features
+- **Bulk image upload** — new `/feeds/<id>/bulk_upload` page with shared
+  scheduling (lifetime, time restrictions, recurrence), drag-and-drop, preview
+  grid, and per-image custom titles.
+- **Screen performance fixes** — reduced `isOnline` divergence in weather
+  widget, fixed weather resource leaks (timers, ResizeObserver, listeners).
+- **Fuzz/regression test script** added under `scripts/dev/`.
+
+### Documentation
+- **ARCHITECTURE.md** — comprehensive project architecture document covering
+  technology stack, route map, DB schema, authentication, plugin systems,
+  screen rendering pipeline, and key design decisions.
+
 ## v1.3.0 — Weather Post Type & Bug Fixes
 
 This release adds a live weather display post type powered by wttr.in, plus
