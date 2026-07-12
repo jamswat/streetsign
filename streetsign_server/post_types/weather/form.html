@@ -160,16 +160,16 @@
 
                 <div class="row g-3">
                     <div class="col-6">
-                        <label class="form-label" for="weather-font-mode">Font sizing</label>
-                        <select class="form-select" id="weather-font-mode" name="font_size_mode">
+                        <label class="form-label" for="weather-font_size_mode">Font sizing</label>
+                        <select class="form-select" id="weather-font_size_mode" name="font_size_mode">
                             <option value="auto" {{ 'selected' if font_size_mode|default('auto') == 'auto' else '' }}>Auto-fit</option>
                             <option value="manual" {{ 'selected' if font_size_mode == 'manual' else '' }}>Manual</option>
                         </select>
                         <div class="form-text">Auto-fit scales text to fill the zone.</div>
                     </div>
                     <div class="col-6" id="weather-font-size-group" {{ 'style="display:none"' if font_size_mode|default('auto') != 'manual' else '' }}>
-                        <label class="form-label" for="weather-font-size">Font size (px)</label>
-                        <input type="number" class="form-control" id="weather-font-size"
+                        <label class="form-label" for="weather-font_size">Font size (px)</label>
+                        <input type="number" class="form-control" id="weather-font_size"
                                name="font_size" value="{{ font_size or '' }}"
                                min="10" max="500" placeholder="40" />
                     </div>
@@ -177,8 +177,8 @@
 
                 <div class="row g-3 mt-2">
                     <div class="col-6">
-                        <label class="form-label" for="weather-layout-mode">Layout mode</label>
-                        <select class="form-select" id="weather-layout-mode" name="layout_mode">
+                        <label class="form-label" for="weather-layout_mode">Layout mode</label>
+                        <select class="form-select" id="weather-layout_mode" name="layout_mode">
                             <option value="auto" {{ 'selected' if layout_mode|default('auto') == 'auto' else '' }}>Auto (by shape)</option>
                             <option value="landscape" {{ 'selected' if layout_mode == 'landscape' else '' }}>Landscape</option>
                             <option value="portrait" {{ 'selected' if layout_mode == 'portrait' else '' }}>Portrait</option>
@@ -187,8 +187,8 @@
                         <div class="form-text">Force a specific grid layout regardless of zone aspect ratio.</div>
                     </div>
                     <div class="col-6">
-                        <label class="form-label" for="weather-metrics-layout">Metrics style</label>
-                        <select class="form-select" id="weather-metrics-layout" name="metrics_layout">
+                        <label class="form-label" for="weather-metrics_layout">Metrics style</label>
+                        <select class="form-select" id="weather-metrics_layout" name="metrics_layout">
                             <option value="cards" {{ 'selected' if metrics_layout|default('cards') == 'cards' else '' }}>Cards</option>
                             <option value="inline" {{ 'selected' if metrics_layout == 'inline' else '' }}>Inline pills</option>
                         </select>
@@ -197,8 +197,8 @@
                 </div>
 
                 <div class="mt-3">
-                    <label class="form-label" for="weather-status-position">Refresh status</label>
-                    <select class="form-select" id="weather-status-position" name="status_position">
+                    <label class="form-label" for="weather-status_position">Refresh status</label>
+                    <select class="form-select" id="weather-status_position" name="status_position">
                         <option value="header" {{ 'selected' if status_position|default('header') == 'header' else '' }}>In header bar</option>
                         <option value="corner" {{ 'selected' if status_position == 'corner' else '' }}>Corner overlay</option>
                         <option value="hidden" {{ 'selected' if status_position == 'hidden' else '' }}>Hidden</option>
@@ -399,7 +399,7 @@ $(function() {
         $color.on('input', function() { $txt.val($color.val()); });
     });
 
-    var $fontMode = $('#weather-font-mode');
+    var $fontMode = $('#weather-font_size_mode');
     var $fontSize = $('#weather-font-size-group');
     $fontMode.on('change', function() {
         $fontSize.toggle($fontMode.val() === 'manual');
@@ -407,11 +407,11 @@ $(function() {
 
     $('#weather-metrics-all').on('click', function(e) {
         e.preventDefault();
-        $('.weather-metric-check').prop('checked', true);
+        $('.weather-metric-check').prop('checked', true).trigger('change');
     });
     $('#weather-metrics-none').on('click', function(e) {
         e.preventDefault();
-        $('.weather-metric-check').prop('checked', false);
+        $('.weather-metric-check').prop('checked', false).trigger('change');
     });
 
     var map = document.getElementById('weather-map-picker');
