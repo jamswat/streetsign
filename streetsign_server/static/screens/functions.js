@@ -163,21 +163,21 @@ function reload_page() {
 
 function reduce_font_size_to_fit(inner, outer) {
     'use strict';
-    let percent = 100;
-    const zone_height = $(outer).height();
-    let zone_width = $(outer).width();
-    let i = 100;
-    const scrolling = outer[0].className.indexOf('scroll') !== -1;
-    const img_sizes = {};
+    var percent = 100;
+    var zone_height = $(outer).height();
+    var zone_width = $(outer).width();
+    var i = 100;
+    var scrolling = outer[0].className.indexOf('scroll') !== -1;
+    var img_sizes = {};
 
     if (scrolling) {
         zone_width = 900000;
     }
 
-    $(inner).find('img').each(function(idx, img) {
-        const $img = $(img);
-        const w = $img.attr('width');
-        const h = $img.attr('height');
+    inner.find('img').each(function(idx, img) {
+        var $img = $(img);
+        var w = $img.attr('width');
+        var h = $img.attr('height');
         if (w && h) {
             img_sizes[idx] = { 'width%': parseFloat(w) / 100,
                                'height%': parseFloat(h) / 100 };
@@ -185,8 +185,10 @@ function reduce_font_size_to_fit(inner, outer) {
     });
 
     while (i > 1) {
-        const height = inner.height();
-        const width = inner.width();
+        inner.css('font-size', percent + '%');
+
+        var height = inner[0].offsetHeight;
+        var width = inner[0].scrollWidth;
 
         i = i / 2;
         if ((height < zone_height - 5) || ((!scrolling) && (width < zone_width - 5))) {
@@ -194,17 +196,16 @@ function reduce_font_size_to_fit(inner, outer) {
         } else if ((height > zone_height + 5) || ((!scrolling) && (width > zone_width + 5))) {
             percent -= i;
         }
-
-        inner.css('font-size', percent + '%');
-        inner.find('img').each(function(idx, img) {
-            const $img = $(img);
-            if (img_sizes[idx]) {
-                $img.attr('width', img_sizes[idx]['width%'] * percent);
-                $img.attr('height', img_sizes[idx]['height%'] * percent);
-            }
-        });
     }
+
     inner.css('font-size', parseInt(percent) + '%');
+    inner.find('img').each(function(idx, img) {
+        var $img = $(img);
+        if (img_sizes[idx]) {
+            $img.attr('width', img_sizes[idx]['width%'] * percent);
+            $img.attr('height', img_sizes[idx]['height%'] * percent);
+        }
+    });
     console.log('reducing font size to ' + parseInt(percent) + '%');
 }
 

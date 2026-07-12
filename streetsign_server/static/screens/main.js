@@ -114,7 +114,7 @@ Zone.prototype = {
         new_data.width = new_data.el.scrollWidth;
         new_data.height = new_data.el.scrollHeight;
 
-        new_data.el.style.transition = `opacity 0.${this.fadetime}s`;
+        new_data.el.style.transition = 'opacity ' + (this.fadetime / 1000).toFixed(3) + 's';
         this.posts.push(new_data);
     },
 
@@ -138,7 +138,7 @@ Zone.prototype = {
                     post.height = post.el.offsetHeight;
                     $(post.el).css('opacity', old_opacity);
                     that.el.style.opacity = 1;
-                }, 1000);
+                }, that.fadetime);
             } else {
                 console.log(`replacing content in post:${post.id}`);
                 post.el.remove();
@@ -400,14 +400,49 @@ function make_updater(zone) {
 
         posts_to_drop.sort().reverse();
 
-        for (let i = 0; i < posts_to_drop.length; i += 1) {
+        for (var i = 0; i < posts_to_drop.length; i += 1) {
             zone.posts.splice(posts_to_drop[i], 1);
         }
 
-        for (let i = 0; i < data.posts.length; i += 1) {
+        var newUris = [];
+        for (var i = 0; i < data.posts.length; i += 1) {
             if (current_post_ids.indexOf(data.posts[i].id) === -1) {
-                safeGetJSON(data.posts[i].uri, (x) => { zone.addPost(x); });
+                newUris.push(data.posts[i].uri);
             }
         }
+        if (newUris.length) { fetchNewPosts(zone, newUris); }
     };
+}
+
+var _newPostQueues = {};
+var _newPostActive = {};
+
+function fetchNewPosts(zone, uris) {
+    if (!_newPostQueues[zone.name]) {
+        _newPostQueues[zone.name] = [];
+        _newPostActive[zone.name] = 0;
+    }
+    _newPostQueues[zone.name].push.apply(_newPostQueues[zone.name], uris);
+    _drainQueue(zone);
+}
+
+function _drainQueue(zone) {
+    var maxConcurrent = 4;
+    var queue = _newPostQueues[zone.name];
+    if (!queue) return;
+
+    while (_newPostActive[zone.name] < maxConcurrent && queue.length) {
+        var uri = queue.shift();
+        _newPostActive[zone.name] += 1;
+        safeGetJSON(uri, (function() {
+            var thatZone = zone;
+            return function(postData) {
+                _newPostActive[thatZone.name] -= 1;
+                requestAnimationFrame(function () {
+                    thatZone.addPost(postData);
+                    _drainQueue(thatZone);
+                });
+            };
+        })());
+    }
 }

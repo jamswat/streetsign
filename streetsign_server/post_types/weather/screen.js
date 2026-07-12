@@ -351,9 +351,6 @@ _WeatherWidget.prototype = {
             this._ro.observe(this.zone);
         }
         update();
-
-        var self2 = this;
-        setTimeout(function () { self2._fit(); }, 200);
     },
 
     _startOnlineListeners: function () {
@@ -394,6 +391,13 @@ _WeatherWidget.prototype = {
         var zw = this.zone.clientWidth;
         if (!zh || !zw) return;
 
+        if (zh === this._lastZoneH && zw === this._lastZoneW && this._lastFontSize) {
+            this.container.style.fontSize = this._lastFontSize;
+            return;
+        }
+        this._lastZoneH = zh;
+        this._lastZoneW = zw;
+
         var lo = 18, hi = Math.max(600, Math.floor(zh / 3)), best = lo;
 
         /* Grid cells have overflow:hidden, which makes CSS Grid treat their
@@ -425,7 +429,7 @@ _WeatherWidget.prototype = {
         var atmosPrev = atmos ? atmos.style.display : '';
         if (atmos) atmos.style.display = 'none';
 
-        for (var i = 0; i < 22; i++) {
+        for (var i = 0; i < 14; i++) {
             var mid = (lo + hi) / 2;
             this.container.style.fontSize = mid + 'px';
 
@@ -444,6 +448,7 @@ _WeatherWidget.prototype = {
         }
         if (atmos) atmos.style.display = atmosPrev;
         this.container.style.fontSize = best + 'px';
+        this._lastFontSize = best + 'px';
     },
 
     /* ---- data helpers ---- */
@@ -574,6 +579,8 @@ _WeatherWidget.prototype = {
         this.$forecast.html(f);
 
         this._updateStatus();
+        this._lastZoneH = null;
+        this._lastZoneW = null;
         this._fit();
     },
 
@@ -657,6 +664,8 @@ _WeatherWidget.prototype = {
             '<span class="ww-stat-dot">\u00B7</span>' +
             '<span>Retrying\u2026</span>'
         );
+        this._lastZoneH = null;
+        this._lastZoneW = null;
         this._fit();
     },
 
@@ -748,7 +757,7 @@ _WeatherWidget.prototype = {
                 var ss = Math.floor((rem % 60000) / 1000);
                 el.textContent = 'refresh in ' + mm + 'm ' + String(ss).padStart(2, '0') + 's';
             }
-        }, 1000);
+        }, 10000);
     }
 };
 
@@ -814,7 +823,6 @@ _WeatherWidget.prototype = {
     background:
         radial-gradient(circle at 25% 30%, var(--ww-glow-a, rgba(200,184,255,0.22)), transparent 30%),
         radial-gradient(circle at 75% 55%, var(--ww-glow-b, rgba(91,191,239,0.18)), transparent 32%);
-    filter: blur(0.18em);
 }
 .ww-atmosphere {
     position: absolute;
@@ -1023,7 +1031,7 @@ _WeatherWidget.prototype = {
 .ww-metric {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     flex: 1 1 calc(50% - 0.35em);
     min-width: 0;
     overflow: hidden;
@@ -1031,9 +1039,8 @@ _WeatherWidget.prototype = {
     padding: 0.45em 0.60em;
     border: 0.035em solid rgba(255,255,255,0.13);
     border-radius: 0.38em;
-    background: rgba(255,255,255,0.085);
+    background: rgba(255,255,255,0.13);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0.16em 0.45em rgba(0,0,0,0.12);
-    backdrop-filter: blur(0.2em);
 }
 .ww-metric-label {
     max-width: 100%;
@@ -1078,11 +1085,10 @@ _WeatherWidget.prototype = {
     align-items: center;
     gap: 0.12em;
     padding: 0.45em 0.60em;
-    background: linear-gradient(160deg, rgba(255,255,255,0.13), rgba(255,255,255,0.055));
+    background: linear-gradient(160deg, rgba(255,255,255,0.18), rgba(255,255,255,0.09));
     border: 0.035em solid rgba(255,255,255,0.14);
     border-radius: 0.45em;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0.18em 0.55em rgba(0,0,0,0.16);
-    backdrop-filter: blur(0.2em);
 }
 .ww-fc-date {
     max-width: 100%;
@@ -1333,10 +1339,7 @@ return {
 
         if (visClasses.length) $container.addClass(visClasses.join(' '));
 
-        /* Re-measure now that visibility/layout classes are applied, so the
-           first fit uses the correct DOM state instead of measuring before
-           classes like ww-no-metrics / ww-no-forecast are present. */
-        widget._fit();
+        requestAnimationFrame(function () { widget._fit(); });
 
         $container.data('weather-widget', widget);
 

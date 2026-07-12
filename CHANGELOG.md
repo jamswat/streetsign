@@ -1,5 +1,44 @@
 # Changelog
 
+## v1.3.2 — Display Performance & Feed Permission Display
+
+### Performance — Display Screen Rendering
+- **Weather widget compositing** — removed `backdrop-filter: blur()` from metric
+  and forecast cards, and `filter: blur()` from the atmosphere overlay. These
+  forced expensive GPU re-compositing on every frame during fade transitions,
+  causing stutter on screens with weather + image slideshow zones. Cards now use
+  a slightly more opaque flat background.
+- **Weather `_fit()` optimised** — added zone-size caching so `_fit()` only
+  re-measures when dimensions change; content refreshes still trigger re-fit
+  correctly. Cap reduced from 22 to 14 iterations. Duplicate delayed-fit
+  call at init removed. Countdown timer interval increased from 1s to 10s.
+- **Font auto-fit de-thrashed** — `reduce_font_size_to_fit()` now resizes images
+  once after the binary search instead of every iteration, and uses native DOM
+  size reads instead of jQuery.
+- **Post-fetch waterfall** — new posts from poll responses are now fetched with
+  a concurrency cap (4 in flight) and added via `requestAnimationFrame` batching
+  instead of all firing at once.
+- **Fade-time format bug fixed** — inline transition style now correctly
+  constructs e.g. `opacity 1.000s` for fadetime=1000 instead of the broken
+  `opacity 0.1000s` (=0.1s). `updatePost` content-swap delay now respects
+  the configured fadetime instead of a hardcoded 1000ms.
+- **`notrans` scroll rewritten** — replaced `requestAnimationFrame` loop
+  animating `style.left` (layout-triggering, no GPU acceleration) with a CSS
+  `@keyframes` + `transform: translateX(...)` animation matching `basic.js`.
+  Stylesheet is now cleaned up when the scroll post hides.
+- **`will-change: transform`** added to `.zone_scroll .post` for GPU layer
+  promotion.
+- **`web_hook` display/hide** — replaced jQuery `fadeOut()/fadeIn()` on the
+  entire `#zones` container with a CSS opacity transition.
+- **Dead CSS removed** — `.post.faded_in` rules (class never applied by JS).
+
+### Feed Permission Display
+- **Feed view now shows effective permissions** — the read-only Authors and
+  Publishers lists on a feed page include users who gain access via group
+  membership, not just those with explicit per-user permissions. Duplicate
+  entries (user with explicit + group-derived access) are merged to a single
+  entry. Admin permission form still uses explicit-only lists for editing.
+
 ## v1.3.1 — Weather Overhaul, Bulk Upload & Scheduling Fix
 
 ### Weather Post Type Overhaul

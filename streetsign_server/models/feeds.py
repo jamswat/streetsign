@@ -93,6 +93,30 @@ class Feed(DBModel):
         return [p.group for p in self.permissions
                 if p.publish == True and p.group]
 
+    def effective_authors(self):
+        ''' All users who can write — explicit + group members, deduplicated. '''
+        result = {}
+        for p in self.permissions:
+            if p.write and p.user:
+                result[p.user_id] = p.user
+        for p in self.permissions:
+            if p.write and p.group:
+                for user in p.group.users():
+                    result.setdefault(user.id, user)
+        return list(result.values())
+
+    def effective_publishers(self):
+        ''' All users who can publish — explicit + group members, deduplicated. '''
+        result = {}
+        for p in self.permissions:
+            if p.publish and p.user:
+                result[p.user_id] = p.user
+        for p in self.permissions:
+            if p.publish and p.group:
+                for user in p.group.users():
+                    result.setdefault(user.id, user)
+        return list(result.values())
+
     def user_can_read(self, user):
         ''' Checks read permission for a feed.  Not really used, as yet. '''
         if not user or user.id is None:

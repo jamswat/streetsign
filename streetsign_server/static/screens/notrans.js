@@ -48,44 +48,44 @@ const zone_types = {
     },
     scroll: {
         start(post, cb) {
-            // Fill any magic_time/magic_date placeholders before measuring the
-            // scroll width, so the animation distance reflects the real text.
-            fill_magic_vars(post.el);
-            post.width = post.el.scrollWidth;
+            let stylesheet;
 
-            const total_distance = post.zone.width + post.width;
-            const end_left = 0 - post.width;
-            let current_left = post.zone.width;
-            let start_time = null;
+            if (!post.scroll_stylesheet) {
+                fill_magic_vars(post.el);
+                post.width = post.el.scrollWidth;
 
-            const mover = function(timestamp) {
-                if (start_time === null) start_time = timestamp;
-                const progress = timestamp - start_time;
+                stylesheet = document.createElement('style');
+                stylesheet.appendChild(document.createTextNode(
+                    `@keyframes slide_${post.id}`
+                    + ` { from { transform: translateX(${post.zone.width}px) }`
+                    + ` to { transform: translateX(-${post.width}px)}}`
+                ));
 
-                if (current_left > end_left) {
-                    const new_left = (total_distance / post.display_time) * (post.display_time - progress) - post.width;
-                    if (new_left < current_left - 1) {
-                        current_left = new_left;
-                    } else if (new_left > current_left) {
-                        return;
-                    }
-                    post.el.style.left = current_left + 'px';
-                    requestAnimationFrame(mover);
-                }
-            };
+                post.scroll_stylesheet = document.head.appendChild(stylesheet);
+            }
 
-            requestAnimationFrame(mover);
             post.el.style.display = 'block';
-            post.el.style.opacity = 1;
+            post.el.style.opacity = 0;
             post.display_time = (post.width + post.zone.width) * 14;
+
+            post.el.style.opacity = '1';
+            const css = `slide_${post.id} ${parseInt(post.display_time / 1000)}s linear 0s 1 both`;
+            post.el.style.animation = css;
 
             cb && cb();
         },
         stop(post, cb) {
+            post.zone.el.style.opacity = 0;
+
             setTimeout(() => {
+                post.el.style.display = 'none';
                 post.el.style.animation = '';
                 post.el.style.opacity = 0;
                 post.zone.el.style.opacity = 1;
+                if (post.scroll_stylesheet && post.scroll_stylesheet.parentNode) {
+                    post.scroll_stylesheet.parentNode.removeChild(post.scroll_stylesheet);
+                }
+                post.scroll_stylesheet = null;
                 cb && cb();
             }, 1001);
         }

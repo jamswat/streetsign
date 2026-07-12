@@ -117,7 +117,7 @@
 
         <h2>Authors who can post here</h2>
         <ul class="list-unstyled">
-        {% for u in feed.authors() %}
+        {% for u in feed.effective_authors() %}
           <li>{{ linkmacros.user(u) }}</li>
         {% endfor %}
         </ul>
@@ -127,7 +127,7 @@
 
         <h2>Publishers</h2>
         <ul class="list-unstyled">
-        {% for u in feed.publishers() %}
+        {% for u in feed.effective_publishers() %}
           <li>{{ linkmacros.user(u) }}</li>
         {% endfor %}
         </ul>

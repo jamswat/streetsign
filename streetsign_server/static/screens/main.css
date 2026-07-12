@@ -38,12 +38,6 @@ div.zone {
     transition: var(--zone-transition);
     will-change: opacity;
 }
-
-.post.faded_in {
-    opacity: 1;
-    transition: var(--zone-transition);
-}
-
 .zone_scroll .post {
     position: absolute;
     /* Anchor to the zone's top-left corner. The parent .zone is a flex
@@ -59,6 +53,7 @@ div.zone {
     height: 100%;
     white-space: nowrap;
     opacity: 0;
+    will-change: transform;
 }
 
 .zone_ div.post_inner, .zone_fade div.post_inner {
@@ -95,8 +90,7 @@ div.zone {
 @media (prefers-reduced-motion: reduce) {
     div.zone,
     .zone_ .post,
-    .zone_fade .post,
-    .post.faded_in {
+    .zone_fade .post {
         transition: none;
     }
 }
