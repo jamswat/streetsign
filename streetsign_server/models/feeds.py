@@ -432,16 +432,35 @@ class Post(DBModel):
 
         # TODO: split this out to the various post_type modules, and cache it.
         try:
-            content = safe_json_load(self.content, {'content':'None'})['content']
+            content = safe_json_load(self.content,
+                                     {'content': 'N/A'}).get('content', 'N/A')
         except KeyError:
-            content = "N/A"
+            content = 'N/A'
 
-        if self.type == 'image':
-            safe_name = Markup.escape(content)
-            return Markup(
-                f'<img src="{url_for("thumbnail", filename="post_images/"+content)}"'
-                f' alt="{safe_name}" />')
-        return self.title + ' (' + self.type + ')'
+        icon = {
+            'text': 'bi-fonts',
+            'html': 'bi-filetype-html',
+            'image': 'bi-card-image',
+            'video': 'bi-camera-video',
+            'weather': 'bi-cloud-sun',
+            'web_hook': 'bi-plug',
+            'external_webpage': 'bi-window',
+            'raw_html': 'bi-code-slash',
+        }.get(self.type, 'bi-file-earmark')
+
+        icon_html = Markup(f'<i class="bi {icon} me-1"></i>')
+
+        if self.type == 'image' and content and content != 'N/A':
+            safe_content = Markup.escape(str(content))
+            thumb_url = url_for('thumbnail',
+                                filename='post_images/' + str(content))
+            thumb_html = Markup(
+                f'<img src="{thumb_url}" alt="{safe_content}"'
+                f' class="post-thumbnail" /> '
+            )
+            return thumb_html + icon_html + Markup.escape(self.title)
+
+        return icon_html + Markup.escape(self.title)
 
     def dict_repr(self):
         ''' must give all info, for use on screens, etc. '''

@@ -349,3 +349,12 @@ tr.time_now:nth-child(odd) {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
+
+.post-thumbnail {
+    max-height: 2.5em;
+    max-width: 4em;
+    vertical-align: middle;
+    border-radius: 0.25em;
+    object-fit: cover;
+}
+}
