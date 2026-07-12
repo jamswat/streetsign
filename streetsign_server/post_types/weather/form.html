@@ -2,6 +2,7 @@
 
 <div class="row">
     <div class="col-md-6">
+
         <div class="card mb-3">
             <div class="card-header"><h6 class="card-title mb-0">Location</h6></div>
             <div class="card-body">
@@ -70,21 +71,23 @@
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="weather-interval">Update every (minutes)</label>
-                    <input type="number" class="form-control" id="weather-interval"
+                    <label class="form-label" for="weather-update_interval_min">Update every (minutes)</label>
+                    <input type="number" class="form-control" id="weather-update_interval_min"
                            name="update_interval_min" value="{{ update_interval_min or 45 }}"
                            min="5" max="360" />
                     <div class="form-text">Min 5, max 360.  Between fetches the last data stays cached.</div>
                 </div>
             </div>
         </div>
+
     </div>
 
     <div class="col-md-6">
+
         <div class="card mb-3">
             <div class="card-header"><h6 class="card-title mb-0">Appearance</h6></div>
             <div class="card-body">
-                <div class="row g-3">
+                <div class="row g-3 mb-3">
                     <div class="col-6">
                         <label class="form-label" for="weather-bg">Background</label>
                         <div class="input-group">
@@ -152,6 +155,134 @@
                         </div>
                     </div>
                 </div>
+
+                <hr />
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label" for="weather-font-mode">Font sizing</label>
+                        <select class="form-select" id="weather-font-mode" name="font_size_mode">
+                            <option value="auto" {{ 'selected' if font_size_mode|default('auto') == 'auto' else '' }}>Auto-fit</option>
+                            <option value="manual" {{ 'selected' if font_size_mode == 'manual' else '' }}>Manual</option>
+                        </select>
+                        <div class="form-text">Auto-fit scales text to fill the zone.</div>
+                    </div>
+                    <div class="col-6" id="weather-font-size-group" {{ 'style="display:none"' if font_size_mode|default('auto') != 'manual' else '' }}>
+                        <label class="form-label" for="weather-font-size">Font size (px)</label>
+                        <input type="number" class="form-control" id="weather-font-size"
+                               name="font_size" value="{{ font_size or '' }}"
+                               min="10" max="500" placeholder="40" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-6">
+                        <label class="form-label" for="weather-layout-mode">Layout mode</label>
+                        <select class="form-select" id="weather-layout-mode" name="layout_mode">
+                            <option value="auto" {{ 'selected' if layout_mode|default('auto') == 'auto' else '' }}>Auto (by shape)</option>
+                            <option value="landscape" {{ 'selected' if layout_mode == 'landscape' else '' }}>Landscape</option>
+                            <option value="portrait" {{ 'selected' if layout_mode == 'portrait' else '' }}>Portrait</option>
+                            <option value="square" {{ 'selected' if layout_mode == 'square' else '' }}>Square</option>
+                        </select>
+                        <div class="form-text">Force a specific grid layout regardless of zone aspect ratio.</div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="weather-metrics-layout">Metrics style</label>
+                        <select class="form-select" id="weather-metrics-layout" name="metrics_layout">
+                            <option value="cards" {{ 'selected' if metrics_layout|default('cards') == 'cards' else '' }}>Cards</option>
+                            <option value="inline" {{ 'selected' if metrics_layout == 'inline' else '' }}>Inline pills</option>
+                        </select>
+                        <div class="form-text">Cards work best for many metrics; inline pills suit 2&ndash;4.</div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="form-label" for="weather-status-position">Refresh status</label>
+                    <select class="form-select" id="weather-status-position" name="status_position">
+                        <option value="header" {{ 'selected' if status_position|default('header') == 'header' else '' }}>In header bar</option>
+                        <option value="corner" {{ 'selected' if status_position == 'corner' else '' }}>Corner overlay</option>
+                        <option value="hidden" {{ 'selected' if status_position == 'hidden' else '' }}>Hidden</option>
+                    </select>
+                    <div class="form-text">Shows when data was last updated.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="card-title mb-0">Metrics</h6>
+                    <span class="weather-metrics-toggle-links">
+                        <a href="#" id="weather-metrics-all">All</a>
+                        &nbsp;/&nbsp;
+                        <a href="#" id="weather-metrics-none">None</a>
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-0">
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_feels_like" name="show_feels_like" value="1"
+                               {{ 'checked' if show_feels_like|default(true) else '' }} />
+                        <label class="form-check-label" for="weather-show_feels_like">Feels like temperature</label>
+                    </div></div>
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_humidity" name="show_humidity" value="1"
+                               {{ 'checked' if show_humidity|default(true) else '' }} />
+                        <label class="form-check-label" for="weather-show_humidity">Humidity</label>
+                    </div></div>
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_wind_speed" name="show_wind_speed" value="1"
+                               {{ 'checked' if show_wind_speed|default(true) else '' }} />
+                        <label class="form-check-label" for="weather-show_wind_speed">Wind speed</label>
+                    </div></div>
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_wind_direction" name="show_wind_direction" value="1"
+                               {{ 'checked' if show_wind_direction|default(false) else '' }} />
+                        <label class="form-check-label" for="weather-show_wind_direction">Wind direction</label>
+                    </div></div>
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_uv" name="show_uv" value="1"
+                               {{ 'checked' if show_uv|default(true) else '' }} />
+                        <label class="form-check-label" for="weather-show_uv">UV Index</label>
+                    </div></div>
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_cloud_cover" name="show_cloud_cover" value="1"
+                               {{ 'checked' if show_cloud_cover|default(false) else '' }} />
+                        <label class="form-check-label" for="weather-show_cloud_cover">Cloud cover</label>
+                    </div></div>
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_pressure" name="show_pressure" value="1"
+                               {{ 'checked' if show_pressure|default(false) else '' }} />
+                        <label class="form-check-label" for="weather-show_pressure">Atmospheric pressure</label>
+                    </div></div>
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_visibility" name="show_visibility" value="1"
+                               {{ 'checked' if show_visibility|default(false) else '' }} />
+                        <label class="form-check-label" for="weather-show_visibility">Visibility</label>
+                    </div></div>
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_precipitation" name="show_precipitation" value="1"
+                               {{ 'checked' if show_precipitation|default(false) else '' }} />
+                        <label class="form-check-label" for="weather-show_precipitation">Precipitation</label>
+                    </div></div>
+                    <div class="col-6"><div class="form-check form-check-sm mb-1">
+                        <input class="form-check-input weather-metric-check" type="checkbox"
+                               id="weather-show_sun_times" name="show_sun_times" value="1"
+                               {{ 'checked' if show_sun_times|default(true) else '' }} />
+                        <label class="form-check-label" for="weather-show_sun_times">Sunrise &amp; sunset</label>
+                    </div></div>
+                </div>
+                <div class="form-text mt-2">Pick exactly which metrics to show. Unused space auto-scales to enlarge the hero area.</div>
             </div>
         </div>
 
@@ -164,18 +295,6 @@
                            {{ 'checked' if show_forecast|default(True) else '' }} />
                     <label class="form-check-label" for="weather-show-forecast">Show 2-day forecast cards</label>
                 </div>
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" role="switch"
-                           id="weather-show-metrics" name="show_metrics" value="1"
-                           {{ 'checked' if show_metrics|default(True) else '' }} />
-                    <label class="form-check-label" for="weather-show-metrics">Show metrics (feels like, humidity, wind, UV)</label>
-                </div>
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" role="switch"
-                           id="weather-show-sun" name="show_sun_times" value="1"
-                           {{ 'checked' if show_sun_times|default(True) else '' }} />
-                    <label class="form-check-label" for="weather-show-sun">Show sunrise &amp; sunset</label>
-                </div>
                 <div class="form-check form-switch mb-0">
                     <input class="form-check-input" type="checkbox" role="switch"
                            id="weather-show-atmosphere" name="show_atmosphere" value="1"
@@ -183,6 +302,33 @@
                     <label class="form-check-label" for="weather-show-atmosphere">Use atmospheric weather background</label>
                     <div class="form-text">Adds weather-aware gradients and the large ambient condition icon.</div>
                 </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="card mb-3" id="weather-preview-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="card-title mb-0">Live Preview</h6>
+        <div>
+            <span class="text-muted me-2" style="font-size:0.8em">Aspect:</span>
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-secondary preview-aspect active" data-w="16" data-h="9">16:9</button>
+                <button type="button" class="btn btn-outline-secondary preview-aspect" data-w="4" data-h="3">4:3</button>
+                <button type="button" class="btn btn-outline-secondary preview-aspect" data-w="1" data-h="1">1:1</button>
+                <button type="button" class="btn btn-outline-secondary preview-aspect" data-w="9" data-h="16">9:16</button>
+                <button type="button" class="btn btn-outline-secondary preview-aspect" data-w="0" data-h="0">Free</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-2 d-flex justify-content-center">
+        <div id="weather-preview" style="position:relative; width:640px; max-width:100%; height:320px; overflow:hidden; border:2px dashed var(--bs-border-color); border-radius:var(--bs-border-radius); min-width:140px; min-height:100px;">
+            <div id="weather-preview-handle"
+                 style="position:absolute; right:0; bottom:0; width:20px; height:20px; cursor:nwse-resize; z-index:10;
+                        background:linear-gradient(135deg, transparent 8px, rgba(128,128,128,0.45) 8px, rgba(128,128,128,0.45) 11px, transparent 11px),
+                                   linear-gradient(135deg, transparent 15px, rgba(128,128,128,0.20) 15px);
+                        border-radius: 0 0 calc(var(--bs-border-radius) - 1px) 0;">
             </div>
         </div>
     </div>
@@ -242,15 +388,30 @@
 }
 .weather-map-help { left: 0.5rem; top: 0.5rem; }
 .weather-map-attribution { right: 0.5rem; bottom: 0.5rem; }
+.weather-metrics-toggle-links a { font-size: 0.82em; }
 </style>
 
 <script type="text/javascript">
 $(function() {
-    // Sync color picker values with their text readouts.
     ['bg', 'text', 'accent', 'high', 'low', 'rain'].forEach(function(name) {
         var $color = $('#weather-' + name);
         var $txt   = $('#weather-' + name + '-txt');
         $color.on('input', function() { $txt.val($color.val()); });
+    });
+
+    var $fontMode = $('#weather-font-mode');
+    var $fontSize = $('#weather-font-size-group');
+    $fontMode.on('change', function() {
+        $fontSize.toggle($fontMode.val() === 'manual');
+    });
+
+    $('#weather-metrics-all').on('click', function(e) {
+        e.preventDefault();
+        $('.weather-metric-check').prop('checked', true);
+    });
+    $('#weather-metrics-none').on('click', function(e) {
+        e.preventDefault();
+        $('.weather-metric-check').prop('checked', false);
     });
 
     var map = document.getElementById('weather-map-picker');
@@ -348,7 +509,6 @@ $(function() {
         renderMap();
     });
 
-    /* ---- drag panning (mouse + touch) ---- */
     var dragging = false;
     var dragLastX = 0, dragLastY = 0;
 
@@ -411,5 +571,234 @@ $(function() {
     });
     $(window).on('resize', renderMap);
     renderMap();
+
+    /* ---- preview ---- */
+
+    var $preview = $('#weather-preview');
+    var $handle  = $('#weather-preview-handle');
+    var previewWidget = null;
+    var previewRatio = { w: 16, h: 9 };
+
+    function makeDummyData(location, units) {
+        var tf = units === 'F' ? 'F' : 'C';
+        var temp = tf === 'F' ? 68 : 20;
+        var hi = tf === 'F' ? 74 : 23;
+        var lo = tf === 'F' ? 59 : 15;
+        var feel = tf === 'F' ? 66 : 19;
+        var windKM = 15, windMI = 9;
+        var pressMB = 1024, pressIN = 30;
+        var visKM = 10, visMI = 6;
+        var precipMM = 0.0, precipIN = 0.0;
+        var sunrise = '06:12 AM', sunset = '08:45 PM';
+        var obsTime = '02:30 PM';
+
+        return {
+            current_condition: [{
+                temp_C: String(temp), temp_F: String(tf === 'F' ? temp : Math.round(temp * 9/5 + 32)),
+                FeelsLikeC: String(feel), FeelsLikeF: String(tf === 'F' ? feel : Math.round(feel * 9/5 + 32)),
+                humidity: '65', windspeedKmph: String(windKM), windspeedMiles: String(windMI),
+                winddir16Point: 'SW', winddirDegree: '225', uvIndex: '4',
+                cloudcover: '40', pressure: String(pressMB), pressureInches: String(pressIN),
+                precipMM: String(precipMM), precipInches: String(precipIN),
+                visibility: String(visKM), visibilityMiles: String(visMI),
+                weatherCode: '116', weatherDesc: [{value: 'Partly cloudy'}],
+                observation_time: obsTime, localObsDateTime: '2026-07-12 ' + obsTime
+            }],
+            weather: [
+                { date: '2026-07-12', astronomy: [{sunrise: sunrise, sunset: sunset}],
+                  maxtempC: String(hi), maxtempF: String(Math.round(hi * 9/5 + 32)),
+                  mintempC: String(lo), mintempF: String(Math.round(lo * 9/5 + 32)),
+                  hourly: Array.from({length: 8}, function(_, i) { return { chanceofrain: String((i % 3) * 20), weatherCode: String(116 + (i % 3) * 3) }; })
+                },
+                { date: '2026-07-13', astronomy: [{sunrise: '06:13 AM', sunset: '08:44 PM'}],
+                  maxtempC: String(hi + 2), maxtempF: String(Math.round((hi + 2) * 9/5 + 32)),
+                  mintempC: String(lo + 2), mintempF: String(Math.round((lo + 2) * 9/5 + 32)),
+                  hourly: Array.from({length: 8}, function(_, i) { return { chanceofrain: String((i % 3) * 15), weatherCode: String(113 + (i % 3) * 3) }; })
+                },
+                { date: '2026-07-14', astronomy: [{sunrise: '06:14 AM', sunset: '08:43 PM'}],
+                  maxtempC: String(hi + 4), maxtempF: String(Math.round((hi + 4) * 9/5 + 32)),
+                  mintempC: String(lo + 3), mintempF: String(Math.round((lo + 3) * 9/5 + 32)),
+                  hourly: Array.from({length: 8}, function(_, i) { return { chanceofrain: String((i % 2) * 30), weatherCode: String(119 + (i % 2) * 3) }; })
+                }
+            ],
+            nearest_area: [{ areaName: [{value: location}], country: [{value: 'United Kingdom'}] }]
+        };
+    }
+
+    function readFormConfig() {
+        var form = document.getElementById('post-editor-form');
+        function bool(name, def) {
+            if (!form) return def;
+            var el = form.querySelector('[name="' + name + '"]');
+            return el ? el.checked : def;
+        }
+        function val(name, def) {
+            var el = document.getElementById('weather-' + name);
+            if (!el && name.slice(-6) === '_color') {
+                el = document.getElementById('weather-' + name.slice(0, -6));
+            }
+            if (!el) {
+                var radioEl = document.querySelector('[name="' + name + '"]:checked');
+                if (radioEl) el = radioEl;
+            }
+            return el ? (el.value || def) : def;
+        }
+        return {
+            location: val('location', 'London'),
+            lat: (function() {
+                var v = val('lat', '');
+                return v ? parseFloat(v) : null;
+            })(),
+            lon: (function() {
+                var v = val('lon', '');
+                return v ? parseFloat(v) : null;
+            })(),
+            units: val('units', 'C'),
+            show_forecast: bool('show_forecast', true),
+            show_atmosphere: bool('show_atmosphere', true),
+            show_feels_like: bool('show_feels_like', true),
+            show_humidity: bool('show_humidity', true),
+            show_wind_speed: bool('show_wind_speed', true),
+            show_wind_direction: bool('show_wind_direction', false),
+            show_uv: bool('show_uv', true),
+            show_cloud_cover: bool('show_cloud_cover', false),
+            show_pressure: bool('show_pressure', false),
+            show_visibility: bool('show_visibility', false),
+            show_precipitation: bool('show_precipitation', false),
+            show_sun_times: bool('show_sun_times', true),
+            bg_color: val('bg_color', '#0a0a0f'),
+            text_color: val('text_color', '#f0f0f5'),
+            accent_color: val('accent_color', '#c8b8ff'),
+            high_color: val('high_color', '#ff8a75'),
+            low_color: val('low_color', '#75c4f5'),
+            rain_color: val('rain_color', '#5bbfef'),
+            update_interval_min: parseInt(val('update_interval_min', '45'), 10) || 45,
+            layout_mode: val('layout_mode', 'auto'),
+            metrics_layout: val('metrics_layout', 'cards'),
+            font_size_mode: val('font_size_mode', 'auto'),
+            font_size: parseInt(val('font_size', '0'), 10) || 0,
+            status_position: val('status_position', 'header'),
+            _preview: true
+        };
+    }
+
+    var _previewTimer = null;
+    function schedulePreview() {
+        clearTimeout(_previewTimer);
+        _previewTimer = setTimeout(refreshPreview, 200);
+    }
+
+    function refreshPreview() {
+        if (!window.post_types || !post_types['weather']) return;
+        if (!$preview.length) return;
+
+        if (previewWidget && typeof previewWidget.find === 'function') {
+            var old = previewWidget.data('weather-widget');
+            if (old && typeof old.destroy === 'function') old.destroy();
+            previewWidget.remove();
+        }
+
+        var cfg = readFormConfig();
+        var cacheKey = 'ss-weather-' + cfg.location.replace(/[^a-z0-9]/gi, '_') + '-' + cfg.units;
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify(makeDummyData(cfg.location, cfg.units)));
+            localStorage.setItem(cacheKey + '-ts', String(Date.now()));
+        } catch(e) {}
+
+        try {
+            previewWidget = post_types['weather'].render($preview[0], { content: cfg });
+        } catch (e) {
+            console.warn('Weather preview error:', e);
+        }
+    }
+
+    function setPreviewSize(w, h) {
+        var parentW = $preview.parent().width();
+        var maxW = parentW - 2;
+        var maxH = 700;
+        var minW = 140;
+        var minH = 100;
+
+        if (previewRatio && previewRatio.w) {
+            var maxWfromH = Math.floor(maxH / previewRatio.h * previewRatio.w);
+            maxW = Math.min(maxW, maxWfromH);
+            w = Math.max(minW, Math.min(maxW, w));
+            h = Math.round(w / previewRatio.w * previewRatio.h);
+        } else {
+            w = Math.max(minW, Math.min(maxW, w));
+            h = Math.max(minH, Math.min(maxH, h));
+        }
+        $preview.css({ width: w + 'px', height: h + 'px' });
+    }
+
+    /* ---- drag resize ---- */
+    var drag = null;
+    $handle.on('mousedown', function(e) {
+        drag = {
+            startX: e.clientX,
+            startY: e.clientY,
+            startW: $preview.width(),
+            startH: $preview.height(),
+            ratio: previewRatio && previewRatio.w ? previewRatio : null
+        };
+        e.preventDefault();
+    });
+    $(document).on('mousemove', function(e) {
+        if (!drag) return;
+        var dx = e.clientX - drag.startX;
+        var dy = e.clientY - drag.startY;
+        var w = Math.max(140, drag.startW + dx);
+        var h;
+        if (drag.ratio) {
+            h = w === 140 ? Math.round(140 / drag.ratio.w * drag.ratio.h)
+                          : Math.round(w / drag.ratio.w * drag.ratio.h);
+        } else {
+            h = Math.max(100, drag.startH + dy);
+        }
+        setPreviewSize(w, h);
+        refreshPreview();
+    }).on('mouseup', function() {
+        drag = null;
+    });
+
+    /* ---- aspect ratio buttons ---- */
+    $('.preview-aspect').on('click', function () {
+        $('.preview-aspect').removeClass('active');
+        $(this).addClass('active');
+        var w = parseInt($(this).data('w'));
+        var h = parseInt($(this).data('h'));
+        if (w && h) {
+            previewRatio = { w: w, h: h };
+            var curW = $preview.width();
+            setPreviewSize(curW, Math.round(curW / w * h));
+        } else {
+            previewRatio = null;
+        }
+        refreshPreview();
+    });
+
+    /* ---- form live updates ---- */
+    $(document).on('change input', '#post-editor-form input, #post-editor-form select, #post-editor-form textarea', schedulePreview);
+    $(document).on('click', '#post-editor-form input[type=checkbox]', schedulePreview);
+    $(document).on('click', '#post-editor-form input[type=radio]', schedulePreview);
+
+    /* ---- initialise ---- */
+    function loadWidgetJS(cb) {
+        if (window.post_types && post_types['weather']) { cb(); return; }
+        var s = document.createElement('script');
+        s.src = '/screens/post_types.js';
+        s.onload = cb;
+        s.onerror = function() { console.warn('Failed to load weather widget JS'); };
+        document.head.appendChild(s);
+    }
+
+    loadWidgetJS(function () {
+        refreshPreview();
+        var ro = new ResizeObserver(function () {
+            if (!drag) refreshPreview();
+        });
+        ro.observe($preview[0]);
+    });
+
 });
 </script>

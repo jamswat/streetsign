@@ -38,6 +38,7 @@ function _WeatherWidget(container, zone, cfg) {
     this.location = this.cfg.location || 'London';
     this.units    = this.cfg.units    || 'C';
 
+    this._initShowMetrics();
     this._setupCacheKey();
     this._applyColors();
     this._loadCache();
@@ -54,8 +55,6 @@ function _WeatherWidget(container, zone, cfg) {
 
     this._fetch();
 
-    // Keep-alive: refresh the "updated X ago" status text once a
-    // minute so it stays current between fetches.
     this._clockTimer = setInterval(
         this._updateStatus.bind(this),
         60 * 1000
@@ -65,6 +64,33 @@ function _WeatherWidget(container, zone, cfg) {
 }
 
 _WeatherWidget.prototype = {
+
+    _initShowMetrics: function () {
+        var cfg = this.cfg;
+        var DEFAULTS = {
+            feels_like:     true,
+            humidity:       true,
+            wind_speed:     true,
+            wind_direction: false,
+            uv:             true,
+            cloud_cover:    false,
+            pressure:       false,
+            visibility:     false,
+            precipitation:  false,
+            sun_times:      true
+        };
+        if (cfg.show_metrics === false) {
+            this.showMetrics = {};
+            for (var k in DEFAULTS) this.showMetrics[k] = false;
+        } else {
+            this.showMetrics = {};
+            for (var k in DEFAULTS) {
+                var key = 'show_' + k;
+                this.showMetrics[k] = cfg[key] !== undefined ? cfg[key] : DEFAULTS[k];
+            }
+        }
+        this.showAnyMetric = Object.values(this.showMetrics).some(function (v) { return v; });
+    },
 
     /* ---- cache key ---- */
 
@@ -271,22 +297,23 @@ _WeatherWidget.prototype = {
     /* ---- build the static DOM shell (once) ---- */
 
     _build: function () {
+        var statusPos = this.cfg.status_position || 'header';
+        var statusHtml = '<div class="ww-status"></div>';
         this.container.innerHTML =
             '<div class="weather-root">' +
                 '<div class="ww-atmosphere"></div>' +
                 '<div class="ww-header">' +
                     '<div class="ww-location"></div>' +
-                    '<div class="ww-desc"></div>' +
+                    (statusPos === 'header' ? statusHtml : '') +
                 '</div>' +
                 '<div class="ww-hero"></div>' +
                 '<div class="ww-metrics"></div>' +
                 '<div class="ww-forecast"></div>' +
-                '<div class="ww-status"></div>' +
+                (statusPos !== 'header' ? statusHtml : '') +
             '</div>';
         this.$root    = $(this.container).find('.weather-root');
         this.$atmos   = this.$root.find('.ww-atmosphere');
         this.$location = this.$root.find('.ww-location');
-        this.$desc     = this.$root.find('.ww-desc');
         this.$hero     = this.$root.find('.ww-hero');
         this.$metrics  = this.$root.find('.ww-metrics');
         this.$forecast = this.$root.find('.ww-forecast');
@@ -324,6 +351,9 @@ _WeatherWidget.prototype = {
             this._ro.observe(this.zone);
         }
         update();
+
+        var self2 = this;
+        setTimeout(function () { self2._fit(); }, 200);
     },
 
     _startOnlineListeners: function () {
@@ -354,22 +384,65 @@ _WeatherWidget.prototype = {
      * iteration is a cheap reflow.
      */
     _fit: function () {
+        if (this.cfg.font_size_mode === 'manual' && this.cfg.font_size > 0) {
+            this.container.style.fontSize = this.cfg.font_size + 'px';
+            return;
+        }
         var root = this.$root[0];
         if (!root) return;
         var zh = this.zone.clientHeight;
         var zw = this.zone.clientWidth;
         if (!zh || !zw) return;
 
-        var lo = 18, hi = 320, best = lo;
-        for (var i = 0; i < 18; i++) {
+        var lo = 18, hi = Math.max(600, Math.floor(zh / 3)), best = lo;
+
+        /* Grid cells have overflow:hidden, which makes CSS Grid treat their
+           min-height as 0.  When the grid container has a fixed height
+           (height:100%), the grid collapses content rows to 0 and silently
+           clips everything — root.scrollHeight reports no overflow even
+           though content is invisible.
+
+           To measure the true content size, temporarily relax constraints:
+             - root height → auto: grid is no longer height-constrained, so
+               rows size to their actual content
+             - cell overflow → visible: content isn't clipped within cells,
+               so it contributes to the root's scroll dimensions
+             - atmosphere → hidden: its rotation pollutes scrollW/H
+
+           With these, root.offsetHeight = total content height and
+           root.scrollWidth = total content width. */
+        var areas = ['.ww-header', '.ww-hero', '.ww-metrics', '.ww-forecast'];
+        var savedOv = [];
+        for (var a = 0; a < areas.length; a++) {
+            var cel = this.$root.find(areas[a])[0];
+            savedOv.push(cel ? cel.style.overflow : null);
+            if (cel) cel.style.overflow = 'visible';
+        }
+        var savedH = root.style.height;
+        root.style.height = 'auto';
+
+        var atmos = this.$atmos[0];
+        var atmosPrev = atmos ? atmos.style.display : '';
+        if (atmos) atmos.style.display = 'none';
+
+        for (var i = 0; i < 22; i++) {
             var mid = (lo + hi) / 2;
             this.container.style.fontSize = mid + 'px';
-            var fitsV = root.scrollHeight <= zh + 1;
-            var fitsH = root.scrollWidth  <= zw + 1;
-            if (fitsV && fitsH) { best = mid; lo = mid; }
+
+            var ovf = root.offsetHeight > zh + 2;
+            if (!ovf) ovf = root.scrollWidth > root.clientWidth + 1;
+
+            if (!ovf) { best = mid; lo = mid; }
             else { hi = mid; }
             if (hi - lo < 0.15) break;
         }
+
+        root.style.height = savedH;
+        for (var a = 0; a < areas.length; a++) {
+            var cel = this.$root.find(areas[a])[0];
+            if (cel) cel.style.overflow = savedOv[a];
+        }
+        if (atmos) atmos.style.display = atmosPrev;
         this.container.style.fontSize = best + 'px';
     },
 
@@ -416,11 +489,12 @@ _WeatherWidget.prototype = {
         return new Date(dateStr).toLocaleDateString('en-US', {weekday: 'short'});
     },
 
-    _windLabel: function (cur) {
+    _windLabel: function (cur, showDir) {
+        var dir = showDir ? this._esc(cur.winddir16Point) + ' ' : '';
         if (this.units === 'F') {
-            return this._esc(cur.windspeedMiles) + ' mph';
+            return dir + this._esc(cur.windspeedMiles) + ' mph';
         }
-        return this._esc(cur.windspeedKmph) + ' km/h';
+        return dir + this._esc(cur.windspeedKmph) + ' km/h';
     },
 
     /* ---- fill content into the existing shell ---- */
@@ -443,7 +517,6 @@ _WeatherWidget.prototype = {
         this.$atmos.text(curEmoji);
 
         this.$location.text(this._cap(this.location));
-        this.$desc.text(desc);
 
         var hero =
             '<div class="ww-emoji">' + curEmoji + '</div>' +
@@ -463,12 +536,31 @@ _WeatherWidget.prototype = {
         this.$hero.html(hero);
 
         /* metrics */
+        var sm = this.showMetrics;
         var m = '';
-        m += this._metric('Feels',  this._esc(cur['FeelsLike' + tf]) + '\u00B0' + this.units);
-        m += this._metric('Humidity', this._esc(cur.humidity) + '%');
-        m += this._metric('Wind',   this._windLabel(cur));
-        m += this._metric('UV',     this._esc(cur.uvIndex));
-        if (astro) {
+        if (sm.feels_like)    m += this._metric('Feels',  this._esc(cur['FeelsLike' + tf]) + '\u00B0' + this.units);
+        if (sm.humidity)      m += this._metric('Humidity', this._esc(cur.humidity) + '%');
+        if (sm.wind_speed || sm.wind_direction) {
+            m += this._metric('Wind', this._windLabel(cur, sm.wind_direction));
+        }
+        if (sm.uv)            m += this._metric('UV', this._esc(cur.uvIndex));
+        if (sm.cloud_cover)   m += this._metric('Cloud', this._esc(cur.cloudcover) + '%');
+        if (sm.pressure) {
+            m += this._metric('Pressure', this.units === 'F'
+                ? this._esc(cur.pressureInches) + ' in'
+                : this._esc(cur.pressure) + ' mb');
+        }
+        if (sm.visibility) {
+            m += this._metric('Visibility', this.units === 'F'
+                ? this._esc(cur.visibilityMiles) + ' mi'
+                : this._esc(cur.visibility) + ' km');
+        }
+        if (sm.precipitation) {
+            m += this._metric('Precip', this.units === 'F'
+                ? this._esc(cur.precipInches) + ' in'
+                : this._esc(cur.precipMM) + ' mm');
+        }
+        if (astro && sm.sun_times) {
             m += this._metric('Sunrise', this._esc(astro.sunrise), 'sun');
             m += this._metric('Sunset',  this._esc(astro.sunset),  'sun');
         }
@@ -571,6 +663,7 @@ _WeatherWidget.prototype = {
     /* ---- fetch + retry ---- */
 
     _fetch: function () {
+        if (this.cfg._preview) return;
         var self = this;
         clearTimeout(this._fetchTimer);
 
@@ -695,7 +788,7 @@ _WeatherWidget.prototype = {
     gap: 0.50em;
     padding: 0.65em 0.75em 0.55em;
     grid-template-areas: "header" "hero" "metrics" "forecast";
-    grid-template-rows: auto 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto auto;
     isolation: isolate;
     overflow: hidden;
     background:
@@ -762,19 +855,22 @@ _WeatherWidget.prototype = {
         "header   header"
         "hero     metrics"
         "hero     forecast";
-    grid-template-rows: auto 1fr 1fr;
+    grid-template-rows: auto auto auto;
 }
 .ww-orient-landscape.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto;
     grid-template-areas:
         "header   header"
         "hero     forecast";
 }
 .ww-orient-landscape.ww-no-forecast .weather-root {
+    grid-template-rows: auto auto;
     grid-template-areas:
         "header   header"
         "hero     metrics";
 }
 .ww-orient-landscape.ww-no-forecast.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto;
     grid-template-columns: 1fr;
     grid-template-areas:
         "header"
@@ -788,21 +884,24 @@ _WeatherWidget.prototype = {
         "header   header"
         "hero     hero"
         "metrics  forecast";
-    grid-template-rows: auto 1fr 1fr;
+    grid-template-rows: auto auto auto;
 }
 .ww-orient-square.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto auto;
     grid-template-areas:
         "header   header"
         "hero     hero"
         "forecast forecast";
 }
 .ww-orient-square.ww-no-forecast .weather-root {
+    grid-template-rows: auto auto auto;
     grid-template-areas:
         "header   header"
         "hero     hero"
         "metrics  metrics";
 }
 .ww-orient-square.ww-no-forecast.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto;
     grid-template-columns: 1fr;
     grid-template-areas:
         "header"
@@ -810,7 +909,16 @@ _WeatherWidget.prototype = {
 }
 
 /* Portrait: single column, vertically stacked (default template). */
+.ww-orient-portrait.ww-no-forecast .weather-root {
+    grid-template-rows: auto auto auto;
+    grid-template-areas: "header" "hero" "metrics";
+}
+.ww-orient-portrait.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto auto;
+    grid-template-areas: "header" "hero" "forecast";
+}
 .ww-orient-portrait.ww-no-forecast.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto;
     grid-template-areas: "header" "hero";
 }
 
@@ -832,23 +940,7 @@ _WeatherWidget.prototype = {
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
-    flex: 0 1 auto;
-}
-.ww-desc {
-    color: var(--ww-accent);
-    font-size: 0.95em;
-    font-weight: 800;
-    padding: 0.38em 0.6em;
-    border: 1px solid rgba(255,255,255,0.14);
-    border-radius: 999px;
-    background: rgba(255,255,255,0.08);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: right;
     flex: 1 1 auto;
-    min-width: 0;
 }
 
 /* ---- hero (current conditions) ---- */
@@ -861,6 +953,7 @@ _WeatherWidget.prototype = {
     gap: 0.30em;
     min-width: 0;
     min-height: 0;
+    overflow: hidden;
 }
 .ww-emoji {
     font-size: 2.0em;
@@ -925,13 +1018,15 @@ _WeatherWidget.prototype = {
     justify-content: center;
     gap: 0.35em;
     min-width: 0;
+    overflow: hidden;
 }
 .ww-metric {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    flex: 1 1 calc(33.333% - 0.35em);
+    flex: 1 1 calc(50% - 0.35em);
     min-width: 0;
+    overflow: hidden;
     gap: 0.10em;
     padding: 0.45em 0.60em;
     border: 0.035em solid rgba(255,255,255,0.13);
@@ -944,7 +1039,7 @@ _WeatherWidget.prototype = {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 0.65em;
+    font-size: 0.55em;
     font-weight: 700;
     color: var(--ww-accent);
     opacity: 0.7;
@@ -956,7 +1051,7 @@ _WeatherWidget.prototype = {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 1.05em;
+    font-size: 0.90em;
     font-weight: 700;
     letter-spacing: -0.01em;
     white-space: nowrap;
@@ -969,8 +1064,10 @@ _WeatherWidget.prototype = {
     display: flex;
     gap: 0.35em;
     justify-content: center;
+    align-items: center;
     align-content: center;
     min-width: 0;
+    overflow: hidden;
 }
 .ww-fc-day {
     flex: 1 1 0;
@@ -1063,6 +1160,120 @@ _WeatherWidget.prototype = {
 .ww-status.offline { color: #ff6b6b; opacity: 0.85; }
 .ww-stat-dot { opacity: 0.4; }
 
+/* ---- corner status: reserve space below grid ---- */
+
+.ww-status-corner .weather-root {
+    padding-bottom: 2.2em;
+}
+.ww-status-corner .weather-root > .ww-status {
+    bottom: 0;
+}
+
+/* ---- status in header bar ---- */
+
+.ww-header .ww-status {
+    position: static;
+    font-size: 0.48em;
+    opacity: 0.78;
+    display: flex;
+    gap: 0.22em;
+    align-items: center;
+    padding: 0.16em 0.44em;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    background: rgba(0,0,0,0.18);
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow: none;
+}
+.ww-header .ww-status.stale   { color: #ffb347; opacity: 0.88; }
+.ww-header .ww-status.offline { color: #ff6b6b; opacity: 0.88; }
+
+.ww-status-hidden .ww-status { display: none; }
+
+/* ---- forced layout modes ---- */
+
+.ww-force-landscape .weather-root {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.82fr) !important;
+    grid-template-areas: "header header" "hero metrics" "hero forecast" !important;
+    grid-template-rows: auto auto auto !important;
+}
+.ww-force-landscape.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto !important;
+    grid-template-areas: "header header" "hero forecast" !important;
+}
+.ww-force-landscape.ww-no-forecast .weather-root {
+    grid-template-rows: auto auto !important;
+    grid-template-areas: "header header" "hero metrics" !important;
+}
+.ww-force-landscape.ww-no-forecast.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto !important;
+    grid-template-columns: 1fr !important;
+    grid-template-areas: "header" "hero" !important;
+}
+
+.ww-force-portrait .weather-root {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto auto auto !important;
+    grid-template-areas: "header" "hero" "metrics" "forecast" !important;
+}
+.ww-force-portrait.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto auto !important;
+    grid-template-areas: "header" "hero" "forecast" !important;
+}
+.ww-force-portrait.ww-no-forecast .weather-root {
+    grid-template-rows: auto auto auto !important;
+    grid-template-areas: "header" "hero" "metrics" !important;
+}
+.ww-force-portrait.ww-no-forecast.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto !important;
+    grid-template-areas: "header" "hero" !important;
+}
+
+.ww-force-square .weather-root {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto !important;
+    grid-template-areas: "header header" "hero hero" "metrics forecast" !important;
+}
+.ww-force-square.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto auto !important;
+    grid-template-areas: "header header" "hero hero" "forecast forecast" !important;
+}
+.ww-force-square.ww-no-forecast .weather-root {
+    grid-template-rows: auto auto auto !important;
+    grid-template-areas: "header header" "hero hero" "metrics metrics" !important;
+}
+.ww-force-square.ww-no-forecast.ww-no-metrics .weather-root {
+    grid-template-rows: auto auto !important;
+    grid-template-columns: 1fr !important;
+    grid-template-areas: "header" "hero" !important;
+}
+
+/* ---- inline metrics (pill layout) ---- */
+
+.ww-metrics-inline .ww-metrics {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.28em;
+}
+.ww-metrics-inline .ww-metric {
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.22em;
+    padding: 0.30em 0.58em;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.ww-metrics-inline .ww-metric-label {
+    font-size: 0.50em;
+}
+.ww-metrics-inline .ww-metric-value {
+    font-size: 0.75em;
+}
+
 /* ---- error ---- */
 
 .ww-error {
@@ -1100,12 +1311,33 @@ return {
 
         var visClasses = [];
         if (cfg.show_forecast === false)   visClasses.push('ww-no-forecast');
-        if (cfg.show_metrics === false)    visClasses.push('ww-no-metrics');
-        if (cfg.show_sun_times === false)  visClasses.push('ww-no-sun');
         if (cfg.show_atmosphere === false) visClasses.push('ww-no-atmosphere');
-        if (visClasses.length) $container.addClass(visClasses.join(' '));
+
+        if (cfg.layout_mode && cfg.layout_mode !== 'auto') {
+            visClasses.push('ww-force-' + cfg.layout_mode);
+        }
+        if (cfg.metrics_layout === 'inline') {
+            visClasses.push('ww-metrics-inline');
+        }
+        if (cfg.status_position === 'corner') {
+            visClasses.push('ww-status-corner');
+        }
+        if (cfg.status_position === 'hidden') {
+            visClasses.push('ww-status-hidden');
+        }
 
         var widget = new _WeatherWidget($container[0], zone, cfg);
+
+        if (!widget.showAnyMetric)  visClasses.push('ww-no-metrics');
+        if (!widget.showMetrics.sun_times) visClasses.push('ww-no-sun');
+
+        if (visClasses.length) $container.addClass(visClasses.join(' '));
+
+        /* Re-measure now that visibility/layout classes are applied, so the
+           first fit uses the correct DOM state instead of measuring before
+           classes like ww-no-metrics / ww-no-forecast are present. */
+        widget._fit();
+
         $container.data('weather-widget', widget);
 
         return $container;
