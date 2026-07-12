@@ -70,12 +70,12 @@ window.makeTimesEditor = function(initialTimes, initialMode) {
 // Date/time pickers for the main post start/end fields
 flatpickr('#active_start', {
     enableTime: true,
-    dateFormat: 'Y-m-d H:i:s',
+    dateFormat: 'Y-m-d H:i:S',
     allowInput: true
 });
 flatpickr('#active_end', {
     enableTime: true,
-    dateFormat: 'Y-m-d H:i:s',
+    dateFormat: 'Y-m-d H:i:S',
     allowInput: true
 });
 
