@@ -215,6 +215,10 @@ def bulk_upload(feedid):
         flash("Sorry! You don't have permission to write here!")
         return redirect(url_for('feeds'))
 
+    if feed.post_types and 'image' not in feed.post_types_as_list():
+        flash("Sorry! This feed does not allow image posts.")
+        return redirect(url_for('feeds'))
+
     if request.method == 'GET':
         return render_template('bulk_upload.html',
                                feed=feed,
@@ -236,7 +240,7 @@ def bulk_upload(feedid):
         return redirect(url_for('bulk_upload', feedid=feedid))
 
     image_module = post_types.load('image')
-    publish = request.form.get('publish_after') and feed.user_can_publish(user)
+    publish = request.form.get('publish_after') == '1' and feed.user_can_publish(user)
 
     # Build the shared scheduling form dict (file-independent fields)
     scheduling = {}

@@ -13,7 +13,7 @@
     <th scope="col">Author</th>
     <th scope="col">Date</th>
     <th scope="col">  <button type="button" class="btn btn-secondary" id="show_past_posts">Show Past Posts</button> </th>
-    <th scope="col" colspan=2>{% if feed.user_can_write(user) %}<a href="{{ url_for('post_new', feed_id=feed.id) }}" class="btn btn-primary">NEW</a> <a href="{{ url_for('bulk_upload', feedid=feed.id) }}" class="btn btn-outline-primary" title="Upload multiple images at once"><span class="bi bi-images"></span> Bulk Images</a>{% endif %}  </th>
+    <th scope="col" colspan=2>{% if feed.user_can_write(user) %}<a href="{{ url_for('post_new', feed_id=feed.id) }}" class="btn btn-primary">NEW</a> {% if 'image' in feed.post_types_as_list() or not feed.post_types %}<a href="{{ url_for('bulk_upload', feedid=feed.id) }}" class="btn btn-outline-primary" title="Upload multiple images at once"><span class="bi bi-images"></span> Bulk Images</a>{% endif %}{% endif %}  </th>
   </tr>
 </thead>
 <tbody>

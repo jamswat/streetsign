@@ -371,13 +371,8 @@
     });
   }
 
-  // Flatpickr date pickers
-  document.addEventListener('DOMContentLoaded', function() {
-    if (typeof flatpickr !== 'undefined') {
-      flatpickr('#active_start', { enableTime: true, dateFormat: 'Y-m-d H:i:S' });
-      flatpickr('#active_end', { enableTime: true, dateFormat: 'Y-m-d H:i:S' });
-    }
-  });
+  // Flatpickr is already initialised by post_times_editor.js on
+  // #active_start / #active_end, which is loaded above.
   updateLifetimeMode();
   updateRecurrence();
 })();
