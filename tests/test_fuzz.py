@@ -893,9 +893,6 @@ class TestPostTypeCreation:
                                   'content': '<script>alert(1)</script>'})
         _aok(r)
 
-    @pytest.mark.xfail(
-        reason='known: image.receive() raises 500 on form data '
-               'without actual file upload/URL/localpath')
     def test_post_type_image(self, fuzz_db):
         r = self._create_post_type(
             fuzz_db, 'image', {'type': 'image', 'content': 'test.png'})

@@ -147,12 +147,12 @@ def receive(data):
         resize_image(full_path)
 
     else:
-        filename = data.get('filename')
+        filename = data.get('filename', '')
         if filename and allow_filetype(filename):
             filename = secure_filename(filename)
         else:
-            raise Exception('Tried to change the file, huh? Not happening')
-            # TODO
+            flash('No valid image file provided.')
+            filename = ''
 
     return {'content': filename,
             'filename': filename,
