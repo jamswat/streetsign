@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Static asset caching** — WhiteNoise now serves static files with
+  `Cache-Control: public, max-age=86400` (24 hours), up from the default
+  60 seconds. Screen config-MD5-triggered reloads bypass the cache, so
+  updates are picked up immediately while normal operation benefits from
+  fewer redundant requests.
+
 ## v1.3.2 — Display Performance & Feed Permission Display
 
 ### Performance — Display Screen Rendering

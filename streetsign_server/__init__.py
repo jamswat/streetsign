@@ -72,6 +72,7 @@ def _static_security_headers(headers, _path, _url):
         matching those applied to dynamic responses by set_security_headers. '''
     headers['X-Content-Type-Options'] = 'nosniff'
     headers['X-Frame-Options'] = 'SAMEORIGIN'
+    headers['Cache-Control'] = 'public, max-age=86400'
 
 # Serve static assets in-process via WhiteNoise instead of an nginx sidecar.
 # Built-in assets (main.js, style.css, etc.) are baked into the image.
