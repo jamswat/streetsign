@@ -148,7 +148,8 @@ def feedpage(feedid):
 
         if action == 'edit':
             newname = request.form.get('title', feed.name).strip()
-            if newname != feed.name and Feed.select().where(Feed.name == newname).exists():
+            if newname != feed.name and \
+               Feed.select().where(Feed.name == newname).exists():
                 flash("Sorry! A feed with that name already exists.")
             else:
                 feed.name = newname
@@ -224,7 +225,9 @@ def bulk_upload(feedid):
                                feed=feed,
                                user=user,
                                default_active_start=now().strftime('%Y-%m-%d %H:%M:%S'),
-                               default_active_end=(now() + timedelta(weeks=1)).strftime('%Y-%m-%d %H:%M:%S'),
+                                default_active_end=(now() +
+                                    timedelta(weeks=1)).strftime(
+                                    '%Y-%m-%d %H:%M:%S'),
                                breadcrumbs=[
                                    ('Dashboard', url_for('index')),
                                    ('Feeds', url_for('feeds')),

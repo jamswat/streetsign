@@ -63,7 +63,8 @@ def form(data):
             vname = basename(vf)
             if allow_filetype(vname):
                 uploaded_videos.append(vname)
-    return render_template_string(my('form.html'), uploaded_videos=uploaded_videos, **data)
+    return render_template_string(my('form.html'),
+                                  uploaded_videos=uploaded_videos, **data)
 
 
 def receive(data):

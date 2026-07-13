@@ -126,6 +126,7 @@ def make_dirlist(path):
 
 
 def locals_dict(**kwargs):
+    """Return keyword arguments as a dictionary."""
     return kwargs
 
 @app.route('/user_files/', methods=['GET', 'POST'])

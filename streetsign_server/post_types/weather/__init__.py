@@ -90,10 +90,12 @@ from streetsign_server.post_types import my
 
 
 def form(data):
+    """Render the weather post type editor form."""
     return render_template_string(my('form.html'), **data)
 
 
 def receive(data):
+    """Validate and process weather post form data."""
     lat = None
     lon = None
     raw_lat = (data.get('lat', '') or '').strip()
@@ -105,7 +107,7 @@ def receive(data):
             if lat < -90 or lat > 90 or lon < -180 or lon > 180:
                 lat = None
                 lon = None
-            elif (lat != lat) or (lon != lon):  # NaN guard
+            elif (lat != lat) or (lon != lon):  # NaN guard, pylint: disable=comparison-with-itself
                 lat = None
                 lon = None
         except (ValueError, TypeError):
@@ -159,8 +161,10 @@ def receive(data):
 
 
 def display(data):
+    """Return weather post data for backend preview."""
     return data
 
 
 def screen_js():
+    """Return the weather widget's screen-rendering JavaScript."""
     return my('screen.js')

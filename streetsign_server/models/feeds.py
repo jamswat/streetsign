@@ -31,7 +31,7 @@ static analysis.
 
 '''
 
-# pylint: disable=singleton-comparison,no-member
+# pylint: disable=singleton-comparison,no-member,not-an-iterable,invalid-repr-returned
 
 
 import sqlite3
@@ -135,7 +135,7 @@ class Feed(DBModel):
 
         # check for group-level read permission:
         if (self.permissions
-                .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+                .join(UserGroup, on=FeedPermission.group == UserGroup.group)
                 .where((UserGroup.user == user)
                       &(FeedPermission.group.is_null(False))
                       &(FeedPermission.read == True)).exists()):
@@ -162,7 +162,7 @@ class Feed(DBModel):
 
         # check for group-level write permission:
         if (self.permissions
-                .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+                .join(UserGroup, on=FeedPermission.group == UserGroup.group)
                 .where((UserGroup.user == user) &
                        (FeedPermission.group.is_null(False)) &
                        (FeedPermission.write == True)).exists()):
@@ -189,7 +189,7 @@ class Feed(DBModel):
 
         # check for group-level publish permission:
         if (self.permissions
-                .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+                .join(UserGroup, on=FeedPermission.group == UserGroup.group)
                 .where((UserGroup.user == user) &
                        (FeedPermission.group.is_null(False)) &
                        (FeedPermission.publish == True)).exists()):
@@ -417,7 +417,8 @@ class Post(DBModel):
     #: Format: {"enabled": true, "days": ["mon","wed","fri"]}
     recurrence = TextField(default='{"enabled":false,"days":[]}')
 
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
+        """Peewee model index configuration."""
         indexes = (
             (('status', 'published', 'active_start', 'active_end'), False),
         )

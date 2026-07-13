@@ -30,9 +30,7 @@ and users at runtime without introducing module-level cycles.
 
 '''
 
-# pylint: disable=cyclic-import
-# pylint: disable=import-outside-toplevel
-# pylint: disable=singleton-comparison
+# pylint: disable=cyclic-import,import-outside-toplevel,singleton-comparison,not-an-iterable,invalid-repr-returned
 
 
 import base64
@@ -126,7 +124,7 @@ class User(DBModel):
         group_feeds = {
             p.feed_id for p in
             FeedPermission.select(FeedPermission.feed)
-            .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+            .join(UserGroup, on=FeedPermission.group == UserGroup.group)
             .where(UserGroup.user == self,
                    FeedPermission.group.is_null(False),
                    FeedPermission.write == True)
@@ -150,7 +148,7 @@ class User(DBModel):
         group_feeds = {
             p.feed_id for p in
             FeedPermission.select(FeedPermission.feed)
-            .join(UserGroup, on=(FeedPermission.group == UserGroup.group))
+            .join(UserGroup, on=FeedPermission.group == UserGroup.group)
             .where(UserGroup.user == self,
                    FeedPermission.group.is_null(False),
                    FeedPermission.publish == True)

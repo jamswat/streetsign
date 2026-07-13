@@ -53,7 +53,8 @@ DB = SqliteDatabase(None, pragmas={
 # Custom Exceptions
 # -------------------------------------------------------------------------
 
-def now(timestamp=False):  # pylint: disable=no-member,not-callable
+# pylint: disable=no-member,not-callable
+def now(timestamp=False):
     '''Return the current datetime adjusted by TIME_OFFSET, or as a timestamp.'''
     if timestamp:
         return mktime(now(False).timetuple())

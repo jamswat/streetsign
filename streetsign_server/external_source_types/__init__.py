@@ -81,5 +81,3 @@ def load(type_name):
     e = import_module('streetsign_server.external_source_types.' + type_name)
     _EDITORS[type_name] = e
     return e
-
-

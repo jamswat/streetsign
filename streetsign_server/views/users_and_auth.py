@@ -256,7 +256,8 @@ def group(groupid):
 
         if request.form.get('action', 'none') == 'update':
             newname = request.form.get('groupname', thisgroup.name)
-            if newname != thisgroup.name and Group.select().where(Group.name == newname).exists():
+            if newname != thisgroup.name and \
+               Group.select().where(Group.name == newname).exists():
                 flash("Sorry! A group with that name already exists.")
             else:
                 thisgroup.name = newname

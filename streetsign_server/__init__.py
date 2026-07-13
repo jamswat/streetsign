@@ -106,6 +106,7 @@ __version__ = '1.3.2'
 
 @app.context_processor
 def inject_version():
+    """Inject the application version into all template contexts."""
     return {'app_version': __version__}
 
 models.init()

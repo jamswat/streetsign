@@ -176,10 +176,12 @@ def post_form_intake(post, form, editor):
 
     # Recurrence (day-of-week scheduling):
     recurrence_enabled = getbool('recurrence_enabled', False, form=form)
-    recurrence_days = form.getlist('recurrence_days') if hasattr(form, 'getlist') \
-                      else (form.get('recurrence_days') if isinstance(form.get('recurrence_days'), list)
-                            else [d for d in form.get('recurrence_days', '').split(',')
-                                  if d.strip()])
+    recurrence_days = form.getlist('recurrence_days') \
+                      if hasattr(form, 'getlist') \
+                      else (form.get('recurrence_days')
+                            if isinstance(form.get('recurrence_days'), list)
+                            else [d for d in form.get('recurrence_days', '')
+                                 .split(',') if d.strip()])
     post.recurrence = json.dumps({
         'enabled': recurrence_enabled,
         'days': recurrence_days,
@@ -238,7 +240,8 @@ def cleanup_orphaned_media_files():
     # otherwise a single corrupt row would cause us to treat its (live)
     # backing file as an orphan and delete it. Fail safe instead.
     known_filenames = set()
-    for post in Post.select().where(Post.type << ['image', 'video']):
+    for post in Post.select().where(  # pylint: disable=not-an-iterable
+            Post.type << ['image', 'video']):
         try:
             data = json.loads(post.content)
         except Exception:
