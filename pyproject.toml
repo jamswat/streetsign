@@ -53,6 +53,7 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = [
     "streetsign_server",
+    "streetsign_server.models",
     "streetsign_server.views",
     "streetsign_server.logic",
     "streetsign_server.post_types",

@@ -109,8 +109,6 @@ def index():
     # Summary stats for dashboard cards
     total_screens = Screen.select().count()
     total_feeds = Feed.select().count()
-    total_posts = Post.select().count()
-    unpublished_posts = Post.select().where(Post.published == False).count()
     active_posts_count = Post.select().where(
         (Post.published == True) &
         (Post.active_start <= now()) &
@@ -134,10 +132,9 @@ def index():
                            posts_to_publish=posts_to_publish,
                            screens=screens,
                            user=user,
+                           show_all=request.args.get('show_all', False),
                            total_screens=total_screens,
                            total_feeds=total_feeds,
-                           total_posts=total_posts,
-                           unpublished_posts=unpublished_posts,
                            active_posts_count=active_posts_count,
                            recent_posts=recent_posts,
                            breadcrumbs=[('Dashboard', None)])

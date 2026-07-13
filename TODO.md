@@ -2,16 +2,16 @@
 
 ## Bugs
 
-- [ ] `streetsign_server.models` is missing from `pyproject.toml` wheel packages — wheel installs would fail on `from streetsign_server.models import ...`
+- [x] `streetsign_server.models` is missing from `pyproject.toml` wheel packages — wheel installs would fail on `from streetsign_server.models import ...`
 
 ## Dashboard Improvements
 
 ### Tier 1 — Low effort, immediate payoff
 
-- [ ] Remove unused `total_posts` and `unpublished_posts` queries from `views/__init__.py:112-113` (dead code — never passed to template)
-- [ ] Render already-queried `recent_posts` in a "Recently Published" card alongside "My Posts" on the admin dashboard
-- [ ] Add expiry badges (expiring-soon / expired) to "My Posts" table rows so stale content is visible at a glance
-- [ ] Filter "My Posts" to show only active posts by default, with a "Show All" toggle
+- [x] Remove unused `total_posts` and `unpublished_posts` queries from `views/__init__.py:112-113` (dead code — never passed to template)
+- [x] Render already-queried `recent_posts` in a "Recently Published" card alongside "My Posts" on the admin dashboard
+- [x] Add expiry badges (expiring-soon / expired) to "My Posts" table rows so stale content is visible at a glance
+- [x] Filter "My Posts" to show only active posts by default, with a "Show All" toggle
 
 ### Tier 2 — Moderate effort
 
@@ -50,7 +50,7 @@
 - [ ] Post expiry notifications — alert authors before their posts expire
 - [ ] Drag-drop zone layout editor — visual zone positioning instead of form fields
 - [ ] i18n / l10n support — currently English-only
-- [ ] Rate limiting on login — brute-force protection beyond the existing account lockout (10 failed attempts)
+- [x] Rate limiting on login — brute-force protection beyond the existing account lockout (10 failed attempts)
 - [ ] Calendar view for post scheduling — timeline / calendar UI to visualize and manage many time-scheduled posts
 - [ ] Content Security Policy hardening — tighten CSP headers beyond existing security headers
 - [ ] JavaScript tests — currently no JS test harness; screen rendering and admin UI JS are untested

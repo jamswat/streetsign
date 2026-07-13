@@ -35,6 +35,7 @@ import peewee
 
 from streetsign_server import app
 from streetsign_server.models import User, Group, Post, UserGroup, InvalidPassword
+from streetsign_server.logic.ratelimit import is_rate_limited
 
 import logging
 
@@ -50,6 +51,10 @@ def login():
     # TODO: is using the request.endpoint the best way to do this?
     #       would it be better to use an absolute URL?  I dunno if this
     #       is better against XSS?
+
+    if request.remote_addr and is_rate_limited(request.remote_addr):
+        flash('Too many login attempts. Please wait before trying again.')
+        return redirect(safe_referrer())
 
     try:
         user_session.login(request.form['username'], request.form['password'])

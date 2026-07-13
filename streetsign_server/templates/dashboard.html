@@ -43,16 +43,21 @@
 	<div class="row">
 		<div class="col-sm-6">
 			<div class="card">
-				<div class="card-header">
-					<h2 class="card-title h5">My Posts</h2>
+				<div class="card-header d-flex justify-content-between align-items-center">
+					<h2 class="card-title h5 mb-0">My Posts</h2>
+					<a href="?{% if show_all %}{% else %}show_all=1{% endif %}" class="btn btn-sm btn-outline-secondary">
+						{% if show_all %}Show Active Only{% else %}Show All{% endif %}
+					</a>
 				</div>
 				<div class="card-body">
 					{% if posts_to_publish.count() > 0 or posts.count() > 0 %}
 					<div class="table-responsive">
 					<table class="table table-striped mb-0">
 						{% for post in posts %}
+							{% if show_all or (post.active_status() == 'now' and post.published) %}
 							<tr class="{{ 'published' if post.published else 'unpublished' }}">
 								<td>{{ linkmacros.post(post) }}</td>
+								<td>{{ linkmacros.post_status_badge(post) }}</td>
 								<td><span class="badge bg-secondary">{{ post.feed.name }}</span></td>
 								<td>
 								{% if post in posts_to_publish %}
@@ -63,6 +68,7 @@
 								{% endif %}
 								</td>
 							</tr>
+							{% endif %}
 						{% endfor %}
 					</table>
 					</div>
@@ -113,6 +119,31 @@
 			</div>
 		</div>
 	</div>
+
+	{% if recent_posts.count() > 0 %}
+	<div class="row mt-4">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-header">
+					<h2 class="card-title h5">Recently Published</h2>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+					<table class="table table-striped mb-0">
+						{% for post in recent_posts %}
+							<tr>
+								<td>{{ linkmacros.post(post) }}</td>
+								<td>{{ linkmacros.post_status_badge(post) }}</td>
+								<td><span class="badge bg-secondary">{{ post.feed.name }}</span></td>
+							</tr>
+						{% endfor %}
+					</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endif %}
 
 	<div class="row mt-4">
 		<div class="col-12">
