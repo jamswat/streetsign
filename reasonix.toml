@@ -1,0 +1,2 @@
+[permissions]
+allow = ["Bash(cd /home/james/dev/streetsign && .venv/bin/pytest -v 2>&1 | tail -40)"]

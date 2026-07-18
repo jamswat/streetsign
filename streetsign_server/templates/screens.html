@@ -84,11 +84,15 @@
 				<td>
 					{% if session.display_admin_stuff %}
 						<label>Layout:
-							<select class="form-control" x-model="alias.screen_name">
+							<select class="form-control" x-model="alias.screen_name"
+							        :class="{'is-invalid': !screenExists(alias)}">
 								<template x-for="name in screenNames" :key="name">
 									<option :value="name" x-text="name"></option>
 								</template>
 							</select>
+							<small x-show="!screenExists(alias)" class="text-danger">
+								⚠ Layout <span x-text="alias.original_screen_name"></span> no longer exists
+							</small>
 						</label><br/>
 						<label>Engine:
 							<select class="form-control" x-model="alias.screen_type">

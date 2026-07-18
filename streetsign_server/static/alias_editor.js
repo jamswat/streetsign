@@ -28,7 +28,8 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
         return {
             name: a.name || 'client-name',
             show_on_dashboard: a.show_on_dashboard || false,
-            screen_name: screenNames.includes(resolvedScreen) ? resolvedScreen : screenNames[0],
+            screen_name: resolvedScreen,
+            original_screen_name: resolvedScreen,
             screen_type: a.screen_type || 'basic',
             fadetime: a.fadetime != null ? a.fadetime : null,
             scrollspeed: a.scrollspeed != null ? a.scrollspeed : null,
@@ -41,6 +42,10 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
         aliases: aliases,
         screenNames: screenNames,
         screenTypes: screenTypes,
+
+        screenExists(alias) {
+            return this.screenNames.includes(alias.screen_name);
+        },
 
         urlFor(alias) {
             return '/client/' + alias.name;

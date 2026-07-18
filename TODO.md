@@ -1,59 +1,36 @@
-# TODO
+# Alias Bugs
 
-## Bugs
+## Bug 1 (CRITICAL): CSRF blocks alias saves — modifying aliases does not work
 
-- [x] `streetsign_server.models` is missing from `pyproject.toml` wheel packages — wheel installs would fail on `from streetsign_server.models import ...`
+- **File:** `streetsign_server/views/__init__.py:66-72` (CSRF exempt list), `streetsign_server/static/alias_editor.js:72-79` (save POST)
+- **Cause:** `POST /aliases` (`save_aliases` endpoint) is not in the CSRF exempt endpoint list. `alias_editor.js` sends `$.post('/aliases', ...)` without a `_csrf_token`. Every save attempt is silently rejected with 403.
+- **Fix:** Add `'save_aliases'` to the CSRF exempt endpoint list in `views/__init__.py`.
 
-## Dashboard Improvements
+## Bug 2 (MEDIUM): Silently wrong layout fallback — settings/layout don't load properly
 
-### Tier 1 — Low effort, immediate payoff
+- **File:** `streetsign_server/static/alias_editor.js:31`
+- **Cause:** When the `screen_name` saved in an alias no longer matches any existing screen (deleted/renamed), `makeAliasesEditor` silently falls back to `screenNames[0]` with no warning.
+  ```javascript
+  screen_name: screenNames.includes(resolvedScreen) ? resolvedScreen : screenNames[0],
+  ```
+- **Fix:** Preserve the original name in the select options (rather than falling back silently) or add a visible warning indicator.
 
-- [x] Remove unused `total_posts` and `unpublished_posts` queries from `views/__init__.py:112-113` (dead code — never passed to template)
-- [x] Render already-queried `recent_posts` in a "Recently Published" card alongside "My Posts" on the admin dashboard
-- [x] Add expiry badges (expiring-soon / expired) to "My Posts" table rows so stale content is visible at a glance
-- [x] Filter "My Posts" to show only active posts by default, with a "Show All" toggle
+## Bug 3 (MEDIUM): Dashboard 500 crash with orphaned aliases
 
-### Tier 2 — Moderate effort
+- **File:** `streetsign_server/templates/dashboard.html:208`, `streetsign_server/views/__init__.py:122-123`
+- **Cause:** When a screen referenced by an alias is deleted, `alias['screen']` becomes `None` (line 123). `dashboard.html:208` accesses `client.screen.background` without a null guard.
+  ```jinja2
+  {% if client.screen.background %}
+  ```
+- **Fix:** Add null guard: `{% if client.screen and client.screen.background %}`.
 
-- [ ] Add a "Posts Expiring Soon" stat card showing posts active now but ending within 48 hours
-- [ ] Replace full-size screen background images in the Public Screens section with thumbnails (reuse existing `/thumbnail/` endpoint)
-- [ ] When screen uses no background, have a basic preview of the zones.
-- [ ] Clean up "My Feeds" table layout — remove per-row "New Post" button noise, show feed name + post count instead
+## Bug 4 (LOW): Empty alias names bypass duplicate check
 
-### Tier 3 — Larger changes
-
-- [ ] Role-aware stat cards — admins see user counts, storage usage, external source health; authors see their own stats; non-admins don't see system-wide Feed/Screen counts
-- [ ] External data source status on admin dashboard (last checked timestamp, success / failure indicator)
-- [ ] Screen preview thumbnails — generate small thumbnails of screen layouts for the Public Screens section instead of loading full background images
-
----
-
-## General
-
-### High impact
-
-- [ ] Server-side pagination and search for `/posts/` — `Post.select()` loads every row, problematic at scale
-- [ ] Audit trail — log who published, edited, deleted, or moved a post; who changed screen layouts; who modified permissions
-
-### Medium impact
-
-- [ ] Display preview — embed a live preview of a screen layout in the screen editor (iframe or canvas-based) (only for images I think - raw html, weather, video etc. are not practical or accurate at small scale)
-- [ ] Emergency override / immediate push — push urgent full screen content to all screens temporairilly.
-- [ ] Screen grouping / tags — label screens by location, department, or type for bulk operations
-- [ ] Image content resizing for specific zones — serve scaled images for low-resolution zones to save bandwidth (generate more sizes with imagemagick)
-- [ ] Generate video thumbnails
-- [ ] Database maintenance / cleanup job — prune expired sessions, orphaned user files, and stale post data
-- [ ] Bulk post operations — bulk delete, archive, publish/unpublish
-
-### Low impact
-
-- [ ] Post expiry notifications — alert authors before their posts expire
-- [ ] Drag-drop zone layout editor — visual zone positioning instead of form fields
-- [ ] i18n / l10n support — currently English-only
-- [x] Rate limiting on login — brute-force protection beyond the existing account lockout (10 failed attempts)
-- [ ] Calendar view for post scheduling — timeline / calendar UI to visualize and manage many time-scheduled posts
-- [ ] Content Security Policy hardening — tighten CSP headers beyond existing security headers
-- [ ] JavaScript tests — currently no JS test harness; screen rendering and admin UI JS are untested
-- [ ] External source type tests — RSS importer and local folder image importer have no test coverage
-- [ ] Weather proxy endpoint tests — `/weather-proxy/` has no dedicated functionality or SSRF-safety tests
-- [ ] Screen rendering integration tests — no test exercises the full display JSON pipeline (`/screens/json/`, `/screens/posts_from_feeds/`)
+- **File:** `streetsign_server/views/screens.py:258-259`
+- **Cause:** The list comprehension filters out empty/whitespace names before the duplicate check, allowing multiple aliases with empty names to be saved.
+  ```python
+  names = [a.get('name', '').strip()
+           for a in aliases_list if a.get('name', '').strip()]
+  if len(names) != len(set(names)):
+  ```
+- **Fix:** Validate empty names separately (reject with an error) before the dedup check, or don't filter empty names and let them collide.

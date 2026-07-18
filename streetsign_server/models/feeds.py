@@ -452,12 +452,11 @@ class Post(DBModel):
         icon_html = Markup(f'<i class="bi {icon} me-1"></i>')
 
         if self.type == 'image' and content and content != 'N/A':
-            safe_content = Markup.escape(str(content))
             thumb_url = url_for('thumbnail',
                                 filename='post_images/' + str(content))
             thumb_html = Markup(
-                f'<img src="{thumb_url}" alt="{safe_content}"'
-                f' class="post-thumbnail" /> '
+                f'<img src="{thumb_url}" alt="" class="post-thumbnail"'
+                f' onerror="this.remove()" /> '
             )
             return thumb_html + icon_html + Markup.escape(self.title)
 

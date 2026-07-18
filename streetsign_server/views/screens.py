@@ -255,8 +255,14 @@ def save_aliases():
         aliases = form_json('aliases', [])
 
         aliases_list = json.loads(aliases)
-        names = [a.get('name', '').strip()
-                 for a in aliases_list if a.get('name', '').strip()]
+
+        # Reject empty/whitespace-only alias names
+        for alias in aliases_list:
+            name = alias.get('name', '').strip()
+            if not name:
+                return jsonify(error='Alias name cannot be empty.'), 400
+
+        names = [a.get('name', '').strip() for a in aliases_list]
         if len(names) != len(set(names)):
             return jsonify(error='Duplicate alias names are not allowed.'), 400
 

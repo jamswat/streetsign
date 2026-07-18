@@ -68,6 +68,7 @@ def before_the_action():
         if request.endpoint in (
             'screendisplay', 'screens_posts_from_feeds', 'screen_json',
             'post_types_js', 'json_post', 'client_alias', 'robots_txt',
+            'save_aliases',
         ):
             return
 
