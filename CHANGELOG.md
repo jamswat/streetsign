@@ -1,12 +1,75 @@
 # Changelog
 
-## Unreleased
+## v1.3.3 — Alias Bug Fixes & Dashboard Improvements
 
+### Bug Fixes — Aliases
+
+- **CSRF blocks alias saves (CRITICAL)** — `POST /aliases` (`save_aliases`
+  endpoint) was missing from the CSRF exempt list. The alias editor sends a
+  jQuery `$.post()` without a `_csrf_token`, so every save attempt was
+  silently rejected with 403. Added `'save_aliases'` to the exempt list.
+- **Silent layout fallback** — when an alias referenced a screen that had
+  been deleted or renamed, `makeAliasesEditor` silently swapped to
+  `screenNames[0]` with no warning. The original name is now preserved and a
+  visible red warning badge is shown in the editor when the screen no longer
+  exists.
+- **Dashboard 500 with orphaned aliases** — when a screen referenced by an
+  alias is deleted, `alias['screen']` becomes `None`. The dashboard template
+  accessed `client.screen.background` without a null guard, crashing with
+  `AttributeError`. Added `{% if client.screen and client.screen.background %}`.
+- **Empty alias names bypass duplicate check** — the list comprehension
+  filtered out empty/whitespace names before the dedup check, so two aliases
+  with empty names resulted in `names = []` and `0 != 0` passed validation.
+  Empty names are now explicitly rejected with a 400 error.
+
+### Bug Fixes — Other
+
+- **Image post crash on missing file** — `image.receive()` raised a bare
+  `AssertionError` (500) when no upload/URL/localpath was provided. Now
+  flashes a descriptive message and returns empty filename, matching the
+  IOError pattern used elsewhere. (`c4fa9fc`)
+- **Broken thumbnail images** — broken image post thumbnails (deleted or
+  inaccessible files) now gracefully self-remove via `onerror="this.remove()"`
+  instead of showing a broken image icon.
+- **`streetsign_server.models` wheel packaging** — models package was missing
+  from `pyproject.toml` `[tool.hatch.build.targets.wheel.packages]`, which
+  would cause `ModuleNotFoundError` on pip-installed releases. Fixed.
+
+### Dashboard
+
+- **Recently Published card** — renders the 5 most recent published posts
+  alongside the existing "My Posts" section on the admin dashboard.
+- **Expiry/status badges** — "My Posts" table rows now show expiry badges
+  (expiring-soon / expired) so stale content is visible at a glance.
+- **Active-only filter** — "My Posts" defaults to showing only active posts,
+  with a "Show All" toggle to include expired/scheduled posts.
+- **Dead queries removed** — unused `total_posts` and `unpublished_posts`
+  queries removed from the dashboard view (never passed to template).
+
+### New Features
+
+- **IP-based login rate limiting** — 5 failed login attempts per 60 seconds
+  per IP address triggers a temporary block, returning a 429 response. The
+  existing per-user account lockout (10 failed attempts) still applies.
+- **Post thumbnails in lists** — `Post.repr()` now renders a thumbnail image
+  for image posts and a type-specific icon for all post types (text, HTML,
+  weather, etc.) in post lists across all views (all posts, feed, dashboard,
+  user). Unknown types fall back to a generic file icon.
+- **Fuzz test suite** — the standalone fuzz script (`scripts/dev/fuzz.py`)
+  has been migrated into the pytest test suite as `tests/test_fuzz.py` with 84
+  tests organised across 14 classes using a module-scoped seeded DB fixture.
 - **Static asset caching** — WhiteNoise now serves static files with
   `Cache-Control: public, max-age=86400` (24 hours), up from the default
   60 seconds. Screen config-MD5-triggered reloads bypass the cache, so
   updates are picked up immediately while normal operation benefits from
   fewer redundant requests.
+
+### Maintenance
+
+- **Pylint score improved from 9.19 to 9.58** — added missing docstrings,
+  wrapped over-long lines, removed unnecessary parentheses, fixed trailing
+  blank lines, and added Peewee-specific suppressions for false positives.
+  (12 files touched, no behavioural changes.)
 
 ## v1.3.2 — Display Performance & Feed Permission Display
 
