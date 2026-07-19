@@ -89,10 +89,10 @@
 								<template x-for="name in screenNames" :key="name">
 									<option :value="name" x-text="name"></option>
 								</template>
-								<option x-show="!screenExists(alias)"
-								        :value="alias.original_screen_name" disabled
-								        x-text="'⚠ ' + alias.original_screen_name + ' (deleted)'"></option>
 							</select>
+							<small x-show="!screenExists(alias)" class="text-danger">
+								⚠ Layout <span x-text="alias.original_screen_name"></span> no longer exists
+							</small>
 						</label><br/>
 						<label>Engine:
 							<select class="form-control" x-model="alias.screen_type">
