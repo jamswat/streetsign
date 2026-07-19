@@ -69,9 +69,15 @@ def form_json(name, default):
 @registered_users_only('GET')
 def screens():
     ''' HTML listing of all screens  '''
+    all_screens = Screen.select()
+    screen_urls = {s.urlname for s in all_screens}
+    aliases = config_var('screens.aliases', [])
+    for alias in aliases:
+        sn = alias.get('screen_name', '')
+        alias['_screen_missing'] = not sn or sn not in screen_urls
     return render_template('screens.html',
-                           aliases=config_var('screens.aliases', []),
-                           screens=Screen.select(),
+                           aliases=aliases,
+                           screens=all_screens,
                            breadcrumbs=[('Dashboard', url_for('index')),
                                         ('Screens', None)])
 

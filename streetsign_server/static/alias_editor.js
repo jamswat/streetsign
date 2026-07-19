@@ -23,26 +23,22 @@
 'use strict';
 
 window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
-    // Snapshot original names before we inject any missing ones.
-    var knownNames = screenNames.slice();
-
-    // Add any alias screen_names missing from the dropdown list so the
-    // <select> always has a matching <option> at init time — Alpine's
-    // x-model falls back to the first option when no option matches.
+    // Inject alias screen_names that reference deleted screens into the
+    // dropdown list so Alpine's x-model always finds a matching <option>.
     (initialList || []).forEach(function(a) {
-        var name = a.screen_name || '';
-        if (name && !screenNames.includes(name)) {
+        var name = a.screen_name;
+        if (a._screen_missing && name && !screenNames.includes(name)) {
             screenNames.push(name);
         }
     });
 
     var aliases = (initialList || []).map(function(a) {
-        var resolvedScreen = a.screen_name || screenNames[0] || 'Default';
         return {
             name: a.name || 'client-name',
             show_on_dashboard: a.show_on_dashboard || false,
-            screen_name: resolvedScreen,
+            screen_name: a.screen_name || screenNames[0] || 'Default',
             screen_type: a.screen_type || 'basic',
+            _screen_missing: a._screen_missing || false,
             fadetime: a.fadetime != null ? a.fadetime : null,
             scrollspeed: a.scrollspeed != null ? a.scrollspeed : null,
             forceaspect: a.forceaspect != null ? a.forceaspect : null,
@@ -56,7 +52,7 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
         screenTypes: screenTypes,
 
         screenExists: function(alias) {
-            return knownNames.includes(alias.screen_name);
+            return !alias._screen_missing;
         },
 
         urlFor: function(alias) {
@@ -64,12 +60,13 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
         },
 
         addAlias: function() {
-            var firstScreen = knownNames.length ? knownNames[0] : 'Default';
+            var firstScreen = screenNames.length ? screenNames[0] : 'Default';
             this.aliases.push({
                 name: 'client-name',
                 show_on_dashboard: false,
                 screen_name: firstScreen,
                 screen_type: 'basic',
+                _screen_missing: false,
                 fadetime: null,
                 scrollspeed: null,
                 forceaspect: null,
