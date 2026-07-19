@@ -23,13 +23,25 @@
 'use strict';
 
 window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
-    const aliases = (initialList || []).map(function(a) {
-        const resolvedScreen = a.screen_name || 'Default';
+    // Snapshot original names before we inject any missing ones.
+    var knownNames = screenNames.slice();
+
+    // Add any alias screen_names missing from the dropdown list so the
+    // <select> always has a matching <option> at init time — Alpine's
+    // x-model falls back to the first option when no option matches.
+    (initialList || []).forEach(function(a) {
+        var name = a.screen_name || '';
+        if (name && !screenNames.includes(name)) {
+            screenNames.push(name);
+        }
+    });
+
+    var aliases = (initialList || []).map(function(a) {
+        var resolvedScreen = a.screen_name || screenNames[0] || 'Default';
         return {
             name: a.name || 'client-name',
             show_on_dashboard: a.show_on_dashboard || false,
             screen_name: resolvedScreen,
-            original_screen_name: resolvedScreen,
             screen_type: a.screen_type || 'basic',
             fadetime: a.fadetime != null ? a.fadetime : null,
             scrollspeed: a.scrollspeed != null ? a.scrollspeed : null,
@@ -43,19 +55,20 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
         screenNames: screenNames,
         screenTypes: screenTypes,
 
-        screenExists(alias) {
-            return this.screenNames.includes(alias.screen_name);
+        screenExists: function(alias) {
+            return knownNames.includes(alias.screen_name);
         },
 
-        urlFor(alias) {
+        urlFor: function(alias) {
             return '/client/' + alias.name;
         },
 
-        addAlias() {
+        addAlias: function() {
+            var firstScreen = knownNames.length ? knownNames[0] : 'Default';
             this.aliases.push({
                 name: 'client-name',
                 show_on_dashboard: false,
-                screen_name: 'Default',
+                screen_name: firstScreen,
                 screen_type: 'basic',
                 fadetime: null,
                 scrollspeed: null,
