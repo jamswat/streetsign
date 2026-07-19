@@ -10,3 +10,4 @@ database.db-wal
 streetsign_server/static/user_files
 *.bak
 .env
+reasonix.toml
