@@ -7,11 +7,11 @@
 {%- endmacro %}
 
 {% macro static_js(name) -%}
-<script type="text/javascript" src="{{ url_for('static', filename=name) }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename=name) }}?v={{ app_version }}"></script>
 {%- endmacro %}
 
 {% macro static_css(name) -%}
-<link rel="stylesheet" href="{{ url_for('static', filename=name) }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename=name) }}?v={{ app_version }}" />
 {%- endmacro %}
 
 {% macro post_title(post) %}
