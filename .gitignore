@@ -11,3 +11,4 @@ streetsign_server/static/user_files
 *.bak
 .env
 reasonix.toml
+__pycache__/
