@@ -38,25 +38,13 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
         };
     });
 
-    // Snapshot before we inject missing names so screenExists() can
-    // still detect orphaned aliases.
-    const existingScreenNames = screenNames.slice();
-
-    // Add any missing screen names to the list so the select has a
-    // matching option — prevents Alpine from overwriting the model.
-    aliases.forEach(function(a) {
-        if (a.original_screen_name && !screenNames.includes(a.original_screen_name)) {
-            screenNames.push(a.original_screen_name);
-        }
-    });
-
     return {
         aliases: aliases,
         screenNames: screenNames,
         screenTypes: screenTypes,
 
         screenExists(alias) {
-            return existingScreenNames.includes(alias.screen_name);
+            return this.screenNames.includes(alias.screen_name);
         },
 
         urlFor(alias) {
