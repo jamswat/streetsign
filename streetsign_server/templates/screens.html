@@ -85,7 +85,8 @@
 					{% if session.display_admin_stuff %}
 						<label>Layout:
 							<select class="form-control" x-model="alias.screen_name"
-							        :class="{'is-invalid': !screenExists(alias)}">
+							        :class="{'is-invalid': !screenExists(alias)}"
+							        x-init="$nextTick(() => $el.value = alias.screen_name)">
 								<template x-for="name in screenNames" :key="name">
 									<option :value="name" x-text="name"></option>
 								</template>
