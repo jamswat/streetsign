@@ -38,7 +38,7 @@ window.makeAliasesEditor = function(initialList, screenNames, screenTypes) {
             show_on_dashboard: a.show_on_dashboard || false,
             screen_name: a.screen_name || screenNames[0] || 'Default',
             screen_type: a.screen_type || 'basic',
-            _screen_missing: a._screen_missing || false,
+            _screen_missing: !!(a._screen_missing && a.screen_name),
             fadetime: a.fadetime != null ? a.fadetime : null,
             scrollspeed: a.scrollspeed != null ? a.scrollspeed : null,
             forceaspect: a.forceaspect != null ? a.forceaspect : null,
