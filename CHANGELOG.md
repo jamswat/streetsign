@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.3.4 — Weather Map Tile Fix
+
+### Bug Fixes
+
+- **Weather coordinate picker broken (CARTO API key required)** — the map
+  picker in the weather post type editor loaded tiles from
+  `a.basemaps.cartocdn.com`, which now requires an API key. Unkeyed requests
+  still return HTTP 200 but the tile image is an `API KEY REQUIRED` watermark,
+  so the picker showed no usable map. Switched to the keyless OpenStreetMap
+  standard tiles at `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, in line
+  with the
+  [OSMF Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/)
+  (canonical host, no subdomains). Attribution updated to
+  "© OpenStreetMap contributors".
+
 ## v1.3.3 — Alias Bug Fixes & Dashboard Improvements
 
 ### Bug Fixes — Aliases

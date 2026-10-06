@@ -45,8 +45,7 @@
                         <div class="weather-map-marker" id="weather-map-marker" aria-hidden="true"></div>
                         <div class="weather-map-help">Click the map to pin exact coordinates</div>
                         <div class="weather-map-attribution">
-                            &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>
-                            &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>
+                            &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors
                         </div>
                     </div>
                     <div class="form-text">Coordinates override the place name and are useful when wttr.in geocoding picks the wrong location.</div>
@@ -483,7 +482,7 @@ $(function() {
                 var img = document.createElement('img');
                 img.alt = '';
                 img.decoding = 'async';
-                img.src = 'https://a.basemaps.cartocdn.com/rastertiles/voyager/' + zoom + '/' + wrappedX + '/' + y + '.png';
+                img.src = 'https://tile.openstreetmap.org/' + zoom + '/' + wrappedX + '/' + y + '.png';
                 img.style.left = Math.round(x * tileSize - centerX + rect.width / 2) + 'px';
                 img.style.top = Math.round(y * tileSize - centerY + rect.height / 2) + 'px';
                 tiles.appendChild(img);
