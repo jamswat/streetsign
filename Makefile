@@ -1,4 +1,4 @@
-.PHONY: migrate backup
+.PHONY: all clean migrate backup run test lint audit check
 
 _INSTRUCTIONS:
 	echo 'make all, or make clean.'
@@ -26,3 +26,18 @@ migrate:
 
 backup:
 	./.venv/bin/python3 scripts/backup_db.py
+
+run:
+	./.venv/bin/python3 run.py
+
+test:
+	./.venv/bin/python3 -m pytest
+
+lint:
+	./.venv/bin/python3 -m pylint --fail-under=9.0 streetsign_server/
+
+audit:
+	uv export --no-dev --no-emit-project -o /tmp/requirements.txt
+	./.venv/bin/python3 -m pip_audit -r /tmp/requirements.txt
+
+check: lint test audit

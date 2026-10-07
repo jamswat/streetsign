@@ -33,7 +33,7 @@ dependencies = [
     "bleach[css]>=6.4.0,<7",
     "bcrypt>=5.0.0,<6",
     "simpleeval>=1.0.7,<2",
-    "werkzeug>=3.1.8,<4",
+    "werkzeug>=3.1.9,<4",
     "waitress>=3.0.2,<4",
     "whitenoise>=6.12.0,<7",
     "markupsafe>=3.0.3,<4",
@@ -48,7 +48,12 @@ dev = [
     "coverage>=7.15.0,<8",
     "pylint>=4.0.6,<5",
     "html5lib>=1.1,<2",
+    "pip-audit>=2.10,<3",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
 
 [tool.hatch.build.targets.wheel]
 packages = [
