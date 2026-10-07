@@ -1,5 +1,47 @@
 # Changelog
 
+## v1.4.0 — Connected Clients & Display Names
+
+### Features
+
+- **Connected Clients admin page** — a new admin-only `/clients` page lists
+  every display client that has checked in recently, showing the screen or
+  client alias it is showing, its IP address, and when it was last seen (the
+  browser user-agent is also recorded and available via `/clients/json`). The
+  page live-updates every 5 seconds.
+- **Client heartbeat** — display clients now send a lightweight periodic
+  heartbeat (`static/screens/heartbeat.js`). Presence is tracked in memory
+  (`logic/clients.py`) and a client is considered connected while its last
+  heartbeat is within `SCREEN_CLIENT_TTL` seconds.
+- **Force refresh** — admins can reload one client/alias/screen or all of
+  them. The refresh is delivered on the client's next heartbeat, so it takes
+  effect within about one `SCREEN_HEARTBEAT_INTERVAL`. A per-process boot id
+  also refreshes every screen once after a server restart.
+- **Proxy-aware client IPs** — real client addresses are read from
+  `X-Forwarded-For` when the request arrives through a proxy
+  (`TRUST_PROXY_HEADERS`, default `'auto'`: trust loopback/private peers only).
+
+### Improvements
+
+- **Display name in the sidebar** — the logged-in user shown at the bottom of
+  the sidebar now displays their display name instead of their login name,
+  falling back to the login name when no display name is set.
+
+### Development
+
+- **`dev_run.sh`** — run a throwaway development server with an isolated,
+  seeded database in a git-ignored `.dev/` directory (also `make dev`), so
+  development never touches the real `database.db`. Supports
+  `reset`/`seed`/`clean` and `HOST`/`PORT`/`FLASK_DEBUG` overrides.
+- **Documentation** — README, admin guide, and developer docs updated for
+  connected clients, `dev_run.sh`, and the `make test`/`lint`/`audit` checks;
+  `ARCHITECTURE.md` covers the heartbeat/refresh channel.
+
+### Maintenance
+
+- Bumped `werkzeug` to 3.1.9 and refreshed the lockfile after a dependency
+  audit flagged the previous version.
+
 ## v1.3.4 — Weather Map Tile Fix
 
 ### Bug Fixes

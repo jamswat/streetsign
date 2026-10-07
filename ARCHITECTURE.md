@@ -33,6 +33,7 @@ streetsign_server/            # Main application package
 │
 ├── logic/                    # Business logic (separated from views)
 │   ├── feeds_and_posts.py    # post_form_intake, cleanup, external import
+│   ├── clients.py            # connected-client presence + refresh channel
 │   └── urlsafety.py          # SSRF protection for server-side URL fetches
 │
 ├── post_types/               # Pluggable post type system (8 types)
@@ -283,6 +284,7 @@ Indexed on `(status, published, active_start, active_end)`.
 | GET | `/screens/<template>/<screenname>` | Screen display (the actual billboard) |
 | GET | `/screens/posts_from_feeds/<json>` | Poll endpoint: JSON list of active posts |
 | GET | `/screens/json/<id>[/<md5>]` | Screen config poll (conditional update via MD5) |
+| GET | `/screens/heartbeat/<id>` | Display client heartbeat: presence + refresh state |
 | GET | `/screens/post_types.js` | Dynamically generated JS renderers |
 | GET | `/feeds/rss/<ids>` | RSS 2.0 feed export |
 | GET | `/posts/<id>/json` | Post JSON (only active+published, or auth) |
@@ -323,6 +325,9 @@ Indexed on `(status, published, active_start, active_end)`.
 | POST | `/external_data_sources/<id>/run` | Manually run importer |
 | POST | `/external_data_sources/test` | Test external source configuration |
 | POST | `/external_data_sources/` | Batch run all external sources |
+| GET | `/clients` | Connected display clients (presence + refresh UI) |
+| GET | `/clients/json` | JSON list of connected clients (live update) |
+| POST | `/clients/refresh` | Force clients to reload (`all`/`alias:`/`screen:`) |
 
 ---
 
@@ -482,6 +487,25 @@ safeGetJSON(/screens/json/<id>/<md5>)
 ### 5. Lifetime
 
 Full page reload every 60 minutes (`REFRESH_PAGE_TIMER`) to prevent memory leaks.
+
+### 6. Client presence & force refresh
+
+Each screen also sends a heartbeat (`static/screens/heartbeat.js`) to
+`/screens/heartbeat/<id>` every `SCREEN_HEARTBEAT_INTERVAL` seconds.  The
+server records `(alias-or-screen, IP, user-agent, last_seen)` in an in-memory,
+thread-safe registry (`logic/clients.py`); a client is "connected" while it has
+been seen within `SCREEN_CLIENT_TTL`.  The real client IP is taken from
+`X-Forwarded-For` when the request arrives via a proxy (`TRUST_PROXY_HEADERS`,
+default `'auto'` trusts loopback/private peers).
+
+The heartbeat response carries a monotonically increasing `refresh` counter
+(summed per `all` / `screen:<name>` / `alias:<name>`) plus a per-process
+`server` boot id.  An admin bumps a counter via `POST /clients/refresh`; every
+matching client sees the new value on its next heartbeat and reloads.  The
+boot id makes all screens reload once after a server restart.
+
+Admins view this on the dedicated `/clients` page, which live-updates from
+`/clients/json`.
 
 ---
 

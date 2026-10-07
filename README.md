@@ -148,6 +148,22 @@ A fresh database is seeded with three demo accounts (password = login name):
 group), and `viewer` (read-only).
 Please change these logins before deploying!
 
+### Development server
+
+To try things out without touching your real database, `dev_run.sh` runs a
+self-contained development server with an isolated, seeded database in a
+git-ignored `.dev/` directory:
+
+```bash
+./dev_run.sh          # seed (if needed) and start on http://127.0.0.1:5000
+./dev_run.sh reset    # wipe the dev database and start fresh
+./dev_run.sh clean    # remove everything dev_run.sh generated (.dev/)
+```
+
+Override the address with `HOST=... PORT=...`, or enable auto-reload with
+`FLASK_DEBUG=1 ./dev_run.sh`. The generated files can be removed at any time
+with `./dev_run.sh clean`.
+
 
 ## Docker
 

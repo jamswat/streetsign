@@ -1,4 +1,4 @@
-.PHONY: all clean migrate backup run test lint audit check
+.PHONY: all clean migrate backup run test lint audit check dev
 
 _INSTRUCTIONS:
 	echo 'make all, or make clean.'
@@ -29,6 +29,9 @@ backup:
 
 run:
 	./.venv/bin/python3 run.py
+
+dev:
+	./dev_run.sh
 
 test:
 	./.venv/bin/python3 -m pytest

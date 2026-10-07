@@ -43,6 +43,7 @@ from streetsign_server import post_types
 from streetsign_server import app
 from streetsign_server.models import Feed, Post, Screen, ConfigVar, \
                                      config_var, now
+from streetsign_server.logic import clients
 from streetsign_server.post_types.image import allow_filetype
 from streetsign_server.views.utils import admin_only, registered_users_only, \
                                           not_found, safe_referrer
@@ -241,6 +242,34 @@ def screen_json(screenid, old_md5):
                    screen=screen.to_dict())
 
 
+@app.route('/screens/heartbeat/<int:screenid>')
+def screen_heartbeat(screenid):
+    '''
+        Display clients call this periodically (see
+        ``static/screens/heartbeat.js``).  It records that the client is
+        connected and returns the refresh state, so an admin can force a
+        reload.  Public and unauthenticated, like the other screen endpoints.
+    '''
+    try:
+        screen_name = Screen.get(id=screenid).urlname
+    except Screen.DoesNotExist:
+        screen_name = None
+
+    alias = request.args.get('alias') or None
+
+    state = clients.record_heartbeat(
+        screenid,
+        screen_name,
+        alias,
+        clients.client_ip(request),
+        request.headers.get('User-Agent'),
+    )
+
+    response = jsonify(state)
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
+
 @app.route('/screens/post_types.js')
 def post_types_js():
     '''
@@ -302,6 +331,7 @@ def client_alias(alias_name):
         # but it works for now:
 
         details = []
+        details.append(('client_alias', alias_name))
         if alias.get('forceaspect', None):
             details.append(('forceaspect', alias['forceaspect']))
         if alias.get('forcetop', None) is not None:
@@ -320,3 +350,44 @@ def client_alias(alias_name):
                 'setTimeout(function(){'
                 '    document.location.reload(true);}, 10000);'
                 '</script></body></html>')
+
+
+###########################################
+#
+# Connected clients (admin only).
+#
+
+
+@app.route('/clients')
+@admin_only('GET')
+def clients_page():
+    ''' Admin page listing currently connected display clients. '''
+    return render_template('clients.html',
+                           clients=clients.connected_clients(),
+                           breadcrumbs=[('Dashboard', url_for('index')),
+                                        ('Connected Clients', None)])
+
+
+@app.route('/clients/json')
+@admin_only('GET')
+def clients_json():
+    ''' JSON list of connected clients, for live-updating the page. '''
+    response = jsonify(clients=clients.connected_clients())
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
+
+@app.route('/clients/refresh', methods=['POST'])
+@admin_only('POST')
+def clients_refresh():
+    ''' Force one or more connected clients to reload.
+
+        The ``target`` form field is ``all``, ``alias:<name>`` or
+        ``screen:<urlname>``.
+    '''
+    target = request.form.get('target', 'all')
+    try:
+        clients.request_refresh(target)
+    except ValueError:
+        return jsonify(error='Invalid refresh target.'), 400
+    return jsonify(ok=True, target=target)

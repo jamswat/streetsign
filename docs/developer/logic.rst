@@ -10,6 +10,12 @@ Feeds and Posts
 .. automodule:: streetsign_server.logic.feeds_and_posts
    :members:
 
+Connected Clients
+-----------------
+
+.. automodule:: streetsign_server.logic.clients
+   :members:
+
 URL Safety
 ----------
 

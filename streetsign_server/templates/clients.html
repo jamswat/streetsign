@@ -1,0 +1,66 @@
+{% extends "index.html" %}
+{% block title %} Connected Clients {% endblock %}
+
+{% block body %}
+	<h1>Connected Clients</h1>
+	<p class="text-muted">
+		Display clients that have sent a heartbeat in the last
+		{{ config.SCREEN_CLIENT_TTL }} seconds. Refreshing a client reloads its
+		page on the next heartbeat (within ~{{ config.SCREEN_HEARTBEAT_INTERVAL }}s).
+	</p>
+
+	<div class="card">
+		<div class="card-header d-flex justify-content-between align-items-center">
+			<h2 class="card-title h5 mb-0">
+				<span id="client-count">{{ clients|length }}</span> connected
+			</h2>
+			<button type="button" class="btn btn-primary btn-sm" id="refresh-all">
+				<span class="bi bi-arrow-clockwise" aria-hidden="true"></span> Refresh All
+			</button>
+		</div>
+		<div class="card-body">
+			<div class="table-responsive">
+				<table class="table table-striped align-middle mb-0" id="clients-table">
+					<thead>
+						<tr>
+							<th>Status</th>
+							<th>Client</th>
+							<th>Screen</th>
+							<th>IP address</th>
+							<th>Last seen</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody id="clients-body">
+						{% for c in clients %}
+						<tr data-target="{{ ('alias:' + c.alias) if c.alias else ('screen:' + c.screen if c.screen else '') }}">
+							<td><span class="badge bg-success">online</span></td>
+							<td>{{ c.alias or '&mdash;'|safe }}</td>
+							<td>{{ c.screen or '&mdash;'|safe }}</td>
+							<td><code>{{ c.ip }}</code></td>
+							<td class="last-seen" data-last-seen="{{ c.last_seen }}">{{ c.last_seen }}</td>
+							<td>
+								{% if c.alias or c.screen %}
+								<button type="button" class="btn btn-outline-secondary btn-sm refresh-client">Refresh</button>
+								{% endif %}
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			<p class="text-muted mb-0 {% if clients %}d-none{% endif %}" id="no-clients">
+				No clients connected right now.
+			</p>
+		</div>
+	</div>
+{% endblock %}
+
+{% block end_of_page_javascript %}
+{{ super() }}
+{{ linkmacros.static_js('clients.js') }}
+<script type="text/javascript">
+	window.CLIENTS_URL = "{{ url_for('clients_json') }}";
+	window.CLIENTS_REFRESH_URL = "{{ url_for('clients_refresh') }}";
+</script>
+{% endblock %}

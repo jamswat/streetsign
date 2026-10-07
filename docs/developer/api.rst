@@ -38,7 +38,7 @@ Screen layout editor.  ``screenid=-1`` creates a new screen.
 GET returns the editor page; POST saves or deletes.
 
 ``/screens/<template>/<screenname>``
------------------------------------
+------------------------------------
 
 Returns the data about this screen, including which zones are defined in it,
 which feeds are attached to those zones, etc.  The ``template`` can be one of:
@@ -89,6 +89,44 @@ Resolves a client alias to the underlying screen.  Named shortcuts
 (configured in the web interface) redirect to the appropriate
 ``/screens/<template>/<screenname>`` URL with the alias's display
 overrides applied.
+
+``/screens/heartbeat/<int:screen_id>``
+--------------------------------------
+
+Sent periodically by every display client (see
+``static/screens/heartbeat.js``) to register that it is connected.  Public
+and unauthenticated.  An optional ``alias`` query parameter records which
+client alias the browser is showing, and the real client IP is taken from
+``X-Forwarded-For`` when the request arrives through a trusted proxy (see
+``TRUST_PROXY_HEADERS``).
+
+Returns (and marks the response ``no-store``)::
+
+    {"refresh": 3, "server": "<boot-id>", "interval": 10}
+
+``refresh`` is a monotonically increasing per-target counter (``all``,
+``screen:<urlname>`` and ``alias:<name>`` summed); when it changes, the
+client reloads.  ``server`` changes on restart, also forcing a reload.
+
+``/clients``
+------------
+
+HTML page listing the currently connected display clients, their IP
+addresses, which screen/alias they are showing, and when they were last
+seen.  Admin only.
+
+``/clients/json``
+-----------------
+
+JSON list of connected clients (those seen within ``SCREEN_CLIENT_TTL``
+seconds), used to live-update the ``/clients`` page.  Admin only.
+
+``/clients/refresh``
+--------------------
+
+Forces connected clients to reload on their next heartbeat.  POST only,
+admin only.  Form field ``target`` is one of ``all``, ``alias:<name>`` or
+``screen:<urlname>``.
 
 ``/feeds/``
 -----------

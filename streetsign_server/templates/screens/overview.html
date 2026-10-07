@@ -18,12 +18,15 @@
   {{ linkmacros.static_js('screens/functions.js') }}
   {{ linkmacros.static_js('screens/overview.js') }}
   {{ linkmacros.static_js('screens/main.js') }}
+  {{ linkmacros.static_js('screens/heartbeat.js') }}
   <script type="text/javascript" src="{{ url_for('post_types_js') }}"></script>
   <script type="text/javascript">
 
     window.LOCALOPTS = {{ request.args | tojson|safe }};
     window.SCREEN_DATA = {{screen.to_dict() | tojson|safe }};
     window.POSTS_URL = "{{ url_for('screens_posts_from_feeds', json_feeds_list='-1') }}";
+    window.CLIENT_ALIAS = {{ (request.args.get('client_alias') or '') | tojson|safe }};
+    window.SCREEN_HEARTBEAT_INTERVAL = {{ config.SCREEN_HEARTBEAT_INTERVAL | int }};
 
     SCREEN_DATA.md5 = "{{screen.md5()}}";
 

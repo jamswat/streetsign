@@ -91,6 +91,7 @@
 				</li>
 					{{ navitem('users_and_groups', 'Users & Groups', 'people', ['users_and_groups', 'user_edit', 'group']) }}
 					{{ navitem('user_files_list', 'Uploaded Files', 'image', ['user_files_list']) }}
+					{{ navitem('clients_page', 'Connected Clients', 'display', ['clients_page']) }}
 				{% endif %}
 			</ul>
 		</nav>
@@ -99,7 +100,7 @@
 			{% if session.logged_in %}
 				<div class="dropup">
 					<a href="#" class="nav-link sidebar-link d-flex align-items-center" data-bs-toggle="dropdown">
-						<span class="bi bi-person me-2"></span> {{session.username}}
+						<span class="bi bi-person me-2"></span> {{ session.displayname or session.username }}
 					</a>
 					<ul class="dropdown-menu">
 						<li><a class="dropdown-item" href="{{ url_for('user_edit', userid=session.userid) }}">Preferences</a></li>

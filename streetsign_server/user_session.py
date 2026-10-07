@@ -34,6 +34,7 @@ def login(username, password):
 
     user, sessionid = user_login(username, password)
     session['username'] = user.loginname
+    session['displayname'] = user.displayname
     session['userid'] = user.id
     # note: this is *potentially* less secure. Always confirm against
     #       real user data before accepting any values:
@@ -58,9 +59,13 @@ def get_user():
     if 'logged_in' not in session:
         raise NotLoggedIn('Not logged in!')
     try:
-        return get_logged_in_user(session['username'], session['sessionid'])
+        user = get_logged_in_user(session['username'], session['sessionid'])
+        if user and session.get('displayname') != user.displayname:
+            session['displayname'] = user.displayname
+        return user
     except Exception:  # pylint: disable=broad-exception-caught
         session.pop('username', None)
+        session.pop('displayname', None)
         session.pop('sessionid', None)
         session.pop('display_admin_stuff', None)
         session.pop('logged_in', None)
@@ -80,6 +85,7 @@ def logout():
     except Exception:  # pylint: disable=broad-exception-caught
         pass # somehow the session expired. but we're logging out anyway.
     session.pop('username', None)
+    session.pop('displayname', None)
     session.pop('sessionid', None)
     session.pop('display_admin_stuff', None)
     session.pop('logged_in', None)

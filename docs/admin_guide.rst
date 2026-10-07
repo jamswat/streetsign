@@ -99,6 +99,33 @@ be set to a long random value in ``config.py`` or via the environment, and
 should NEVER be committed to a repository or shared outside the deployment. The
 server refuses to start in production if it is left at the insecure default.
 
+Connected clients
+-----------------
+
+The **Connected Clients** page (in the admin sidebar) shows every display
+client that has checked in recently: which screen or client alias it is
+showing, its IP address, and when it was last seen.  A screen is considered
+connected while it has sent a heartbeat within ``SCREEN_CLIENT_TTL`` seconds
+(default 30); screens send a heartbeat every ``SCREEN_HEARTBEAT_INTERVAL``
+seconds (default 10).
+
+Each row has a **Refresh** button, and the page has a **Refresh All** button.
+Refreshing does not cut the connection: it asks the client to reload its page
+on its next heartbeat, so it takes effect within about one heartbeat interval.
+This is handy after changing a screen layout or when a display has got itself
+stuck.
+
+When StreetSign runs behind a reverse proxy (the usual setup, including
+Docker), the proxy should record the real client address in
+``X-Forwarded-For``; the bundled nginx example does this already.  StreetSign
+uses only the address the proxy itself appends (the right-most entry) and
+requires it to be a valid IP, so a client cannot forge the address shown by
+sending its own header.  It trusts ``X-Forwarded-For`` only from loopback or
+private peers by default; change ``TRUST_PROXY_HEADERS`` in ``config.py`` to
+``True`` (always trust) or ``False`` (never trust) if your topology differs.
+The client IP is for display only and is never used for authentication or rate
+limiting.
+
 Housekeeping & removing old content
 -----------------------------------
 
@@ -164,6 +191,13 @@ Key options:
 - ``MAX_FAILED_LOGINS`` — consecutive failed logins before an account is locked
   out (default: ``10``)
 - ``MAX_CONTENT_LENGTH`` — max upload size in bytes (default: 1 GB)
+- ``SCREEN_HEARTBEAT_INTERVAL`` — seconds between display-client heartbeats
+  (default: ``10``)
+- ``SCREEN_CLIENT_TTL`` — seconds before a silent display client is considered
+  offline on the Connected Clients page (default: ``30``)
+- ``TRUST_PROXY_HEADERS`` — how to determine the real client IP for display
+  clients: ``'auto'`` (default) trusts ``X-Forwarded-For`` only from
+  loopback/private peers, ``True`` always trusts it, ``False`` never does
 - ``LOG_LEVEL`` — logging level for the application (default: ``INFO``).
   One of ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``. Can also be set via
   the ``LOG_LEVEL`` environment variable.

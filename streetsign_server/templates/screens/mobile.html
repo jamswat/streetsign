@@ -158,6 +158,8 @@
 
         const SCREEN_DATA = {{ screen.to_dict() | tojson|safe }};
         const POSTS_URL = "{{ url_for('screens_posts_from_feeds', json_feeds_list='-1') }}";
+        window.CLIENT_ALIAS = {{ (request.args.get('client_alias') or '') | tojson|safe }};
+        window.SCREEN_HEARTBEAT_INTERVAL = {{ config.SCREEN_HEARTBEAT_INTERVAL | int }};
 
         const backBtn = document.getElementById('back-btn');
         const homeBtn = document.getElementById('home-btn');
@@ -247,5 +249,6 @@
             }, 60000);
         }
     </script>
+    <script src="/static/screens/heartbeat.js"></script>
 </body>
 </html>
