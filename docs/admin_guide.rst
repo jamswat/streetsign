@@ -117,14 +117,19 @@ stuck.
 
 When StreetSign runs behind a reverse proxy (the usual setup, including
 Docker), the proxy should record the real client address in
-``X-Forwarded-For``; the bundled nginx example does this already.  StreetSign
-uses only the address the proxy itself appends (the right-most entry) and
-requires it to be a valid IP, so a client cannot forge the address shown by
-sending its own header.  It trusts ``X-Forwarded-For`` only from loopback or
-private peers by default; change ``TRUST_PROXY_HEADERS`` in ``config.py`` to
-``True`` (always trust) or ``False`` (never trust) if your topology differs.
-The client IP is for display only and is never used for authentication or rate
-limiting.
+``X-Forwarded-For``; the bundled nginx example does this already.  Each proxy
+in the chain appends its own address, so StreetSign uses the **left-most**
+entry — the originating client — which works through any number of proxies
+(e.g. an upstream nginx-proxy-manager in front of the bundled one).  The value
+must be a valid IP, otherwise the socket peer is shown.  It trusts
+``X-Forwarded-For`` only from loopback or private peers by default; change
+``TRUST_PROXY_HEADERS`` in ``config.py`` to ``True`` (always trust) or ``False``
+(never trust) if your topology differs.
+
+Because the client controls the left-hand entries, a client can forge the
+address shown here if an upstream proxy forwards its ``X-Forwarded-For`` header
+unchanged.  This is acceptable because the client IP is for display only and is
+never used for authentication or rate limiting.
 
 Housekeeping & removing old content
 -----------------------------------
@@ -197,7 +202,8 @@ Key options:
   offline on the Connected Clients page (default: ``30``)
 - ``TRUST_PROXY_HEADERS`` — how to determine the real client IP for display
   clients: ``'auto'`` (default) trusts ``X-Forwarded-For`` only from
-  loopback/private peers, ``True`` always trusts it, ``False`` never does
+  loopback/private peers, ``True`` always trusts it, ``False`` never does.
+  When trusted, the left-most (originating-client) entry is used
 - ``LOG_LEVEL`` — logging level for the application (default: ``INFO``).
   One of ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``. Can also be set via
   the ``LOG_LEVEL`` environment variable.

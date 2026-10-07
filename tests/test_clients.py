@@ -8,7 +8,7 @@
 
 import sys
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from flask import json
 
 sys.path.append(os.path.dirname(__file__) + '/..')
@@ -86,20 +86,20 @@ class TestHeartbeat(ClientTestBase):
         self.assertEqual(connected[0]['alias'], 'ghost')
         self.assertIsNone(connected[0]['screen'])
 
-    def test_x_forwarded_for_uses_rightmost_hop(self):
+    def test_x_forwarded_for_uses_leftmost_hop(self):
+        # Behind several proxies each appends to the right, so the left-most
+        # entry is the originating client.
         self.client.get(
             f'/screens/heartbeat/{self.screen.id}',
             headers={'X-Forwarded-For': '203.0.113.5, 10.0.0.1'})
 
         connected = clients_logic.connected_clients()
-        self.assertEqual(connected[0]['ip'], '10.0.0.1')
+        self.assertEqual(connected[0]['ip'], '203.0.113.5')
 
-    def test_x_forwarded_for_forged_prefix_ignored(self):
-        # A client-provided left-hand value must not win; the proxy-appended
-        # right-most address is authoritative.
+    def test_x_forwarded_for_single_entry(self):
         self.client.get(
             f'/screens/heartbeat/{self.screen.id}',
-            headers={'X-Forwarded-For': '1.2.3.4, 203.0.113.9'})
+            headers={'X-Forwarded-For': '203.0.113.9'})
 
         connected = clients_logic.connected_clients()
         self.assertEqual(connected[0]['ip'], '203.0.113.9')
@@ -141,6 +141,18 @@ class TestHeartbeat(ClientTestBase):
         clients_logic._presence[key]['last_seen'] = now() - timedelta(seconds=120)
 
         self.assertEqual(clients_logic.connected_clients(), [])
+
+    def test_last_seen_is_timezone_aware(self):
+        # The browser parses the ISO string; without an offset it assumes
+        # browser-local time and renders a constant, timezone-sized age
+        # (e.g. "60m ago" in a UTC container viewed from UTC+1).
+        self.client.get(f'/screens/heartbeat/{self.screen.id}')
+
+        stamp = clients_logic.connected_clients()[0]['last_seen']
+        parsed = datetime.fromisoformat(stamp)
+        self.assertIsNotNone(parsed.tzinfo)
+        age = abs((datetime.now(timezone.utc) - parsed).total_seconds())
+        self.assertLess(age, 5)
 
 
 class TestClientsPage(ClientTestBase):

@@ -1,5 +1,28 @@
 # Changelog
 
+## v1.4.1 — Proxy-chain IP & Timestamp Fixes
+
+### Bug Fixes
+
+- **Wrong client IP behind multiple proxies** — the Connected Clients page took
+  the right-most `X-Forwarded-For` entry, which is the proxy nearest
+  StreetSign. With more than one proxy (e.g. an external nginx-proxy-manager in
+  front of the bundled nginx) this showed the inner proxy/gateway address
+  instead of the client. It now uses the left-most (originating-client) entry,
+  so it resolves correctly through any number of proxies. As before, the value
+  is for display only and is never used for authentication or rate limiting.
+- **"Last seen" age off by the server's timezone** — `last_seen` was serialised
+  as a naive local timestamp. Browsers interpret an offset-less ISO string as
+  *their own* timezone, so a UTC server (the Docker default) viewed from, say,
+  UTC+1 showed every client as a constant "60m ago". Timestamps are now
+  serialised timezone-aware.
+
+### Improvements
+
+- **Clients page live-update indicator** — if polling `/clients/json` fails,
+  the page now shows a "live updates unavailable — showing last known state"
+  warning instead of silently ageing the displayed times.
+
 ## v1.4.0 — Connected Clients & Display Names
 
 ### Features

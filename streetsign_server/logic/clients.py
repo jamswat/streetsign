@@ -91,11 +91,16 @@ def client_ip(request):
     - ``True``: always trust it.
     - ``False``: never trust it.
 
-    Only the *right-most* X-Forwarded-For entry is used: that value is added by
-    the proxy we are directly behind, so a client cannot forge it (it only
-    controls the left-hand entries).  The value must be a syntactically valid
-    IP, otherwise we fall back to the socket peer.  This is informational only
-    — it is never used for authentication or rate limiting.
+    The *left-most* X-Forwarded-For entry is used: that is the address of the
+    originating client, which is what an admin wants to see even when the
+    request passes through several proxies (each of which appends its own
+    address to the right).  The value must be a syntactically valid IP,
+    otherwise we fall back to the socket peer.
+
+    Because a client controls the left-hand entries, a client can forge the
+    address shown here if an upstream proxy forwards its X-Forwarded-For
+    header unchanged.  That is acceptable because this value is informational
+    only — it is never used for authentication or rate limiting.
     """
     peer = request.remote_addr or ''
     trust = app.config.get('TRUST_PROXY_HEADERS', 'auto')
@@ -107,7 +112,7 @@ def client_ip(request):
 
     forwarded = request.headers.get('X-Forwarded-For', '')
     if forwarded:
-        candidate = _safe_ip(forwarded.split(',')[-1].strip())
+        candidate = _safe_ip(forwarded.split(',')[0].strip())
         if candidate:
             return candidate
     return peer
@@ -211,7 +216,8 @@ def connected_clients():
             'alias': c['alias'],
             'ip': c['ip'],
             'user_agent': c['user_agent'],
-            'last_seen': c['last_seen'].isoformat(timespec='seconds'),
+            'last_seen': c['last_seen'].astimezone()
+                                  .isoformat(timespec='seconds'),
         }
         for c in items
     ]

@@ -101,6 +101,13 @@
         });
     }
 
+    function setLiveError(visible) {
+        const el = document.getElementById('clients-error');
+        if (el) {
+            el.classList.toggle('d-none', !visible);
+        }
+    }
+
     function loadClients() {
         fetch(window.CLIENTS_URL, {cache: 'no-store', credentials: 'same-origin'})
             .then(function(response) {
@@ -109,10 +116,15 @@
             .then(function(data) {
                 if (data && data.clients) {
                     render(data.clients);
+                    setLiveError(false);
+                } else {
+                    setLiveError(true);
                 }
             })
             .catch(function() {
-                // Ignore transient failures; the next tick will retry.
+                // Transient failure; the next tick will retry.  Warn the
+                // admin so an ageing "last seen" isn't mistaken for the truth.
+                setLiveError(true);
             });
     }
 
