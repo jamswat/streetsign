@@ -50,13 +50,17 @@ TIME_OFFSET = 0
 SCREEN_HEARTBEAT_INTERVAL = 10  # seconds between heartbeats
 SCREEN_CLIENT_TTL = 30          # seconds before a silent client is offline
 
-# How to determine the real client IP for display clients. Display clients are
-# usually reached through a reverse proxy (nginx, Docker), so the socket peer
-# address is the proxy. 'auto' trusts X-Forwarded-For only when the immediate
-# peer is a loopback or private address (the common proxy case); True always
-# trusts it; False never does. Note: X-Forwarded-For is only used for the
-# informational client list, never for authentication.
-TRUST_PROXY_HEADERS = 'auto'
+# Number of reverse proxies chained in front of StreetSign that append
+# X-Forwarded-For / set X-Forwarded-Proto (e.g. nginx, nginx-proxy-manager,
+# a Docker ingress). Werkzeug's ProxyFix is applied with this hop count, so
+# request.remote_addr and request.scheme reflect the real client and protocol.
+#
+# 0 (default) means "not behind a proxy" and forwarded headers are ignored.
+# Set it to exactly the number of proxies in front of StreetSign (1 for a
+# single nginx-proxy-manager). Only set this if the app is genuinely behind
+# those proxies: trusting forwarded headers from an untrusted client lets it
+# spoof its address (which also affects login rate limiting).
+TRUSTED_PROXY_HOPS = int(environ.get('TRUSTED_PROXY_HOPS', '0'))
 
 # These are available in all templates, so useful for storing configuration
 # strings, etc.

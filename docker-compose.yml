@@ -21,6 +21,7 @@ services:
       - SECRET_KEY=${SECRET_KEY:-dev-default-key-change-in-production}
       - PORT=${PORT:-5000}
       - HOST=${HOST:-0.0.0.0}
+      - TRUSTED_PROXY_HOPS=${TRUSTED_PROXY_HOPS:-0}
       - WAITRESS_THREADS=${WAITRESS_THREADS:-8}
       - WAITRESS_CHANNEL_TIMEOUT=${WAITRESS_CHANNEL_TIMEOUT:-30}
     volumes:

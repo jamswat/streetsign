@@ -494,10 +494,11 @@ Each screen also sends a heartbeat (`static/screens/heartbeat.js`) to
 `/screens/heartbeat/<id>` every `SCREEN_HEARTBEAT_INTERVAL` seconds.  The
 server records `(alias-or-screen, IP, user-agent, last_seen)` in an in-memory,
 thread-safe registry (`logic/clients.py`); a client is "connected" while it has
-been seen within `SCREEN_CLIENT_TTL`.  The real client IP is the left-most
-`X-Forwarded-For` entry when the request arrives via a proxy
-(`TRUST_PROXY_HEADERS`, default `'auto'` trusts loopback/private peers), so it
-resolves correctly through a chain of proxies.  `last_seen` is serialised
+been seen within `SCREEN_CLIENT_TTL`.  The real client IP comes from
+`request.remote_addr`, which Werkzeug's `ProxyFix` middleware resolves from
+`X-Forwarded-For` when `TRUSTED_PROXY_HOPS` is set to the number of reverse
+proxies in front of the app (`0` by default, i.e. direct access).  The same
+value is used for login rate limiting.  `last_seen` is serialised
 timezone-aware so browsers in any timezone render the age correctly.
 
 The heartbeat response carries a monotonically increasing `refresh` counter

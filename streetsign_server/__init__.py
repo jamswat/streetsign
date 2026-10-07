@@ -22,6 +22,7 @@ import logging
 
 from flask import Flask, json
 from whitenoise import WhiteNoise
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,22 @@ def _static_security_headers(headers, _path, _url):
     headers['X-Frame-Options'] = 'SAMEORIGIN'
     headers['Cache-Control'] = 'public, max-age=86400'
 
+def apply_proxy_fix(wsgi_app, hops):
+    ''' Wrap *wsgi_app* with Werkzeug's ProxyFix when StreetSign runs behind
+        reverse proxies, so request.remote_addr / request.scheme reflect the
+        real client and protocol. *hops* is the number of chained proxies that
+        set the X-Forwarded-For / X-Forwarded-Proto headers (see
+        TRUSTED_PROXY_HOPS). When *hops* is 0 no wrapping happens and forwarded
+        headers are ignored, which is the safe default for direct access. '''
+    try:
+        hops = int(hops)
+    except (TypeError, ValueError):
+        hops = 0
+
+    if hops > 0:
+        return ProxyFix(wsgi_app, x_for=hops, x_proto=hops)
+    return wsgi_app
+
 # Serve static assets in-process via WhiteNoise instead of an nginx sidecar.
 # Built-in assets (main.js, style.css, etc.) are baked into the image.
 # User uploads live under /static/user_files/ on a persistent volume and are
@@ -82,8 +99,10 @@ def _static_security_headers(headers, _path, _url):
 # WhiteNoise only scans the filesystem at startup. For a signage server with
 # a handful of always-on displays the extra stat() per static request is
 # negligible. Requests that don't match a static file fall through to Flask.
+# ProxyFix is applied inside WhiteNoise, so Flask sees the fixed environ while
+# static file serving stays untouched.
 app.wsgi_app = WhiteNoise(
-    app.wsgi_app,
+    apply_proxy_fix(app.wsgi_app, app.config.get('TRUSTED_PROXY_HOPS', 0)),
     root=pathjoin(dirname(__file__), 'static'),
     prefix='static',
     autorefresh=True,
@@ -103,7 +122,7 @@ import streetsign_server.views as views
 from .models import \
      User, Group, Post, Feed, FeedPermission
 
-__version__ = '1.4.1'
+__version__ = '1.4.2'
 
 @app.context_processor
 def inject_version():

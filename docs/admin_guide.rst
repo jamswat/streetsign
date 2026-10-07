@@ -115,21 +115,34 @@ on its next heartbeat, so it takes effect within about one heartbeat interval.
 This is handy after changing a screen layout or when a display has got itself
 stuck.
 
-When StreetSign runs behind a reverse proxy (the usual setup, including
-Docker), the proxy should record the real client address in
-``X-Forwarded-For``; the bundled nginx example does this already.  Each proxy
-in the chain appends its own address, so StreetSign uses the **left-most**
-entry — the originating client — which works through any number of proxies
-(e.g. an upstream nginx-proxy-manager in front of the bundled one).  The value
-must be a valid IP, otherwise the socket peer is shown.  It trusts
-``X-Forwarded-For`` only from loopback or private peers by default; change
-``TRUST_PROXY_HEADERS`` in ``config.py`` to ``True`` (always trust) or ``False``
-(never trust) if your topology differs.
+Client addresses behind a reverse proxy
+---------------------------------------
 
-Because the client controls the left-hand entries, a client can forge the
-address shown here if an upstream proxy forwards its ``X-Forwarded-For`` header
-unchanged.  This is acceptable because the client IP is for display only and is
-never used for authentication or rate limiting.
+When StreetSign runs behind one or more reverse proxies (nginx,
+nginx-proxy-manager, a Docker ingress, ...), the proxies add
+``X-Forwarded-For`` / ``X-Forwarded-Proto`` headers but the socket peer the
+app sees is the proxy.  Tell StreetSign how many proxies are in front of it so
+it can recover the real client address and protocol:
+
+- ``TRUSTED_PROXY_HOPS`` — the number of chained proxies (set it in
+  ``config.py`` or via the environment variable of the same name).  ``0`` (the
+  default) means "direct access, ignore forwarded headers"; ``1`` is a single
+  proxy such as nginx-proxy-manager.
+
+StreetSign applies Werkzeug's ``ProxyFix`` with that hop count, so
+``request.remote_addr`` becomes the real client and ``request.scheme`` honours
+``X-Forwarded-Proto``.  This value is used for the Connected Clients page
+*and* for the per-IP login rate limiter.
+
+Only set this to the number of proxies that actually sit in front of
+StreetSign: trusting forwarded headers from an untrusted client lets it spoof
+its address.  If the app's port is reachable directly (bypassing the proxy),
+keep it private or leave ``TRUSTED_PROXY_HOPS`` at ``0``.
+
+Note that nginx-proxy-manager *overwrites* ``X-Forwarded-Proto`` (it does not
+append), so with more than one proxy the scheme resolves to the innermost
+hop's scheme; the client IP (from ``X-Forwarded-For``, which is appended) is
+still correct.
 
 Housekeeping & removing old content
 -----------------------------------
@@ -200,10 +213,10 @@ Key options:
   (default: ``10``)
 - ``SCREEN_CLIENT_TTL`` — seconds before a silent display client is considered
   offline on the Connected Clients page (default: ``30``)
-- ``TRUST_PROXY_HEADERS`` — how to determine the real client IP for display
-  clients: ``'auto'`` (default) trusts ``X-Forwarded-For`` only from
-  loopback/private peers, ``True`` always trusts it, ``False`` never does.
-  When trusted, the left-most (originating-client) entry is used
+- ``TRUSTED_PROXY_HOPS`` — number of reverse proxies in front of StreetSign
+  whose ``X-Forwarded-For`` / ``X-Forwarded-Proto`` headers are trusted
+  (default: ``0`` = not behind a proxy).  Can also be set via the
+  ``TRUSTED_PROXY_HOPS`` environment variable.
 - ``LOG_LEVEL`` — logging level for the application (default: ``INFO``).
   One of ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``. Can also be set via
   the ``LOG_LEVEL`` environment variable.

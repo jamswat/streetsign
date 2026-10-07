@@ -96,9 +96,9 @@ overrides applied.
 Sent periodically by every display client (see
 ``static/screens/heartbeat.js``) to register that it is connected.  Public
 and unauthenticated.  An optional ``alias`` query parameter records which
-client alias the browser is showing, and the real client IP is taken from the
-left-most ``X-Forwarded-For`` entry when the request arrives through a trusted
-proxy (see ``TRUST_PROXY_HEADERS``).
+client alias the browser is showing, and the real client IP is taken from
+``request.remote_addr``, which the ``ProxyFix`` middleware resolves from
+``X-Forwarded-For`` when ``TRUSTED_PROXY_HOPS`` is configured.
 
 Returns (and marks the response ``no-store``)::
 

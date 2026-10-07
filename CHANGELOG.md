@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.4.2 — Trusted-proxy support via ProxyFix
+
+### Bug Fixes
+
+- **Client address behind a reverse proxy** — StreetSign now applies Werkzeug's
+  `ProxyFix` middleware when `TRUSTED_PROXY_HOPS` is set to the number of
+  proxies in front of it. `request.remote_addr` becomes the real client (used
+  by the Connected Clients page *and* the per-IP login rate limiter) and
+  `request.scheme` honours `X-Forwarded-Proto`. The previous hand-rolled
+  `X-Forwarded-For` parsing has been removed.
+
+### Configuration
+
+- **`TRUSTED_PROXY_HOPS`** (config / env, default `0`) — number of chained
+  reverse proxies whose forwarded headers are trusted. Set to `1` for a single
+  nginx-proxy-manager. `0` (the default) means direct access and forwarded
+  headers are ignored. Replaces the removed `TRUST_PROXY_HEADERS` option.
+
 ## v1.4.1 — Proxy-chain IP & Timestamp Fixes
 
 ### Bug Fixes

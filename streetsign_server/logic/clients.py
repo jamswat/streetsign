@@ -80,51 +80,17 @@ def _safe_ip(value):
 
 
 def client_ip(request):
-    """Best-effort real client IP for *request*.
+    """Real client IP for *request*.
 
-    Display clients are commonly reached through a reverse proxy (nginx,
-    Docker), so ``request.remote_addr`` is the proxy.  ``X-Forwarded-For`` is
-    honoured according to the ``TRUST_PROXY_HEADERS`` config value:
-
-    - ``'auto'`` (default): only trust it when the immediate peer is a
-      loopback or private address, i.e. a local/reverse proxy.
-    - ``True``: always trust it.
-    - ``False``: never trust it.
-
-    The *left-most* X-Forwarded-For entry is used: that is the address of the
-    originating client, which is what an admin wants to see even when the
-    request passes through several proxies (each of which appends its own
-    address to the right).  The value must be a syntactically valid IP,
-    otherwise we fall back to the socket peer.
-
-    Because a client controls the left-hand entries, a client can forge the
-    address shown here if an upstream proxy forwards its X-Forwarded-For
-    header unchanged.  That is acceptable because this value is informational
-    only — it is never used for authentication or rate limiting.
+    When StreetSign runs behind trusted reverse proxies, the ``ProxyFix``
+    middleware (wired up in ``streetsign_server`` from the
+    ``TRUSTED_PROXY_HOPS`` config) has already rewritten
+    ``request.remote_addr`` from ``X-Forwarded-For``.  Otherwise this is the
+    socket peer.  The result is informational only; authentication and rate
+    limiting use the same ``request.remote_addr``, so ``TRUSTED_PROXY_HOPS``
+    must match the real number of proxies for that value to be trustworthy.
     """
-    peer = request.remote_addr or ''
-    trust = app.config.get('TRUST_PROXY_HEADERS', 'auto')
-
-    if trust is False:
-        return peer
-    if trust is not True and not _is_trusted_peer(peer):
-        return peer
-
-    forwarded = request.headers.get('X-Forwarded-For', '')
-    if forwarded:
-        candidate = _safe_ip(forwarded.split(',')[0].strip())
-        if candidate:
-            return candidate
-    return peer
-
-
-def _is_trusted_peer(peer):
-    """True if *peer* is a loopback or private (RFC1918/ULA) address."""
-    try:
-        address = ip_address(peer)
-    except ValueError:
-        return False
-    return address.is_loopback or address.is_private
+    return request.remote_addr or ''
 
 
 def _valid_target(target):
