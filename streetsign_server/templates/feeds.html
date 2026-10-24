@@ -43,6 +43,13 @@
 					</td>
 			</tr>
 		{% endfor %}
+		{% if not feeds %}
+			<tr>
+				<td colspan="3" class="text-muted text-center py-3">
+					No feeds yet.{% if session.display_admin_stuff %} Use "New Feed" above to create one.{% endif %}
+				</td>
+			</tr>
+		{% endif %}
 	</tbody>
 </table>
 	</div>
@@ -85,6 +92,11 @@
 					</td>
 				</tr>
 			{% endfor %}
+			{% if not external_sources %}
+				<tr>
+					<td colspan="5" class="text-muted text-center py-3">No external importers configured.</td>
+				</tr>
+			{% endif %}
 			</tbody>
 			</table>
 			</div>

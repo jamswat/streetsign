@@ -45,16 +45,36 @@ $(() => {
 
 ////////////////////////////////////////////////
 // Sidebar toggle for mobile:
+function openSidebar() {
+    $('.sidebar').addClass('open');
+    $('#sidebar-overlay').addClass('show');
+    $('body').addClass('overflow-hidden');
+    $('#sidebar-toggle').attr('aria-expanded', 'true');
+    $('.sidebar .sidebar-link').first().focus();
+}
+
+function closeSidebar() {
+    $('.sidebar').removeClass('open');
+    $('#sidebar-overlay').removeClass('show');
+    $('body').removeClass('overflow-hidden');
+    $('#sidebar-toggle').attr('aria-expanded', 'false');
+    $('#sidebar-toggle').focus();
+}
+
 $('#sidebar-toggle').click(function() {
-    $('.sidebar').toggleClass('open');
-    $('#sidebar-overlay').toggleClass('show');
-    $('body').toggleClass('overflow-hidden');
+    if ($('.sidebar').hasClass('open')) {
+        closeSidebar();
+    } else {
+        openSidebar();
+    }
 });
 
-$('#sidebar-overlay').click(function() {
-    $('.sidebar').removeClass('open');
-    $(this).removeClass('show');
-    $('body').removeClass('overflow-hidden');
+$('#sidebar-overlay').click(closeSidebar);
+
+$(document).on('keydown', function(evt) {
+    if (evt.key === 'Escape' && $('.sidebar').hasClass('open') && !$('.modal.show').length) {
+        closeSidebar();
+    }
 });
 
 ////////////////////////////////////////////////
@@ -85,6 +105,9 @@ function updateThemeIcon(theme) {
     const icons = $('.theme-toggle span.bi');
     icons.removeClass('bi-sun-fill bi-moon-stars-fill');
     icons.addClass(theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill');
+    $('.theme-toggle')
+        .attr('aria-pressed', theme === 'dark' ? 'true' : 'false')
+        .attr('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
 }
 
 ////////////////////////////////////////////////
@@ -103,11 +126,12 @@ function showToast(message, type) {
     const toast = $(`
         <div id="${id}" class="toast align-items-center ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
-                <div class="toast-body">${message}</div>
+                <div class="toast-body"></div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     `);
+    toast.find('.toast-body').text(message === undefined ? '' : message);
     $('.toast-container').append(toast);
     const bsToast = new bootstrap.Toast(toast[0], { delay: 5000 });
     bsToast.show();
@@ -117,11 +141,12 @@ function showToast(message, type) {
 ////////////////////////////////////////////////
 // Bootstrap confirm modal:
 
-function confirmAction(message, onConfirm) {
+function confirmAction(message, onConfirm, okLabel) {
     $('#confirm-modal-message').text(message || 'Are you sure?');
     const modal = new bootstrap.Modal('#confirm-modal');
     const okBtn = $('#confirm-modal-ok');
 
+    okBtn.text(okLabel || 'Delete');
     okBtn.off('click').click(() => {
         modal.hide();
         if (onConfirm) { onConfirm(); }
@@ -193,17 +218,23 @@ $('#show_past_posts').click(function() {
 
 $('#run_housekeeping').click(function() {
     const btn = $(this);
-    btn.prop('disabled', true);
-    $.post(window.HOUSEKEEPING_URL, {}, function(data) {
-        showToast(
-            'Housekeeping: ' + data.archived + ' archived, ' + data.deleted + ' deleted.',
-            'success'
-        );
-    }, 'json').fail(function() {
-        showToast('Housekeeping failed.', 'error');
-    }).always(function() {
-        btn.prop('disabled', false);
-    });
+    confirmAction(
+        'Run housekeeping? This will archive posts ending more than 7 days ago and permanently delete posts ending more than 30 days ago. Unused uploaded files will also be removed.',
+        function() {
+            btn.prop('disabled', true);
+            $.post(window.HOUSEKEEPING_URL, {}, function(data) {
+                showToast(
+                    'Housekeeping: ' + data.archived + ' archived, ' + data.deleted + ' deleted.',
+                    'success'
+                );
+            }, 'json').fail(function() {
+                showToast('Housekeeping failed.', 'error');
+            }).always(function() {
+                btn.prop('disabled', false);
+            });
+        },
+        'Run Housekeeping'
+    );
 });
 
 // and run any js which was inserted by a template, which needs jQuery.
@@ -214,6 +245,8 @@ while (jLater.length) {
 
 ////////////////////////////////
 
+$('.clickable-row').attr('tabindex', '0');
+
 $(document).on('click', '.clickable-row', function(evt) {
     const tag = evt.target.tagName.toLowerCase();
     const isInteractive = tag === 'a' || tag === 'button' || tag === 'input' ||
@@ -221,6 +254,17 @@ $(document).on('click', '.clickable-row', function(evt) {
     if (!isInteractive && !$(evt.target).closest('a, button, input, select, textarea, label').length) {
         window.location.href = $(this).data('uri');
     }
+});
+
+$(document).on('keydown', '.clickable-row', function(evt) {
+    if (evt.key !== 'Enter' && evt.key !== ' ') {
+        return;
+    }
+    if (evt.target !== this && $(evt.target).closest('a, button, input, select, textarea, label').length) {
+        return;
+    }
+    evt.preventDefault();
+    window.location.href = $(this).data('uri');
 });
 
 $(document).on('click', '.item_ajax_toggle', function(evt) {
@@ -257,12 +301,16 @@ $(document).on('click', '.item_ajax_toggle', function(evt) {
 
 $(() => {
     $('.autopost').change(function() {
+        const select = this;
         $.post(this.form.getAttribute('action'), $(this.form).serialize(), function(data) {
             if (data.message) {
                 showToast(data.message, 'success');
             } else {
                 showToast(data, 'info');
             }
+        }).fail(function() {
+            showToast('Could not move post — check your permissions.', 'error');
+            select.form.reset();
         });
     });
 

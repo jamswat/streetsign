@@ -11,12 +11,9 @@
 <div x-data="makeScreenEditor(screenEditorConfig)" class="row">
 <div class="col-md-7">
 	<div class="card mb-3">
-		<div class="card-header">
-			<h2 class="card-title h5">Preview
-			<div class="float-end">
-			{% if screen.urlname %}<a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname) }}" class="btn btn-secondary btn-sm">Full Preview</a>{% endif %}
-			</div>
-			</h2>
+		<div class="card-header d-flex justify-content-between align-items-center">
+			<h2 class="card-title h5 mb-0">Preview</h2>
+			{% if screen.urlname %}<a href="{{ url_for('screendisplay', template='basic', screenname=screen.urlname) }}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">Full Preview</a>{% endif %}
 		</div>
 		<div class="card-body p-2">
 			<div class="d-flex justify-content-end mb-2">
@@ -51,12 +48,12 @@
 		</div>
 		<div class="card-body">
 			<div class="mb-3">
-				<label class="form-label">Name</label>
+				<label class="form-label" for="urlname">Name</label>
 				<input type="text" name="urlname" id="urlname" value="{{ screen.urlname }}" class="form-control" required
 		       title="Letters, numbers, hyphens and underscores only" />
 			</div>
 			<div class="mb-3">
-				<label class="form-label">Background:</label>
+				<label class="form-label" for="background">Background:</label>
 				<select name="background" id="background" autocomplete="off" class="chosen">
 					<option {{ 'selected' if not screen.background }} value="">None</option>
 					{% for bg in backgrounds %}
@@ -65,8 +62,8 @@
 				</select>
 			</div>
 			<div class="mb-3">
-				<label class="form-label">Custom CSS:</label>
-				<textarea name="css" x-model="css" class="form-control" rows="3" placeholder="Additional CSS for this screen..."></textarea>
+				<label class="form-label" for="screen_css">Custom CSS:</label>
+				<textarea name="css" id="screen_css" x-model="css" class="form-control" rows="3" placeholder="Additional CSS for this screen..."></textarea>
 			</div>
 		<input type="hidden" name="settings" :value="settings" />
 		</div>
@@ -81,25 +78,26 @@
 	<div class="card-header d-flex justify-content-between align-items-center">
 		<h2 class="card-title h5 mb-0">Zones</h2>
 		<button x-on:click="addZone" class="btn btn-sm btn-primary">
-			<span class="bi bi-plus-lg"></span> Add Zone
+			<span class="bi bi-plus-lg" aria-hidden="true"></span> Add Zone
 		</button>
 	</div>
 	<div class="card-body p-2">
 	<template x-for="(zone, idx) in zones" :key="idx">
 		<div class="card mb-2 zone-editor-card" :class="{ 'border-primary': zone.selected }"
 		     :id="'zone-editor-' + idx"
-		     x-on:click="selectZone(idx)">
+		     x-on:click="selectZone(idx)"
+		     x-on:focusin="selectZone(idx)">
 			<div class="card-header py-2 d-flex justify-content-between align-items-center">
 			<input x-model="zone.name"
 			       placeholder="Zone name" class="form-control form-control-sm"
-			       style="max-width: 60%" />
-				<button x-on:click.stop="removeZone(idx)" class="btn btn-sm btn-danger">
-					<span class="bi bi-trash"></span>
+			       style="max-width: 60%" aria-label="Zone name" />
+				<button x-on:click.stop="removeZone(idx)" class="btn btn-sm btn-danger" aria-label="Remove zone">
+					<span class="bi bi-trash" aria-hidden="true"></span>
 				</button>
 			</div>
 			<div class="card-body p-2" x-show="zone.selected">
 				<div class="mb-2">
-					<label class="form-label small">Feeds:</label>
+					<label class="form-label small" :for="'zonefeeds_' + idx">Feeds:</label>
 					<select multiple autocomplete="off" class="form-control form-control-sm"
 					        :id="'zonefeeds_' + idx"
 					        x-on:change="zone.feeds = Array.from($event.target.selectedOptions).map(o => o.value)"
@@ -113,7 +111,7 @@
 				<div class="row g-2">
 					<div class="col-6">
 						<label class="form-label small">Zone type:</label>
-						<select class="form-control form-control-sm" x-model="zone.type">
+						<select class="form-control form-control-sm" x-model="zone.type" aria-label="Zone type">
 							<option value="fade">Fade In, Fade Out</option>
 							<option value="scroll">Scrolling text</option>
 						</select>
@@ -121,7 +119,7 @@
 					<div class="col-6">
 						<label class="form-label small">Fade time:</label>
 						<div class="input-group input-group-sm">
-							<input type="number" x-model="zone.fadetime" class="form-control" />
+							<input type="number" x-model="zone.fadetime" class="form-control" aria-label="Fade time in milliseconds" />
 							<span class="input-group-text">ms</span>
 						</div>
 					</div>
@@ -130,12 +128,12 @@
 				<div class="row g-2 mt-2">
 					<div class="col-6">
 						<label class="form-label small">Text Color:</label>
-						<input type="color" x-model="zone.color" class="form-control form-control-sm form-control-color" style="height:2em" />
+						<input type="color" x-model="zone.color" class="form-control form-control-sm form-control-color" style="height:2em" aria-label="Text color" />
 					</div>
 					<div class="col-6">
 						<label class="form-label small">Font:</label>
 						<select name="fontfamily" class="form-control form-control-sm"
-						    x-model="zone.fontfamily">
+						    x-model="zone.fontfamily" aria-label="Font family">
 							<template x-for="font in availableFonts" :key="font">
 								<option :value="font" x-text="font || '(browser default)'"></option>
 							</template>
@@ -146,25 +144,25 @@
 				<div class="row g-2 mt-2">
 					<div class="col-3">
 						<label class="form-label small">Top %</label>
-						<input x-model="zone.top" placeholder="top" class="form-control form-control-sm" />
+						<input x-model="zone.top" placeholder="top" class="form-control form-control-sm" aria-label="Top percent" />
 					</div>
 					<div class="col-3">
 						<label class="form-label small">Left %</label>
-						<input x-model="zone.left" placeholder="left" class="form-control form-control-sm" />
+						<input x-model="zone.left" placeholder="left" class="form-control form-control-sm" aria-label="Left percent" />
 					</div>
 					<div class="col-3">
 						<label class="form-label small">Right %</label>
-						<input x-model="zone.right" placeholder="right" class="form-control form-control-sm" />
+						<input x-model="zone.right" placeholder="right" class="form-control form-control-sm" aria-label="Right percent" />
 					</div>
 					<div class="col-3">
 						<label class="form-label small">Bottom %</label>
-						<input x-model="zone.bottom" placeholder="bottom" class="form-control form-control-sm" />
+						<input x-model="zone.bottom" placeholder="bottom" class="form-control form-control-sm" aria-label="Bottom percent" />
 					</div>
 				</div>
 
 				<div class="mt-2">
 					<label class="form-label small">Additional CSS:</label>
-					<textarea x-model="zone.css" class="form-control form-control-sm" rows="2" placeholder="Custom zone CSS..."></textarea>
+					<textarea x-model="zone.css" class="form-control form-control-sm" rows="2" placeholder="Custom zone CSS..." aria-label="Additional zone CSS"></textarea>
 				</div>
 			</div>
 		</div>
@@ -173,13 +171,13 @@
 	<div class="text-center mt-2" x-show="zones.length === 0">
 		<p class="text-muted">No zones yet.</p>
 		<button x-on:click="addZone" class="btn btn-outline-primary">
-			<span class="bi bi-plus-lg"></span> Add Your First Zone
+			<span class="bi bi-plus-lg" aria-hidden="true"></span> Add Your First Zone
 		</button>
 	</div>
 	</div>
 	<div class="card-footer" x-show="zones.length > 0">
 		<button x-on:click="addZone" class="btn btn-sm btn-outline-primary">
-			<span class="bi bi-plus-lg"></span> Add Zone
+			<span class="bi bi-plus-lg" aria-hidden="true"></span> Add Zone
 		</button>
 	</div>
 </div>
@@ -195,13 +193,13 @@
 
 // Provide data for the Alpine component
 screenEditorConfig = {
-    background: "{{ screen.background }}",
-    settings: JSON.stringify({{ screen.settings|safe if screen.settings else '{}' }}),
-    css: "{{ screen.css|replace('\n', '\\n')|replace('\r', '')|replace('</', '')|safe }}",
-    zones: {{ screen.zones|safe if screen.zones else '[]' }},
+    background: {{ (screen.background or '')|tojson }},
+    settings: {{ (screen.settings or '{}')|tojson }},
+    css: {{ (screen.css or '')|tojson }},
+    zones: {{ (screen.zones|from_json if screen.zones else [])|tojson }},
     availableFeeds: [
         {%- for feed in feeds -%}
-            {id: "{{ feed.id }}", name: "{{ feed.name}}"} {{- ',' if not loop.last -}}
+            {id: "{{ feed.id }}", name: {{ feed.name|tojson }}} {{- ',' if not loop.last -}}
         {%- endfor -%} ],
     availableFonts: {{ fonts|tojson|safe }}
 };
@@ -233,6 +231,30 @@ $(window).resize(update_fake_screen_size);
 $('#urlname').on('input', function() {
     this.value = this.value.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/\s+/g, '-');
 });
+
+// Warn before leaving with unsaved edits.
+(function() {
+    const form = document.getElementById('screen_form');
+    const editor = document.querySelector('[x-data^="makeScreenEditor"]');
+    if (!form || !editor) {
+        return;
+    }
+    let dirty = false;
+    const markDirty = function() { dirty = true; };
+    editor.addEventListener('input', markDirty);
+    editor.addEventListener('change', markDirty);
+    form.addEventListener('submit', function() {
+        if (form.checkValidity()) {
+            dirty = false;
+        }
+    });
+    window.addEventListener('beforeunload', function(evt) {
+        if (dirty) {
+            evt.preventDefault();
+            evt.returnValue = '';
+        }
+    });
+})();
 
 </script>
 

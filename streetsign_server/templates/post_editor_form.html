@@ -103,7 +103,7 @@
 			<div class="card-body">
 				<div class="input-group" style="max-width:14rem">
 					<input type="number" name="displaytime" data-min="1" data-max="500"
-					       class="form-control" value="{{ post.display_time }}" />
+					       class="form-control" value="{{ post.display_time }}" aria-label="Display duration in seconds" />
 					<span class="input-group-text">seconds</span>
 				</div>
 			</div>
@@ -125,7 +125,7 @@
 				<p class="text-muted small mb-0 mt-1">Which hours of each day is this post allowed to show?</p>
 			</div>
 			<div class="card-body">
-				<select class="form-select mb-3" x-model="mode" name="times_mode" @change="updateSchedulingSummary()">
+				<select class="form-select mb-3" x-model="mode" name="times_mode" @change="updateSchedulingSummary()" aria-label="Time restriction mode">
 					<option value="all_day">All day — no restrictions</option>
 					<option value="only_show">Only show during these hours</option>
 					<option value="do_not_show">Do not show during these hours</option>
@@ -140,8 +140,8 @@
 						<th scope="col">Why? (optional)</th>
 						<th scope="col" style="width:4em">
 							{% if post.feed.user_can_write(user) %}
-							<button type="button" class="btn btn-sm btn-outline-primary" x-on:click.prevent="addTime">
-								<span class="bi bi-plus-lg"></span>
+							<button type="button" class="btn btn-sm btn-outline-primary" x-on:click.prevent="addTime" aria-label="Add time restriction">
+								<span class="bi bi-plus-lg" aria-hidden="true"></span>
 							</button>
 							{% endif %}
 						</th>
@@ -159,26 +159,26 @@
 					<tr :class="{ 'table-warning': timeInvalid(idx) }">
 						<td>
 							<div class="input-group">
-								<input type="time" x-model="time.start" class="form-control" data-date-format="HH:mm" />
-								<span class="input-group-text"><span class="bi bi-clock"></span></span>
+								<input type="time" x-model="time.start" class="form-control" data-date-format="HH:mm" aria-label="Start time" />
+								<span class="input-group-text"><span class="bi bi-clock" aria-hidden="true"></span></span>
 							</div>
 						</td>
 						<td>
 							<div class="input-group">
-								<input type="time" x-model="time.end" class="form-control" data-date-format="HH:mm" />
-								<span class="input-group-text"><span class="bi bi-clock"></span></span>
+								<input type="time" x-model="time.end" class="form-control" data-date-format="HH:mm" aria-label="End time" />
+								<span class="input-group-text"><span class="bi bi-clock" aria-hidden="true"></span></span>
 							</div>
 						</td>
 						<td>
-							<input x-model="time.note" class="form-control" placeholder="e.g. Lunch break" />
+							<input x-model="time.note" class="form-control" placeholder="e.g. Lunch break" aria-label="Time restriction note" />
 							<span class="text-danger small" x-show="timeInvalid(idx)">
 								End time must be after start time.
 							</span>
 						</td>
 						<td>
 							{% if post.feed.user_can_write(user) %}
-							<a href="#" class="btn btn-sm btn-danger" x-on:click.prevent="removeTime(idx)">
-								<span class="bi bi-trash"></span>
+							<a href="#" class="btn btn-sm btn-danger" x-on:click.prevent="removeTime(idx)" aria-label="Remove time restriction">
+								<span class="bi bi-trash" aria-hidden="true"></span>
 							</a>
 							{% endif %}
 						</td>
@@ -257,7 +257,7 @@
 				<div class="input-group" style="max-width:12rem">
 					<input class="form-control" type="number" name="post_fontsize"
 					       value="{{post.fontsize if post.fontsize else ''}}"
-					       placeholder="Auto" />
+					       placeholder="Auto" aria-label="Custom font size in points" />
 					<span class="input-group-text">pt</span>
 				</div>
 			</div>

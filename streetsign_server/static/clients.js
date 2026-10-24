@@ -154,7 +154,15 @@
         });
 
         loadClients();
-        setInterval(loadClients, 5000);
-        setInterval(updateRelativeTimes, 1000);
+        setInterval(function() {
+            if (document.visibilityState === 'visible') {
+                loadClients();
+            }
+        }, 5000);
+        setInterval(function() {
+            if (document.visibilityState === 'visible') {
+                updateRelativeTimes();
+            }
+        }, 1000);
     });
 })();

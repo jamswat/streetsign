@@ -28,7 +28,7 @@
 <table class="table table-striped" id="posts-table">
 	<thead>
 		<tr>
-			<th scope="col" style="width:2em"><input type="checkbox" id="select-all-posts" title="Select all"></th>
+			<th scope="col" style="width:2em"><input type="checkbox" id="select-all-posts" title="Select all" aria-label="Select all posts"></th>
 			<th scope="col">Title</th>
 			<th scope="col">Author</th>
 			<th scope="col">Feed</th>
@@ -46,7 +46,7 @@
 			    {{ 'un' if not post.published}}published clickable-row"
 				data-uri="{{ url_for('postpage', postid=post.id) }}"
 				data-post-id="{{ post.id }}" >
-				<td><input type="checkbox" class="post-checkbox" data-post-id="{{ post.id }}" onclick="event.stopPropagation()"></td>
+				<td><input type="checkbox" class="post-checkbox" data-post-id="{{ post.id }}" onclick="event.stopPropagation()" aria-label="Select post {{ post.title }}"></td>
 				<td>{{ linkmacros.post(post) }}</td>
 				<td>
 					{% if post.author %}
@@ -97,7 +97,8 @@
 					   or ((not post.published) and post.feed.user_can_write(user)) %}
 						<button data-ajaxtype="POST" data-ajaxtoggle="hidden"
 						        data-name="action" data-value="delete"
-						        class="item_ajax_toggle btn btn-sm btn-danger" data-confirm="true"><span class="bi bi-trash"></span></button>
+						        class="item_ajax_toggle btn btn-sm btn-danger" data-confirm="true"
+						        aria-label="Delete post"><span class="bi bi-trash"></span></button>
 					{% endif %}
 				</td>
 		</tr>

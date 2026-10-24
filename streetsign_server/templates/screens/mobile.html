@@ -134,6 +134,11 @@
             border-radius: 8px;
         }
 
+        .post-list li.post-error {
+            background: #f8d7da;
+            color: #842029;
+        }
+
         @media (prefers-reduced-motion: reduce) {
             * {
                 transition: none !important;
@@ -215,13 +220,17 @@
 
         function loadZonePosts(zoneId, zoneData, postListEl) {
             const feedsUrl = POSTS_URL.replace('-1', JSON.stringify(zoneData.feeds));
+            let initialLoadDone = false;
 
             $.getJSON(feedsUrl, (data) => {
+                initialLoadDone = true;
                 data.posts.forEach(postSummary => {
                     $.getJSON(postSummary.uri, (postInfo) => {
                         const li = document.createElement('li');
-                        if (postInfo.type === 'html' || postInfo.type === 'text') {
+                        if (postInfo.type === 'html') {
                             li.innerHTML = postInfo.content.content;
+                        } else if (postInfo.type === 'text') {
+                            li.textContent = postInfo.content.content;
                         } else if (postInfo.type === 'image') {
                             const img = document.createElement('img');
                             img.src = postInfo.content.file_url;
@@ -232,19 +241,40 @@
                             li.textContent = JSON.stringify(postInfo);
                         }
                         postListEl.appendChild(li);
+                    }).fail(() => {
+                        const li = document.createElement('li');
+                        li.className = 'post-error';
+                        li.textContent = 'This post could not be loaded.';
+                        postListEl.appendChild(li);
                     });
                 });
+            }).fail(() => {
+                if (!initialLoadDone) {
+                    const li = document.createElement('li');
+                    li.className = 'post-error';
+                    li.textContent = 'Unable to load posts. Retrying automatically…';
+                    postListEl.appendChild(li);
+                }
             });
 
             // Poll for new posts periodically
             let lastPostIds = null;
             setInterval(() => {
+                if (document.visibilityState !== 'visible') {
+                    return;
+                }
                 $.getJSON(feedsUrl, (data) => {
+                    if (!initialLoadDone) {
+                        document.location.reload();
+                        return;
+                    }
                     const ids = data.posts.map(p => p.id).join(',');
                     if (lastPostIds !== null && ids !== lastPostIds) {
                         document.location.reload();
                     }
                     lastPostIds = ids;
+                }).fail(() => {
+                    // Keep showing the last known content and retry on the next tick.
                 });
             }, 60000);
         }

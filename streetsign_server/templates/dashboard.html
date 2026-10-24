@@ -50,11 +50,17 @@
 					</a>
 				</div>
 				<div class="card-body">
+					{% set visible_posts = [] %}
+					{% for post in posts %}
+						{% if show_all or (post.active_status() == 'now' and post.published) %}
+							{% set _ = visible_posts.append(post) %}
+						{% endif %}
+					{% endfor %}
 					{% if posts_to_publish.count() > 0 or posts.count() > 0 %}
-					<div class="table-responsive">
-					<table class="table table-striped mb-0">
-						{% for post in posts %}
-							{% if show_all or (post.active_status() == 'now' and post.published) %}
+						{% if visible_posts %}
+						<div class="table-responsive">
+						<table class="table table-striped mb-0">
+							{% for post in visible_posts %}
 							<tr class="{{ 'published' if post.published else 'unpublished' }}">
 								<td>{{ linkmacros.post(post) }}</td>
 								<td>{{ linkmacros.post_status_badge(post) }}</td>
@@ -68,10 +74,16 @@
 								{% endif %}
 								</td>
 							</tr>
+							{% endfor %}
+						</table>
+						</div>
+						{% else %}
+						<p class="text-muted mb-0">No posts to show right now.
+							{% if not show_all %}
+							<a href="?show_all=1">Show all posts</a>.
 							{% endif %}
-						{% endfor %}
-					</table>
-					</div>
+						</p>
+						{% endif %}
 					{% else %}
 					<p class="text-muted mb-0">No posts yet.
 						{% if user.writeable_feeds() %}
@@ -199,9 +211,10 @@
 <div class="row mt-4">
 	<h2>Public Screens</h2>
 </div>
-{% if aliases %}
+{% set public_aliases = aliases|selectattr('show_on_dashboard')|list %}
+{% if public_aliases %}
 <div class="row">
-	{% for client in aliases if client.show_on_dashboard %}
+	{% for client in public_aliases %}
 		<div class="col-6 col-md-3">
 			<div class="card card-body">
 				<a href="{{ url_for('client_alias', alias_name=client.name) }}">
