@@ -1,5 +1,33 @@
 # Changelog
 
+## v1.5.0 — Frontend CI checks and UI/UX improvements
+
+### Improvements
+
+- **Frontend checks in CI** — a new `frontend` job runs `node --check` over the
+  application JavaScript and parses the application CSS with `tinycss2`, so
+  syntax errors fail the build. The Python test matrix now also covers 3.13 and
+  3.14, and dependency syncs are enforced against `uv.lock`.
+- **Accessibility** — form controls in the screen and post editors and the posts
+  table now have associated labels or ARIA names; clickable table rows respond to
+  Enter and Space; the mobile sidebar manages focus and closes with Escape; and
+  the theme toggle exposes its pressed state.
+- **Clearer feedback** — housekeeping asks for confirmation before running, toast
+  messages are rendered as text, and the mobile display shows a retry message when
+  posts cannot be loaded instead of failing silently.
+- **Empty states** — the dashboard and feeds pages explain when there is nothing
+  to show and how to create the first item.
+
+### Bug Fixes
+
+- **Mobile display text rendering** — plain-text posts are now rendered as text
+  rather than HTML, preventing markup in post content from being interpreted.
+- **Screen editor configuration** — screen settings, CSS, and zones are serialised
+  with `tojson` and parsed with `from_json`, so quotes and newlines in custom CSS
+  no longer break the editor. Unsaved edits now warn before leaving the page.
+- **Stray CSS brace** — removed an unmatched closing brace at the end of
+  `style.css`.
+
 ## v1.4.2 — Trusted-proxy support via ProxyFix
 
 ### Bug Fixes
