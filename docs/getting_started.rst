@@ -37,7 +37,7 @@ To actually run a local test server. The development server runs **without**
 the interactive debugger by default; set ``FLASK_DEBUG=1`` to enable it (in
 which case it binds only to ``127.0.0.1`` for safety).
 
-To deploy streetsign for production use, check out the :doc:`deployment` guide.
+To deploy StreetSign for production use, check out the :doc:`deployment` guide.
 
 A fresh database is seeded with three demo accounts (the password matches the
 login name): ``admin`` (full administrator), ``editor`` (can write and publish

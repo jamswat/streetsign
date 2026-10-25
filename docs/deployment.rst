@@ -1,14 +1,14 @@
-Deploying Streetsign in Production
+Deploying StreetSign in Production
 ==================================
 
-How to deploy a 'production-ready' streetsign installation.
+How to deploy a 'production-ready' StreetSign installation.
 
 Dependencies
 ------------
 
-First you need to install the python headers (for compiling some extra modules),
-imagemagick (to generate thumbnails), and pip for installing other python modules,
-and git for downloading streetsign itself.
+First, install the Python headers (for compiling some extra modules),
+ImageMagick (to generate thumbnails), pip (for installing Python modules),
+and git (to download StreetSign).
 
 On Debian/Ubuntu Server, this will be::
 
@@ -21,8 +21,8 @@ On CentOS/RHEL 8+, this is::
 User/Group
 ----------
 
-Streetsign, as every other service, should really run as it's own user, for
-security's sake ::
+StreetSign, like every other service, should really run as its own user, for
+security's sake::
 
     sudo useradd streetsign
 
@@ -31,8 +31,8 @@ Which will also create a new group for it.
 Installation path
 -----------------
 
-As per the LSB, probably the best place for public facing services to install their
-data is ``/srv/``.  So we should create that directory, and install streetsign there::
+Following the LSB, the best place for public-facing services to install their
+data is ``/srv/``.  Create that directory and install StreetSign there::
 
     sudo mkdir /srv/streetsign
     sudo chown -R streetsign:streetsign /srv/streetsign
@@ -40,7 +40,7 @@ data is ``/srv/``.  So we should create that directory, and install streetsign t
 Actually Installing it
 ----------------------
 
-We'll use git to get the latest version, and set it up as normal::
+We'll use git to clone the latest version and set it up::
 
     cd /srv/streetsign
     sudo su streetsign
@@ -68,31 +68,31 @@ or via the environment (e.g. in the systemd unit or a ``.env`` file)::
 a repository. It is *not* used for password hashing, so you can rotate it
 without affecting stored passwords.
 
-Test it's all ready to go
--------------------------
+Test that everything is ready
+-----------------------------
 
-This step is technically un-needed, but probably a good idea.  While still ``su``'d as
-streetsign::
+This step is technically unneeded, but probably a good idea.  While still running
+as the streetsign user::
 
     ./run.py waitress
 
-and then from a web browser, browse to that server's IP at port 5000.  If you don't know
-the server IP::
+and then from a web browser, browse to the server's IP on port 5000.  If you
+don't know the server's IP::
 
-    ifconfig |grep 'inet addr:'
+    ip -4 addr show
 
-Note that often servers may have a firewall (e.g. IPTables, or similar) blocking port 5000.
+Note that servers often have a firewall (e.g. iptables, or similar) blocking port 5000.
 
-And then you can ``exit`` from the streetsign user.
+Then ``exit`` from the streetsign user.
 
-Configure streetsign to start on system-boot
---------------------------------------------
+Configure StreetSign to start at boot
+-------------------------------------
 
-Unfortunately, this is different on practically every linux distribution.
+Unfortunately, this is different on practically every Linux distribution.
 
-There are startup files in the streetsign source, in the ``deployment`` folder.
+There are startup files in the StreetSign source, in the ``deployment`` folder.
 
-systemd systems (Ubuntu 16.04+, CentOS/RHEL 7+, Debian 8+, etc)
+systemd systems (Ubuntu 20.04+, CentOS/RHEL 8+, Debian 11+, etc)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On a systemd-based Linux distribution,
@@ -102,26 +102,26 @@ the above instructions)::
 
     sudo cp /srv/streetsign/deployment/systemd/streetsign.service /etc/systemd/system/
 
-And then tell enable the service::
+Then enable the service::
 
     sudo systemctl enable streetsign
 
-And then you can actually start it up::
+Then start it up::
 
     sudo systemctl start streetsign
 
-If it's all running quite happily, then cool.  If you want to test that it does actually start on
+If it starts without errors, you're done.  To verify that it starts on
 boot, feel free to reboot the server and see what happens.
 
-Logs for streetsign can then be found using the normal systemd logging utils::
+Logs for StreetSign can be found with the usual systemd tools::
 
     journalctl -u streetsign.service
 
-Getting Streetsign on to Port 80
+Getting StreetSign onto Port 80
 --------------------------------
 
-If streetsign is going to be 'public facing', and so you want it to be running on the regular
-HTTP port 80, or over HTTPS, then it's best to run a 'reverse proxy' in front of it.
+If StreetSign is going to be public-facing and you want it on the standard
+HTTP port 80 or over HTTPS, it's best to run a reverse proxy in front of it.
 
 In-process static file serving via WhiteNoise_ means nginx is not required
 for serving static assets — requests for static files should simply be
@@ -140,26 +140,26 @@ Or on CentOS::
 
     yum install nginx
 
-copy the basic streetsign configuration file in::
+Copy the basic StreetSign configuration file in::
 
     sudo cp /srv/streetsign/deployment/nginx/streetsign /etc/nginx/sites-available/
 
-on CentOS, it's to ``/etc/nginx/conf.d/streetsign.conf``::
+on CentOS, copy it to ``/etc/nginx/conf.d/streetsign.conf``::
 
     sudo cp /srv/streetsign/deployment/nginx/streetsign /etc/nginx/conf.d/streetsign.conf
 
 Edit it with whatever settings you wish.
 
-Enable it (Debian Only)::
+Enable it (Debian only)::
 
     sudo ln -s /etc/nginx/sites-available/streetsign /etc/nginx/sites-enabled/
 
-And if streetsign is the only thing you're using nginx for, and you don't need
-the default welcome page, turn that off::
+If StreetSign is the only thing you use nginx for and you don't need the
+default welcome page, disable it::
 
     sudo rm /etc/nginx/sites-enabled/default
 
-And of course, restart nginx::
+Then restart nginx::
 
     sudo systemctl restart nginx
 
@@ -172,7 +172,7 @@ tagged release — no local build required:
 
 .. code-block:: bash
 
-    docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.2.0
+    docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:latest
 
 Or with docker-compose (pulls the image automatically):
 
@@ -183,22 +183,22 @@ Or with docker-compose (pulls the image automatically):
 See the `README <https://github.com/jamswat/streetsign#docker>`_ for
 Docker-specific configuration, volume mounts, and docker-compose usage.
 
-CentOS Notes: (Esp. SELinux)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CentOS notes (especially SELinux)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-CentOS has SELinux installed often, and is locked down pretty hard.  You will probably need to allow the HTTPD
-to make outgoing connections.
+CentOS often has SELinux installed and locked down.  You will probably need to
+allow httpd to make outgoing connections.
 
-(All of the following commands are as root.)
+Run the following commands as root.
 
-First install semanage::
+First, install semanage::
 
     yum install policycoreutils-python
 
-Then open up HTTPD to have outgoing-network access (to the actual python server)::
+Then allow httpd outgoing network access (to the actual Python server)::
 
     /usr/sbin/setsebool httpd_can_network_connect 1
 
-And to make that permanent::
+To make that permanent::
 
     /usr/sbin/setsebool -P httpd_can_network_connect 1

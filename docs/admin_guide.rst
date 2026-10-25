@@ -1,7 +1,7 @@
 StreetSign Admin's guide
 ========================
 
-Here's first a guide on how to set up streetsign to play with.  For full proper
+Here's first a guide on how to set up StreetSign to play with.  For full proper
 deployment (for real live production usage) check the :doc:`deployment` page.
 
 Installation
@@ -33,7 +33,7 @@ insecure default** — set a unique random value (see below) before deploying.
 
 Which will spin up a version which should be totally capable for small
 deployments (up to a hundred screens or so, I guess).  If you are going to be
-on a public network, then it's advised that you run streetsign - either with
+on a public network, then it's advised that you run StreetSign - either with
 waitress or another WSGI server of your choice - behind nginx or another
 reverse proxy, which should keep things a bit saner.  If you're on a public
 network, also remember to set up your reverse proxy to use SSL, so that you
@@ -42,7 +42,7 @@ aren't sending log-in credentials around in plaintext.
 Static files are served in-process by WhiteNoise_, so no separate web server
 or reverse proxy is required for static assets.
 
-If you want to run another WSGI server, remember the virtualenv that streetsign
+If you want to run another WSGI server, remember the virtualenv that StreetSign
 is using, so any scripts you write need to use the python found in there
 (``.venv/bin/python``).  You can use pip from in there to install any
 pypi packages you need too (``.venv/bin/pip install gunicorn``, say).
@@ -147,7 +147,7 @@ still correct.
 Housekeeping & removing old content
 -----------------------------------
 
-By default, streetsign will tag content that has a lifetime which ended over a week
+By default, StreetSign will tag content that has a lifetime which ended over a week
 ago as "archived".  This means it no longer shows up on the interface for anyone
 except admin users.  After a month, it will be deleted, including any uploaded images.
 
@@ -231,7 +231,7 @@ StreetSign uses Python's standard ``logging`` module. When started via
 called with a timestamped format at the level given by ``LOG_LEVEL``.
 All application messages go through ``streetsign_server`` loggers and
 appear on stderr — in Docker they're captured by ``docker logs``, under
-systemd by ``journalctl -u streetsign``.
+systemd by ``journalctl -u streetsign.service``.
 
 Backup & Restore
 ----------------

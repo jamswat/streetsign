@@ -3,7 +3,7 @@ Screen Design
 
 "Screens" are where your posts actually get displayed.
 
-A "Screen" output is actually a URL on the streetsign server which you can point
+A "Screen" output is actually a URL on the StreetSign server which you can point
 a browser on client machines at.
 
 Four rendering engines are available, selected per client alias:

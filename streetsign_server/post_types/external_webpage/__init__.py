@@ -16,9 +16,9 @@
 #    along with StreetSign.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
----------------------------------
+--------------------------------------------------
 streetsign_server.post_types.external_webpage
----------------------------------
+--------------------------------------------------
 
 Display an External Web Page embedded in a screen.
 

@@ -6,6 +6,7 @@
 # pylint: disable=redefined-builtin, invalid-name, unused-import
 import sys
 import os
+from importlib.metadata import version as _pkg_version, PackageNotFoundError
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '.venv', 'lib',
@@ -17,16 +18,27 @@ extensions = [
 ]
 
 templates_path = ['_templates']
-source_suffix = '.rst'
+source_suffix = {'.rst': 'restructuredtext'}
 master_doc = 'index'
 
 # General information about the project.
 project = 'StreetSign'
 copyright = '2013-2026, Daniel Fairhead, et al.'
 
-version = '1.2'
+# Keep the documented version in step with the installed package. The
+# fallback only applies when building outside an installed environment.
+try:
+    _release = _pkg_version('streetsign-server')
+except PackageNotFoundError:
+    _release = '1.5.0'
+
+version = '.'.join(_release.split('.')[:2])
 # The full version, including alpha/beta/rc tags.
-release = '1.2.0'
+release = _release
+
+# Importing the application during autodoc reads its configuration. Set a
+# throwaway secret so the "insecure default SECRET_KEY" warning is not emitted.
+os.environ.setdefault('SECRET_KEY', 'docs-build-not-a-real-secret')
 
 exclude_patterns = ['_build']
 pygments_style = 'sphinx'
@@ -79,7 +91,8 @@ html_theme = 'furo'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# Add any paths that contain custom static files here (none at present).
+html_static_path = []
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied

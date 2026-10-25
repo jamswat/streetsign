@@ -46,7 +46,7 @@ from streetsign_server.logic.urlsafety import check_fetch_url, UnsafeURL
 #
 
 def run_local_script(scriptname, *vargs):
-    ''' run an local ("my") <scriptname> script, with <*vargs> '''
+    ''' Run a local (post-type) script ``<scriptname>``, passing ``*vargs``. '''
     return check_call([pathjoin(dirname(abspath(__file__)), scriptname)] \
         + list(vargs))
 
