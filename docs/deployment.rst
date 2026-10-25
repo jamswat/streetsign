@@ -172,7 +172,12 @@ tagged release — no local build required:
 
 .. code-block:: bash
 
-    docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:latest
+    docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.5
+
+Each release publishes several tags: the full version (``1.5.0``), the
+minor line (``1.5``), the major line (``1``), and ``latest`` (the newest
+release).  Use ``1.5`` to get patch updates within the 1.5 series, or a full
+version such as ``1.5.0`` to pin exactly.
 
 Or with docker-compose (pulls the image automatically):
 

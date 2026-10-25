@@ -172,8 +172,12 @@ A Docker image is built and published to [GitHub Container Registry](https://git
 ### Quick start (pre-built image)
 
 ```bash
-docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:latest
+docker run -d --name streetsign -p 5000:5000 ghcr.io/jamswat/streetsign:1.5
 ```
+
+Each release publishes several tags: the full version (`1.5.0`), the minor
+line (`1.5`), the major line (`1`), and `latest`. Use `1.5` for patch updates
+within the 1.5 series, or a full version such as `1.5.0` to pin exactly.
 
 Open <http://localhost:5000> — default login is `admin` / `admin`.
 
@@ -184,7 +188,7 @@ Open <http://localhost:5000> — default login is `admin` / `admin`.
 docker compose up -d
 ```
 
-The compose file pulls `ghcr.io/jamswat/streetsign:latest` 
+The compose file pulls `ghcr.io/jamswat/streetsign:1.5` 
 
 This brings up a single `app` service on `${WEB_PORT:-5000}`. Two named volumes
 are created automatically and persist across rebuilds:
