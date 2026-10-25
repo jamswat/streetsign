@@ -11,14 +11,16 @@ System Requirements
 -------------------
 
 - Python 3.10 (or later) is required.
+- `uv <https://docs.astral.sh/uv/>`_ and ``make``, which ``setup.sh`` uses to
+  create the virtualenv and install dependencies.
 - Python development headerfiles & capable compiler:
-  `yum install python3-devel` on CentOS/RPM based distros,
-  `apt-get install python3-dev` on Debian/Ubuntu
+  ``yum install python3-devel`` on CentOS/RPM based distros,
+  ``apt-get install python3-dev`` on Debian/Ubuntu
 
 It's also recommended to install ImageMagick for creating image thumbnails:
 
-- `yum install ImageMagick` (on CentOS/RPM)
-  `apt-get install imagemagick` (on Debian/Ubuntu)
+- ``yum install ImageMagick`` (on CentOS/RPM)
+  ``apt-get install imagemagick`` (on Debian/Ubuntu)
 
 Installing
 ----------
@@ -27,7 +29,7 @@ Essentially, once you've downloaded or cloned the project::
 
     ./setup.sh
 
-Should download and install a virtualenv, and set up all the dependencies and
+Should create a virtualenv (using ``uv``), install all dependencies, and set up
 the initial database (a local sqlite file).  (The script delegates to
 ``make all``.)  Then ::
 

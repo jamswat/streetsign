@@ -7,9 +7,11 @@ deployment (for real live production usage) check the :doc:`deployment` page.
 Installation
 ------------
 
-StreetSign requires python 3.10+, imagemagick (to generate thumbnails).  If you
-are installing on a fresh server, you may need to install ``python3-headers``
-or ``python3-dev`` or whatever your distribution calls it.
+StreetSign requires python 3.10+, imagemagick (to generate thumbnails),
+``make``, and ``uv`` (used by ``setup.sh`` to create the virtualenv and install
+dependencies).  If you are installing on a fresh server, you may need to
+install ``python3-headers`` or ``python3-dev`` or whatever your distribution
+calls it.
 
 (On a stock OSX computer, it doesn't need anything.)
 
@@ -81,8 +83,11 @@ Account lockout
 
 To slow down password-guessing, an account is automatically locked out after a
 number of consecutive failed login attempts (``MAX_FAILED_LOGINS``, default
-``10``). A locked-out account cannot log in until an admin clears the lock from
-the user's edit page.
+``10``). A locked-out account cannot log in. There is currently no unlock
+control in the web interface, so an administrator must clear the
+``is_locked_out`` flag (and ``failed_logins``) directly in the database::
+
+    sqlite3 database.db "UPDATE user SET is_locked_out = 0, failed_logins = 0 WHERE loginname = 'the-user';"
 
 Password hashes and moving the database
 ---------------------------------------
@@ -147,35 +152,31 @@ still correct.
 Housekeeping & removing old content
 -----------------------------------
 
-By default, StreetSign will tag content that has a lifetime which ended over a week
-ago as "archived".  This means it no longer shows up on the interface for anyone
-except admin users.  After a month, it will be deleted, including any uploaded images.
+By default, StreetSign will tag content whose lifetime ended over a week ago as
+"archived".  This means it no longer shows up on the interface for anyone except
+admin users.  After a month, it will be deleted, including any uploaded images.
 
-This "housekeeping" should take milliseconds to run as long as it's run regularly,
-so each screen view will fire a request to the server to do it once an hour or so.
-It and can also be triggered through the interface by hitting the "housekeeping"
-button on the "All Posts" page, or on the front page (Dashboard).
+Housekeeping is **not** run automatically by the display clients.  An
+administrator triggers it manually with the "housekeeping" button on the "All
+Posts" page or on the front page (Dashboard).  It can also be triggered by an
+authenticated admin ``HTTP POST`` to ``/posts/housekeeping``.
 
-If you want to ensure that this runs every hour or so, you can use standard unix
-cron, or any other task scheduling program.
+Housekeeping is quick as long as it is run regularly.  If you want to run it on a
+schedule, use cron or another task scheduler to POST to the endpoint as an
+administrator.  The endpoint requires an admin session (there is currently no
+API-token mechanism), so a cron job must log in first and send the resulting
+session cookie.  In practice, the admin UI button is the simplest option.
 
-- ``HTTP POST`` to ``/posts/housekeeping``
+External feeds are updated manually too.  Each external data source has its own
+page where an administrator can press "Run Now" or change its update frequency;
+the update endpoint skips a source until its frequency interval has elapsed.
+There is also an authenticated admin ``HTTP POST`` to
+``/external_data_sources/`` which runs every source that is due.  Display
+clients do not trigger feed imports.
 
-so if you're using cron::
-
-    0 * * * * nobody curl -d "" 'http://streetsign_url/posts/housekeeping' > /dev/null
-
-should do it.
-
-For automatically updating content from external feeds, again, screen views will
-automatically do this once a minute, but you can also trigger it manually
-(or via cron) with a
-
-- ``HTTP POST`` to ``/external_data_sources/``
-
-If you are on a public network, and worry about DOS issues, then realistically,
+If you are on a public network and worry about DOS issues, then realistically
 you should be running behind a reverse proxy such as nginx.  With nginx you can
-add restrictions on what URLS are accessble by any IP address, so you can limit
+add restrictions on what URLs are accessible by any IP address, so you can limit
 these addresses to only be accessed by the machine with cron, for instance.
 
 Server Time

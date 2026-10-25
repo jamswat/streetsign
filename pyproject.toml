@@ -52,6 +52,12 @@ dev = [
     "pip-audit>=2.10,<3",
 ]
 
+[dependency-groups]
+docs = [
+    "sphinx>=7.2,<10",
+    "furo>=2024.8.6,<2027",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

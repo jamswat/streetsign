@@ -141,6 +141,8 @@ cd streetsign
 ./run.py
 ```
 
+Install the requirements below first — in particular `uv` and `make`.
+
 Open <http://localhost:5000> — default login is `admin` / `admin`.
 
 A fresh database is seeded with three demo accounts (password = login name):
@@ -188,7 +190,7 @@ Open <http://localhost:5000> — default login is `admin` / `admin`.
 docker compose up -d
 ```
 
-The compose file pulls `ghcr.io/jamswat/streetsign:1.5` 
+The compose file pulls `ghcr.io/jamswat/streetsign:1.5`.
 
 This brings up a single `app` service on `${WEB_PORT:-5000}`. Two named volumes
 are created automatically and persist across rebuilds:
@@ -211,6 +213,7 @@ You may wish to set up bind mounts for these instead, or also configure for exte
 | `HOST`           | `0.0.0.0`                            | Bind address inside the container                |
 | `DATABASE_FILE`  | `/data/database.db`                  | SQLite path (already volume-mounted in image)    |
 | `LOG_LEVEL`      | `INFO`                               | Logging level: `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+| `TRUSTED_PROXY_HOPS` | `0`                              | Number of reverse proxies in front of StreetSign whose forwarded headers are trusted. Set to `1` behind a single proxy. |
 | `WAITRESS_THREADS` | `8`                                 | Number of Waitress worker threads                |
 | `WAITRESS_CHANNEL_TIMEOUT` | `30`                               | Seconds before an idle client connection is dropped |
 
@@ -220,14 +223,16 @@ You may wish to set up bind mounts for these instead, or also configure for exte
 StreetSign loads `config.py` if present, falling back to the defaults in
 `config_default.py`. Don't edit `config_default.py`; instead copy the values
 you want to change into `config.py`. Common environment variables
-(`SECRET_KEY`, `DATABASE_FILE`, `PORT`, `HOST`) are honoured directly.
+(`SECRET_KEY`, `DATABASE_FILE`, `PORT`, `HOST`, `LOG_LEVEL`,
+`TRUSTED_PROXY_HOPS`) are honoured directly.
 
 ## Upgrading
 
 1. Back up `database.db` and `config.py` (see **Backup & Restore** below)
 2. `git pull`
-3. `make migrate`
-4. Restart the server
+3. `uv sync --extra dev` (install any updated dependencies)
+4. `make migrate`
+5. Restart the server
 
 ## Backup & Restore
 
@@ -255,15 +260,19 @@ restart.
 
 - Python 3.10+
 - ImageMagick (for image resizing and thumbnails)
+- [uv](https://docs.astral.sh/uv/) (creates the virtualenv and installs dependencies)
+- `make` and `git` (used by `setup.sh`, and to clone the repository)
 
 Debian/Ubuntu:
 
 ```bash
-apt-get install python3-dev python3-pip imagemagick
+apt-get install python3-dev make git imagemagick
+# then install uv:
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-The `setup.sh` script (which runs `make all`) creates a `.venv` with all
-Python dependencies. To use the virtualenv directly: `.venv/bin/python`.
+The `setup.sh` script (which runs `make all`) uses `uv` to create a `.venv`
+with all Python dependencies. To use the virtualenv directly: `.venv/bin/python`.
 
 ## Documentation
 

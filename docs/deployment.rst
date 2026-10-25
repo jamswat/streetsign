@@ -7,16 +7,20 @@ Dependencies
 ------------
 
 First, install the Python headers (for compiling some extra modules),
-ImageMagick (to generate thumbnails), pip (for installing Python modules),
-and git (to download StreetSign).
+ImageMagick (to generate thumbnails), make, and git (to download StreetSign).
 
 On Debian/Ubuntu Server, this will be::
 
-    sudo apt-get install python3-pip python3-dev imagemagick git
+    sudo apt-get install python3-dev make imagemagick git
 
 On CentOS/RHEL 8+, this is::
 
-    sudo yum install python3-devel python3-pip ImageMagick git
+    sudo yum install python3-devel make ImageMagick git
+
+Then install `uv <https://docs.astral.sh/uv/>`_, which ``setup.sh`` uses to
+create the virtualenv and install Python dependencies::
+
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 
 User/Group
 ----------
@@ -39,6 +43,8 @@ data is ``/srv/``.  Create that directory and install StreetSign there::
 
 Actually Installing it
 ----------------------
+
+Make sure ``uv`` and ``make`` are installed first (see Dependencies).
 
 We'll use git to clone the latest version and set it up::
 
@@ -71,7 +77,7 @@ without affecting stored passwords.
 Test that everything is ready
 -----------------------------
 
-This step is technically unneeded, but probably a good idea.  While still running
+This step is optional, but probably a good idea.  While still running
 as the streetsign user::
 
     ./run.py waitress
@@ -149,6 +155,11 @@ on CentOS, copy it to ``/etc/nginx/conf.d/streetsign.conf``::
     sudo cp /srv/streetsign/deployment/nginx/streetsign /etc/nginx/conf.d/streetsign.conf
 
 Edit it with whatever settings you wish.
+
+The supplied configuration sets ``X-Forwarded-For`` and ``X-Forwarded-Proto``.
+StreetSign ignores those headers unless ``TRUSTED_PROXY_HOPS`` is set to the
+number of proxies in front of it, so set ``TRUSTED_PROXY_HOPS = 1`` in
+``config.py`` (or the environment) when using this configuration.
 
 Enable it (Debian only)::
 
