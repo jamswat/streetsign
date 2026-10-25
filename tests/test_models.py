@@ -228,8 +228,10 @@ class Test_models_now(unittest.TestCase):
         now = models.now()
         after = datetime.now()
 
-        self.assertLess(before, now)
-        self.assertGreater(after, now)
+        # With a zero offset, now() can land on the same clock tick as the
+        # datetime.now() calls either side of it, so allow equality.
+        self.assertLessEqual(before, now)
+        self.assertGreaterEqual(after, now)
 
     def test_30_mins_offset(self):
         models.app.config['TIME_OFFSET'] = 30
